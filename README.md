@@ -1,4 +1,4 @@
-# typescript-npm-package-template
+# comlink-serializer
 
 > Template to kickstart creating a Node.js module using TypeScript and VSCode
 
