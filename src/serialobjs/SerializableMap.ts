@@ -2,7 +2,7 @@ import { Serializable } from '../serial';
 import { ObjectRegistry } from '../registry';
 import { SerializedMap } from './types';
 
-@Serializable<SerializedMap, SerializableMap>()
+@Serializable
 export class SerializableMap<K extends Serializable = Serializable, V extends Serializable = Serializable> extends Map<
 	K,
 	V

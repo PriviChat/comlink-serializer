@@ -2,13 +2,13 @@ import { Serializable } from '../serial';
 import { ObjectRegistry } from '../registry';
 import { SerializedArray } from './types';
 
-@Serializable<SerializedArray, SerializableArray>()
+@Serializable
 export class SerializableArray<S extends Serializable = Serializable> extends Array<S> {
 	isEmpty(): boolean {
 		return this.length === 0;
 	}
 
-	serialize() {
+	serialize(): SerializedArray {
 		const obj = {
 			_array: this.map((object) => object.serialize()),
 		};

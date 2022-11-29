@@ -1,7 +1,7 @@
 import { Serializable } from '../../src';
 import { SerializedProduct } from './types';
 
-@Serializable()
+@Serializable
 export class Product implements Serializable<SerializedProduct> {
 	constructor(readonly productId: string, readonly productName: string) {}
 
@@ -9,7 +9,7 @@ export class Product implements Serializable<SerializedProduct> {
 		return Object.assign(Object.create(Product.prototype), data);
 	}
 
-	public serialize() {
+	public serialize(): SerializedProduct {
 		return {
 			productId: this.productId,
 			productName: this.productName,
