@@ -1,0 +1,17 @@
+{
+	"preset": "ts-jest",
+	"testEnvironment": "node",
+	"testMatch": ["**/*.test.ts"],
+	"collectCoverageFrom": ["<rootDir>/src/**/*.ts", "!<rootDir>/src/types/**/*.ts"],
+	"transform": {
+		"^.+\\.ts?$": [
+			"ts-jest",
+			{
+				"diagnostics": {
+					"exclude": ["!**/*.(spec|test).ts"],
+					"isolatedModules": true
+				}
+			}
+		]
+	}
+}

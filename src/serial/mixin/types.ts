@@ -5,6 +5,5 @@ import { Serializable } from './Serializable';
 export type AnyConstructor<A = object> = new (...input: any[]) => A;
 
 export interface StaticDeserializable<S extends Serialized, C extends Serializable<S>> {
-	_SCLASS: string;
 	deserialize(data: S): C;
 }

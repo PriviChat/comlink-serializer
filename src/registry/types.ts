@@ -1,7 +1,7 @@
-import { Deserializable } from '../serial';
+import { Serializable, Serialized } from '../serial';
 
-export type ObjectRegistryEntry = {
+export interface ObjectRegistryEntry {
 	name: string;
 	_SCLASS: string;
-	constructor: Deserializable;
-};
+	deserialize(data: Serialized): Serializable;
+}

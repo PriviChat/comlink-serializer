@@ -7,15 +7,12 @@ export class SerializableMap<K extends Serializable = Serializable, V extends Se
 	K,
 	V
 > {
-	static readonly _SCLASS = '8ee63271-ed37-40ac-8f34-aca039c8ab9e';
-
 	serialize(): SerializedMap {
 		const map = new Map();
 		this.forEach((obj, key) => {
 			map.set(key.serialize(), obj.serialize());
 		});
 		const obj = {
-			_SCLASS: SerializableMap._SCLASS,
 			_map: map,
 		};
 		return obj;
@@ -37,9 +34,9 @@ export class SerializableMap<K extends Serializable = Serializable, V extends Se
 	static deserialize(obj: SerializedMap): SerializableMap<Serializable> {
 		const sm = new SerializableMap();
 		obj._map.forEach((value, key) => {
-			const keyEntry = ObjectRegistry.get().getEntry(key._SCLASS);
-			const objEntry = ObjectRegistry.get().getEntry(value._SCLASS);
-			sm.set(keyEntry.constructor.deserialize(key), objEntry.constructor.deserialize(value));
+			const keyEntry = ObjectRegistry.get().getEntry(key._SCLASS!);
+			const objEntry = ObjectRegistry.get().getEntry(value._SCLASS!);
+			sm.set(keyEntry.deserialize(key), objEntry.deserialize(value));
 		});
 		return sm;
 	}

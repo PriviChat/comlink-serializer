@@ -1,6 +1,5 @@
 /* Registry of all the classes that are serializable */
 
-import { Deserializable } from '../serial';
 import { ObjectRegistryEntry } from './types';
 
 export class ObjectRegistry {
@@ -25,22 +24,18 @@ export class ObjectRegistry {
 		return entry;
 	}
 
-	public register(constructor: Deserializable): ObjectRegistryEntry {
-		if (!constructor._SCLASS) {
+	public register(entry: ObjectRegistryEntry): ObjectRegistryEntry {
+		if (!entry._SCLASS) {
 			throw TypeError('Object not serializable!');
 		}
-		const entry: ObjectRegistryEntry = {
-			name: constructor.name,
-			_SCLASS: constructor._SCLASS,
-			constructor,
-		};
 
-		const existing = this.registry.get(constructor._SCLASS);
+		const existing = this.registry.get(entry._SCLASS);
 		if (existing)
 			throw TypeError(
-				`Object: ${entry.name} has the same _SCLASS: ${constructor._SCLASS} as a class with name: ${existing.name}. _SCLASS must be unique.`
+				`Object: ${entry.name} has the same _SCLASS: ${entry._SCLASS} as a class with name: ${existing.name}. _SCLASS must be unique.`
 			);
-		this.registry.set(constructor._SCLASS, entry);
+		this.registry.set(entry._SCLASS, entry);
+		console.info(`Object: [${entry.name}] _SCLASS: [${entry._SCLASS}] has been registered as serializable.`);
 		return entry;
 	}
 }

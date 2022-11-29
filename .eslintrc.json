@@ -1,11 +1,7 @@
 {
 	"root": true,
-	"env": {
-		"browser": true,
-		"es6": true
-	},
 	"parser": "@typescript-eslint/parser",
-	"plugins": ["@typescript-eslint", "prettier"],
+	"plugins": ["@typescript-eslint", "prettier", "import"],
 	"parserOptions": {
 		"project": ["./tsconfig.json"],
 		"createDefaultProgram": true
@@ -13,11 +9,12 @@
 	"extends": ["standard-with-typescript", "prettier", "plugin:prettier/recommended"],
 	"rules": {
 		"prettier/prettier": "warn",
+		"import/no-cycle": 1,
 		"@typescript-eslint/no-use-before-define": "off",
 		"@typescript-eslint/no-unsafe-assignment": "off",
 		"@typescript-eslint/no-var-requires": "off",
 		"@typescript-eslint/ban-ts-comment": "off",
-		"@typescript-eslint/no-unsafe-argument": "off",
+		"@typescript-eslint/no-unsafe-argument": "on",
 		"quotes": [
 			"warn",
 			"single",
@@ -31,5 +28,5 @@
 			"files": ["**/*.ts"]
 		}
 	],
-	"ignorePatterns": ["**/*.js", "test/**/*.ts"]
+	"ignorePatterns": ["**/*.js"]
 }
