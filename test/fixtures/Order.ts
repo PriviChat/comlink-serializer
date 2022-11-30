@@ -4,7 +4,7 @@ import { SerializedOrder } from './types';
 import { User } from './User';
 
 @Serializable
-export class Order implements Serializable<SerializedOrder> {
+export class Order {
 	constructor(readonly orderId: string, readonly user: User, readonly products: SerializableArray<Product>) {}
 
 	static deserialize(data: SerializedOrder): Order {
