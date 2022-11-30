@@ -11,7 +11,7 @@ describe('ObjectRegistry', () => {
 		const reg = ObjectRegistry.get();
 		const entry = reg.getEntry('e45b5b10-1097-5d39-92d5-f66521e79e39'); // user _SCLASS
 		expect(entry).toBeDefined();
-		expect(entry.name).toBe(User.name);
+		expect(entry.name).toBe('User');
 		expect(entry.deserialize).toBeDefined();
 	});
 });
