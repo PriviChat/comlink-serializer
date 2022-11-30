@@ -1,30 +1,41 @@
 import { ObjectRegistry } from '../../registry';
-import { Serialized, Serializer } from '../types';
+import { Serialized } from '../types';
 import { AnyConstructor, StaticDeserializable } from './types';
-import { applyMixins, generateSCLASS } from './utils';
+import { generateSCLASS } from './utils';
 
-export function Serializable<S extends Serialized, C extends Serializable<S>>(
-	constructor: StaticDeserializable<S, C> & AnyConstructor<Serializable<S>>
-): void {
-	const SerializableObjectMixin = class SerializableObject extends constructor {
-		public readonly _SCLASS = generateSCLASS(constructor);
-
-		public get isSerializable() {
-			return true;
-		}
-		public serialize() {
-			return { ...super.serialize(), _SCLASS: this._SCLASS };
-		}
+export function Serializable<S extends Serialized, C extends Serializable<S>>() {
+	type SerializableObject = C & {
+		isSerializable: boolean;
+		$SCLASS: string;
+		serialize(): S;
 	};
-	applyMixins(constructor, [SerializableObjectMixin]);
-	ObjectRegistry.get().register({
-		deserialize: constructor.deserialize,
-		_SCLASS: generateSCLASS(constructor),
-		name: constructor.name,
-	});
+	return function <CtorC extends AnyConstructor<any> & StaticDeserializable<S, C>>(base: CtorC) {
+		const serializableObject = class SerializableObject extends base {
+			readonly $SCLASS: string;
+
+			constructor(...args: any[]) {
+				super(...args);
+				this.$SCLASS = generateSCLASS(base);
+			}
+
+			public get isSerializable() {
+				return this.$SCLASS ? true : false;
+			}
+
+			public serialize(): S {
+				return { ...super.serialize(), $SCLASS: this.$SCLASS };
+			}
+		} as AnyConstructor<SerializableObject> & StaticDeserializable<S, C>;
+
+		ObjectRegistry.get().register({
+			deserialize: serializableObject.deserialize,
+			$SCLASS: generateSCLASS(base),
+			name: base.name,
+		});
+		return serializableObject;
+	};
 }
 
 export interface Serializable<S extends Serialized = Serialized> {
-	//serialize(seializer:r Serializer<S>): S;
 	serialize(): S;
 }

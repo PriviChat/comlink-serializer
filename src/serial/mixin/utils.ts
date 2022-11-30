@@ -3,7 +3,7 @@ import { Serializable } from './Serializable';
 import { AnyConstructor } from './types';
 import { v5 as uuidv5 } from 'uuid';
 
-export function applyMixins(derivedCtor: any, constructors: any[]) {
+export const applyMixins = (derivedCtor: any, constructors: any[]) => {
 	constructors.forEach((baseCtor) => {
 		Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
 			Object.defineProperty(
@@ -13,7 +13,7 @@ export function applyMixins(derivedCtor: any, constructors: any[]) {
 			);
 		});
 	});
-}
+};
 
 export function generateSCLASS<S extends Serialized>(constructor: AnyConstructor<Serializable<S>>) {
 	const namespace = '22547e41-5fab-482d-9524-19d9d3872596';

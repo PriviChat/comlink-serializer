@@ -2,8 +2,11 @@ import { Serializable } from '../serial';
 import { ObjectRegistry } from '../registry';
 import { SerializedArray } from './types';
 
-@Serializable
-export class SerializableArray<S extends Serializable = Serializable> extends Array<S> {
+@Serializable<SerializedArray, SerializableArray>()
+export class SerializableArray<S extends Serializable = Serializable>
+	extends Array<S>
+	implements Serializable<SerializedArray>
+{
 	isEmpty(): boolean {
 		return this.length === 0;
 	}
@@ -27,7 +30,7 @@ export class SerializableArray<S extends Serializable = Serializable> extends Ar
 	}
 
 	static deserialize(obj: SerializedArray): SerializableArray<Serializable> {
-		const array = obj._array.map((value) => ObjectRegistry.get().getEntry(value._SCLASS!).deserialize(value));
+		const array = obj._array.map((value) => ObjectRegistry.get().getEntry(value.$SCLASS!).deserialize(value));
 		return SerializableArray.from<Serializable>(array);
 	}
 }

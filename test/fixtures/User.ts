@@ -1,8 +1,8 @@
-import { Serializable, Serializer } from '../../src';
+import { Serializable } from '../../src';
 import { SerializedUser } from './types';
 
-@Serializable
-export class User implements Serializable<SerializedUser> {
+@Serializable<SerializedUser, User>()
+export class User {
 	constructor(readonly email: string, readonly firstName: string, readonly lastName: string) {}
 
 	static deserialize(data: SerializedUser) {
