@@ -5,6 +5,8 @@ import { User } from '../fixtures/User';
 
 export class TestWorker {
 	constructor() {
+		SerializableArray;
+		SerializableMap;
 		User;
 	}
 
