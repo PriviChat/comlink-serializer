@@ -1,6 +1,6 @@
 # comlink-serializer
 
-> Template to kickstart creating a Node.js module using TypeScript and VSCode
+> Template to kickstart creating a Node.js module using TypeScript
 
 Inspired by [node-module-boilerplate](https://github.com/sindresorhus/node-module-boilerplate)
 
