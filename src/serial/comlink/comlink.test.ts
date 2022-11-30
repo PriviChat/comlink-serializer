@@ -24,7 +24,7 @@ describe('Comlink', () => {
 		worker.terminate();
 	});
 
-	test('Check Serialized and Deserialized Object', async () => {
+	test('Check that User object can pass through Comlink', async () => {
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		const userFromWorker = await testWorker.getUser(user);
