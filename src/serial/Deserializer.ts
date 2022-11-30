@@ -1,4 +1,4 @@
-import { Serializable } from './mixin';
+import { Serializable } from './';
 import { ObjectRegistry } from '../registry';
 import { Serialized } from '.';
 

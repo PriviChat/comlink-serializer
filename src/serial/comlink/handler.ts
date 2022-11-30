@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 import { Deserializer } from '../Deserializer';
-import { Serializable } from '../mixin';
+import { Serializable } from '..';
 import { Serialized } from '../types';
 
 /* Global Handlers */
