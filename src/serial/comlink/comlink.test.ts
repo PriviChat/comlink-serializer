@@ -16,7 +16,7 @@ describe('Comlink', () => {
 		Comlink.transferHandlers.set('SerializableObject', serializableObjectTransferHandler);
 	});
 	beforeEach(async () => {
-		worker = new Worker('./lib/test/comlink/user.worker.js');
+		worker = new Worker('./lib/test/comlink/worker.js');
 		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
 		testWorker = await new comlinkWorker();
 	});
