@@ -22,11 +22,11 @@ export function Serializable<
 		}
 
 		public get isSerializable() {
-			return this.$SCLASS ? true : false;
+			return true;
 		}
 
 		public serialize(): S {
-			return { ...super.serialize(), $SCLASS: this.$SCLASS };
+			return { ...super.serialize(), $SCLASS: generateSCLASS(base) };
 		}
 	} as AnyConstructor<SerializableObject> & StaticDeserializable<S, C> & any;
 
