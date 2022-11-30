@@ -1,5 +1,5 @@
-import { Serializable } from '../serial';
 import { ObjectRegistry } from '../registry';
+import { Serializable } from '../serial/mixin';
 import { SerializedArray } from './types';
 
 @Serializable

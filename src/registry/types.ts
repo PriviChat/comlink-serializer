@@ -1,4 +1,5 @@
-import { Serializable, Serialized } from '../serial';
+import { Serialized } from '../serial';
+import { Serializable } from '../serial/mixin';
 
 export interface ObjectRegistryEntry {
 	name: string;
