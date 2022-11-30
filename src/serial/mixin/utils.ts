@@ -4,7 +4,14 @@ import { AnyConstructor } from './types';
 import { v5 as uuidv5 } from 'uuid';
 
 export function applyMixins(derivedCtor: any, constructors: any[]) {
+	if (!derivedCtor.prototype['original_serialize']) {
+		derivedCtor.prototype['original_serialize'] = derivedCtor.prototype['serialize'];
+	}
 	constructors.forEach((baseCtor) => {
+		// if (!derivedCtor['original_serialize']) {
+		// Object.defineProperty(derivedCtor.prototype, 'original_serialize', Object.getOwnPropertyDescriptor(baseCtor.prototype, 'serialize') || Object.create(null));
+		// }
+		// Object.defineProperty(derivedCtor.prototype, 'original_serialize', Object.getOwnPropertyDescriptor(baseCtor.prototype, 'serialize') || Object.create(null));
 		Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
 			Object.defineProperty(
 				derivedCtor.prototype,
@@ -12,6 +19,7 @@ export function applyMixins(derivedCtor: any, constructors: any[]) {
 				Object.getOwnPropertyDescriptor(baseCtor.prototype, name) || Object.create(null)
 			);
 		});
+		derivedCtor.constructor = baseCtor.constructor;
 	});
 }
 

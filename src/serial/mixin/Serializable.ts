@@ -4,23 +4,35 @@ import { AnyConstructor, StaticDeserializable } from './types';
 import { applyMixins, generateSCLASS } from './utils';
 
 export function Serializable<S extends Serialized, C extends Serializable<S>>(
-	constructor: StaticDeserializable<S, C> & AnyConstructor<Serializable<S>>
+	cons: StaticDeserializable<S, C> & AnyConstructor<Serializable<S>>
 ): void {
-	const SerializableObjectMixin = class SerializableObject extends constructor {
-		public readonly _SCLASS = generateSCLASS(constructor);
+	const SerializableObjectMixin = class SerializableObject {
+		private __SCLASS?: string;
+		constructor() {
+			this._SCLASS = generateSCLASS(cons);
+		}
+
+		public get _SCLASS() {
+			return this.__SCLASS ?? generateSCLASS(cons);
+		}
+
+		public set _SCLASS(sclass: string) {
+			this.__SCLASS = sclass;
+		}
 
 		public get isSerializable() {
 			return true;
 		}
-		public serialize() {
-			return { ...super.serialize(), _SCLASS: this._SCLASS };
+
+		public serialize(): S {
+			return { ...(this as any).original_serialize(), _SCLASS: this._SCLASS };
 		}
 	};
-	applyMixins(constructor, [SerializableObjectMixin]);
+	applyMixins(cons, [SerializableObjectMixin]);
 	ObjectRegistry.get().register({
-		deserialize: constructor.deserialize,
-		_SCLASS: generateSCLASS(constructor),
-		name: constructor.name,
+		deserialize: cons.deserialize,
+		_SCLASS: generateSCLASS(cons),
+		name: cons.name,
 	});
 }
 
