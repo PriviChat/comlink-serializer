@@ -3,6 +3,9 @@ import { User } from '../../test/fixtures/User';
 import { ObjectRegistry } from './ObjectRegistry';
 
 describe('ObjectRegistry', () => {
+	beforeAll(() => {
+		User;
+	});
 	test('Returns An Instance', () => {
 		expect(ObjectRegistry.get()).toBeDefined();
 	});
