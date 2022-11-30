@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import { Serializable, SerializableArray, SerializableMap } from '../../src';
+import { SerializableArray, SerializableMap } from '../../src';
 import { serializableObjectTransferHandler } from '../../src/serial/comlink/handler';
 import { User } from '../fixtures/User';
 

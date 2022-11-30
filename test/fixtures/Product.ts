@@ -1,4 +1,4 @@
-import { Serializable } from '../../src';
+import { Serializable } from '../../src/serial/mixin';
 import { SerializedProduct } from './types';
 
 @Serializable
