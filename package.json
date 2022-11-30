@@ -13,6 +13,7 @@
     "prepare": "husky install",
     "semantic-release": "semantic-release",
     "test:watch": "jest --watch",
+    "pretest": "npm run build",
     "test": "jest --coverage",
     "typecheck": "tsc --noEmit"
   },
