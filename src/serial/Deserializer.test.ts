@@ -4,6 +4,7 @@ import { User } from '../../test/fixtures/User';
 import { SerializableArray } from '../serialobjs';
 import { SerializedArray } from '../serialobjs/types';
 import { Deserializer } from './Deserializer';
+import { Serializable } from './mixin';
 
 let user0: SerializedUser;
 let user1: SerializedUser;
@@ -37,6 +38,7 @@ describe('Deserializer', () => {
 			_array: [user0, user1, user2],
 		};
 	});
+
 	test('Flat Object Deserialize', () => {
 		const user = Deserializer.deserialize(user0) as User;
 		expect((user as any).isSerializable).toBeTruthy();
