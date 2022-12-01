@@ -1,10 +1,9 @@
 import Worker from 'web-worker';
 import * as Comlink from 'comlink';
 import { expect, test } from '@jest/globals';
-import { User } from '../../../test/fixtures/User';
-import { TestWorker } from '../../../test/comlink/worker';
-import { serializableObjectTransferHandler } from './handler';
-import { SerializableArray, SerializableMap } from '../../serialobjs';
+import { User } from '../fixtures/User';
+import type { TestWorker } from './worker';
+import ComlinkSerializer, { SerializableArray, SerializableMap } from '../../src';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -14,7 +13,7 @@ let testWorker: Comlink.Remote<TestWorker>;
 
 describe('Comlink', () => {
 	beforeAll(() => {
-		Comlink.transferHandlers.set('SerializableObject', serializableObjectTransferHandler);
+		ComlinkSerializer.registerTransferHandler([User]);
 	});
 	beforeEach(async () => {
 		worker = new Worker('./lib/test/comlink/worker.js');
