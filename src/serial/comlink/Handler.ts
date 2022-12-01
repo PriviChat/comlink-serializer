@@ -7,11 +7,11 @@ import { SerializableArray, SerializableMap } from '../../serialobjs';
 
 /* Global Handlers */
 
-export interface TransferHandlerConfig {
+export interface TransferHandlerRegistration {
 	transferClasses: AnyConstructor<Serializable>[];
 }
 
-export function registerTransferHandler(config: TransferHandlerConfig) {
+export function registerTransferHandler(config: TransferHandlerRegistration) {
 	//Declare these so that the decorators get called (and the classes registered in the registry)
 	SerializableArray;
 	SerializableMap;
