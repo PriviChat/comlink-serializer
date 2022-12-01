@@ -1,6 +1,7 @@
 import { expect, test } from '@jest/globals';
 import { User } from '../../test/fixtures/User';
 import { ObjectRegistry } from './ObjectRegistry';
+import { ObjectRegistryEntry } from './types';
 
 describe('ObjectRegistry', () => {
 	beforeAll(() => {
@@ -16,5 +17,34 @@ describe('ObjectRegistry', () => {
 		expect(entry).toBeDefined();
 		expect(entry.name).toBe('User');
 		expect(entry.deserialize).toBeDefined();
+	});
+
+	test('Throws exception when entry does not exist for sclass', () => {
+		const reg = ObjectRegistry.get();
+		expect(() => {
+			reg.getEntry('foo');
+		}).toThrow();
+	});
+
+	test('Throws exception when registering class without sclass', () => {
+		const reg = ObjectRegistry.get();
+		expect(() => {
+			reg.register({
+				$SCLASS: '',
+				deserialize: jest.fn(),
+				name: '',
+			});
+		}).toThrow();
+	});
+
+	test('Throws exception when registering class that is already registered', () => {
+		const reg = ObjectRegistry.get();
+		expect(() => {
+			reg.register({
+				$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // user _SCLASS
+				deserialize: jest.fn(),
+				name: '',
+			});
+		}).toThrow();
 	});
 });

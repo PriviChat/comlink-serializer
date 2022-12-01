@@ -24,7 +24,7 @@ npm i comlink-serializer
 
 - [Setup](#setup)
 - [@Serializable](#serializable)
-- [Comlink](#comlink)
+- [Comlink Integration](#comlink-integration)
 
 ### [Setup](#setup)
 
@@ -154,7 +154,7 @@ export interface SerializedAddress extends Serialized {
 }
 ```
 
-### [Comlink](#comlink)
+### [Comlink Integration](#comlink-integration)
 
 > **Note**
 > This document assumes a good understanding of how to work with Comlink. If you are new to Comlink, please do your homework.
