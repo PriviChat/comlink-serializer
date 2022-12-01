@@ -5,5 +5,5 @@ export interface SerializedArray extends Serialized {
 }
 
 export interface SerializedMap extends Serialized {
-	_map: Map<Serialized, Serialized>;
+	_map: Map<boolean | number | bigint | string, Serialized>;
 }

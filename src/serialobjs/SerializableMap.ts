@@ -4,19 +4,13 @@ import { SerializedMap } from './types';
 
 @Serializable
 export class SerializableMap<
-	K extends Serializable | number | string = Serializable,
+	K extends boolean | number | bigint | string,
 	V extends Serializable = Serializable
 > extends Map<K, V> {
 	serialize(): SerializedMap {
 		const map = new Map();
 		this.forEach((obj, key) => {
-			let serializedKey;
-			if (typeof key === 'number' || typeof key === 'string') {
-				serializedKey = key;
-			} else {
-				serializedKey = key.serialize();
-			}
-			map.set(serializedKey, obj.serialize());
+			map.set(key, obj.serialize());
 		});
 		const obj = {
 			_map: map,
@@ -24,7 +18,9 @@ export class SerializableMap<
 		return obj;
 	}
 
-	static from<K extends Serializable, V extends Serializable>(map: Map<K, V>): SerializableMap<K, V> {
+	static from<K extends boolean | number | bigint | string, V extends Serializable>(
+		map: Map<K, V>
+	): SerializableMap<K, V> {
 		const sm = new SerializableMap<K, V>();
 		map.forEach((obj, key) => {
 			sm.set(key, obj);
@@ -37,19 +33,12 @@ export class SerializableMap<
 		return Map;
 	}
 
-	static deserialize(obj: SerializedMap): SerializableMap<Serializable> {
-		const sm = new SerializableMap();
+	static deserialize(obj: SerializedMap): SerializableMap<boolean | number | bigint | string> {
+		const sm = new Map();
 		obj._map.forEach((value, key) => {
-			let deserializedKey;
-			if (typeof key === 'number' || typeof key === 'string') {
-				deserializedKey = key;
-			} else {
-				const keyEntry = ObjectRegistry.get().getEntry(key.$SCLASS!);
-				deserializedKey = keyEntry.deserialize(key);
-			}
 			const objEntry = ObjectRegistry.get().getEntry(value.$SCLASS!);
-			sm.set(deserializedKey, objEntry.deserialize(value));
+			sm.set(key, objEntry.deserialize(value));
 		});
-		return sm;
+		return SerializableMap.from(sm);
 	}
 }

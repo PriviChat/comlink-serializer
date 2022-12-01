@@ -1,15 +1,16 @@
 import { expect, test } from '@jest/globals';
 import { SerializedUser } from '../../test/fixtures/types';
 import { User } from '../../test/fixtures/User';
-import { SerializableArray } from '../serialobjs';
-import { SerializedArray } from '../serialobjs/types';
+import { SerializableArray, SerializableMap } from '../serialobjs';
+import { SerializedArray, SerializedMap } from '../serialobjs/types';
 import { Deserializer } from './Deserializer';
-import { Serializable } from './mixin';
 
 let user0: SerializedUser;
 let user1: SerializedUser;
 let user2: SerializedUser;
 let userArray: SerializedArray;
+let userMap: SerializedMap;
+let userMap2: SerializedMap;
 
 describe('Deserializer', () => {
 	beforeEach(() => {
@@ -37,6 +38,14 @@ describe('Deserializer', () => {
 			$SCLASS: '0fc6729c-e75f-521f-8ad6-657a78494fd6', // SerializableArray _SCLASS
 			_array: [user0, user1, user2],
 		};
+		userMap = {
+			$SCLASS: 'a2341794-4348-5080-a350-624f81126bf6', // SerializableMap _SCLASS
+			_map: new Map([
+				['0', user0],
+				['1', user1],
+				['2', user2],
+			]),
+		};
 	});
 
 	test('Flat Object Deserialize', () => {
@@ -56,5 +65,15 @@ describe('Deserializer', () => {
 		expect(users[0].email).toEqual('john.smith-0@email.com');
 		expect(users[0].firstName).toEqual('John');
 		expect(users[0].lastName).toEqual('Smith');
+	});
+
+	test('Map Object Deserialize', () => {
+		const users = Deserializer.deserialize(userMap) as SerializableMap<string, User>;
+		expect((users as any).isSerializable).toBeTruthy();
+		expect(users).toBeInstanceOf(SerializableMap);
+		expect((users as any).$SCLASS).toBeDefined();
+		expect(users.get('0')?.email).toEqual('john.smith-0@email.com');
+		expect(users.get('0')?.firstName).toEqual('John');
+		expect(users.get('0')?.lastName).toEqual('Smith');
 	});
 });
