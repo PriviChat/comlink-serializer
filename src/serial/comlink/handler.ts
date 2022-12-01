@@ -18,7 +18,7 @@ export function registerTransferHandler(transferClasses: AnyConstructor<Serializ
 export const serializableObjectTransferHandler: Comlink.TransferHandler<Serializable, Serialized> = {
 	// We want to use this transfer handler for any objects that have the serializable mixin
 	canHandle: function (value: any): value is Serializable {
-		return value?.isSerializable;
+		return value?.isSerializable ?? false;
 	},
 	serialize: (object) => {
 		// Convert the UserId to string for transfer
