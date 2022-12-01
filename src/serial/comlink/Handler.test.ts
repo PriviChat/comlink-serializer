@@ -2,9 +2,9 @@ import Worker from 'web-worker';
 import * as Comlink from 'comlink';
 import { expect, test } from '@jest/globals';
 import { User } from '../../../test/fixtures/User';
-import type { TestWorker } from '../../../test/comlink/worker';
+import type { TestWorker } from '../../../test/comlink/Worker';
 import ComlinkSerializer, { SerializableArray, SerializableMap } from '../..';
-import { serializableObjectTransferHandler } from './handler';
+import { serializableObjectTransferHandler } from './Handler';
 import { Deserializer } from '..';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
