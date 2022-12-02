@@ -27,6 +27,7 @@
 
 Comlink Serializer makes working with [Comlink](https://github.com/GoogleChromeLabs/comlink) even more enjoyable by providing a framework for the serialization and deserialization of your transfer objects. Your transfer objects come out on the Worker side with their prototypes intact. The framework supports deep serialization and comes with collection support for both Array and Map. There is no need to setup multiple transfer handlers because Comlink Serializer handles that for you. If you are new to Comlink, it's a good idea to start reading that documentation first.
 
+
 ---
 
 ## Installation
