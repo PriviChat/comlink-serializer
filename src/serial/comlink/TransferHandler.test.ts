@@ -59,11 +59,13 @@ describe('Comlink passthrough', () => {
 	beforeAll(() => {
 		ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
 	});
+
 	beforeEach(async () => {
 		worker = new Worker('./lib/test/comlink/worker.js');
 		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
 		testWorker = await new comlinkWorker();
-	});
+	}, 10000);
+
 	afterEach(() => {
 		worker.terminate();
 	});
@@ -75,7 +77,7 @@ describe('Comlink passthrough', () => {
 		expect(userFromWorker.email).toBe('foo@example.org');
 		expect(userFromWorker.firstName).toBe('Bob');
 		expect(userFromWorker.lastName).toBe('Smith');
-	}, 10000);
+	});
 
 	test('Check that User array can pass through Comlink', async () => {
 		const arr = new SerializableArray<User>(
@@ -88,7 +90,7 @@ describe('Comlink passthrough', () => {
 		expect(arrFromWorker[1]).toBeInstanceOf(User);
 		expect(arrFromWorker[0].email).toBe('foo@example.org');
 		expect(arrFromWorker[1].email).toBe('foo2@example.org');
-	}, 10000);
+	});
 
 	test('Check that User map can pass through Comlink', async () => {
 		const map = new SerializableMap<string, User>([
@@ -101,5 +103,5 @@ describe('Comlink passthrough', () => {
 		expect(mapFromWorker.get('foo2')).toBeInstanceOf(User);
 		expect(mapFromWorker.get('foo')?.email).toBe('foo@example.org');
 		expect(mapFromWorker.get('foo2')?.email).toBe('foo2@example.org');
-	}, 10000);
+	});
 });
