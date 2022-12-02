@@ -1,6 +1,6 @@
 {
   "name": "comlink-serializer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library to assist with the serialization and deserialization of objects when using comlink",
   "main": "./lib/index.js",
   "files": [
