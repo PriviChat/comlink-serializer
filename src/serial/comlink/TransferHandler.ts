@@ -24,12 +24,12 @@ export const serializableObjectTransferHandler: Comlink.TransferHandler<Serializ
 	canHandle: function (value: any): value is Serializable {
 		return value?.isSerializable ?? false;
 	},
-	serialize: (object) => {
+	serialize: (object: Serializable<Serialized>) => {
 		// Convert the UserId to string for transfer
 		const serialized = object.serialize();
 		return [serialized, []];
 	},
-	deserialize: (object) => {
+	deserialize: (object: Serialized) => {
 		const deserialized = Deserializer.deserialize(object);
 		return deserialized;
 	},
