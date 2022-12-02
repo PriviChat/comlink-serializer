@@ -10,25 +10,31 @@ on:
         required: true
  
 jobs:
-  release:
-    name: Release
-    runs-on: ubuntu-latest
+  test:
+    name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]    
+        node-version: [12, 14, 16, 18]
+        os: [ubuntu-latest, windows-latest, macOS-latest]    
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+          args: --experimental-worker      
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
-      - name: Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npx semantic-release
+  publish:
+    name: Publish
+    needs: test    
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - run: npx semantic-release
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v3.1.0
