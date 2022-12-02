@@ -57,7 +57,7 @@ describe('handler unit tests', () => {
 
 describe('Comlink passthrough', () => {
 	beforeAll(() => {
-		ComlinkSerializer.registerTransferHandler([User]);
+		ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
 	});
 	beforeEach(async () => {
 		worker = new Worker('./lib/test/comlink/worker.js');

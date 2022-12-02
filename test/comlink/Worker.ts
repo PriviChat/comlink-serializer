@@ -16,4 +16,4 @@ export class TestWorker {
 	}
 }
 Comlink.expose(TestWorker);
-ComlinkSerializer.registerTransferHandler([User]);
+ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
