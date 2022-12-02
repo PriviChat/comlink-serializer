@@ -6,9 +6,14 @@ export class Deserializer {
 	public static deserialize(obj: Serialized): Serializable {
 		if (!obj.$SCLASS)
 			throw TypeError(
-				`Object not deserializable, missing internal _SCLASS property: ${obj}. Make sure you have properly decorated your object with @Serializable`
+				`Object not deserializable, missing internal $SCLASS property: ${obj}. Make sure you have properly decorated your class with @Serializable`
 			);
-		const entry = ObjectRegistry.get().getEntry(obj.$SCLASS);
-		return entry.deserialize(obj);
+		try {
+			const entry = ObjectRegistry.get().getEntry(obj.$SCLASS);
+			return entry.deserialize(obj);
+		} catch (err) {
+			console.error(err);
+			throw err;
+		}
 	}
 }

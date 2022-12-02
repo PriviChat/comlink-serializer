@@ -17,29 +17,29 @@ describe('Deserializer', () => {
 		SerializableArray;
 		User;
 		user0 = {
-			$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // User _SCLASS
+			$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // User $SCLASS
 			email: 'john.smith-0@email.com',
 			firstName: 'John',
 			lastName: 'Smith',
 		};
 		user1 = {
-			$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // User _SCLASS
+			$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // User $SCLASS
 			email: 'john.smith-1@email.com',
 			firstName: 'John',
 			lastName: 'Smith',
 		};
 		user2 = {
-			$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // User _SCLASS
+			$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // User $SCLASS
 			email: 'john.smith-2@email.com',
 			firstName: 'John',
 			lastName: 'Smith',
 		};
 		userArray = {
-			$SCLASS: '0fc6729c-e75f-521f-8ad6-657a78494fd6', // SerializableArray _SCLASS
+			$SCLASS: '0fc6729c-e75f-521f-8ad6-657a78494fd6', // SerializableArray $SCLASS
 			_array: [user0, user1, user2],
 		};
 		userMap = {
-			$SCLASS: 'a2341794-4348-5080-a350-624f81126bf6', // SerializableMap _SCLASS
+			$SCLASS: 'a2341794-4348-5080-a350-624f81126bf6', // SerializableMap $SCLASS
 			_map: new Map([
 				['0', user0],
 				['1', user1],

@@ -15,11 +15,11 @@ export class ObjectRegistry {
 		return ObjectRegistry._instance;
 	}
 
-	public getEntry(_SCLASS: string): ObjectRegistryEntry {
-		const entry = this.registry.get(_SCLASS);
+	public getEntry(SCLASS: string): ObjectRegistryEntry {
+		const entry = this.registry.get(SCLASS);
 		if (!entry)
 			throw Error(
-				`Entry for _SCLASS: ${_SCLASS} not found in registry! You need to make sure you are instantiating the class on both sides of the worker thread.`
+				`Entry for $SCLASS: ${SCLASS} not found in registry! You need to make sure you register the class with the registerTransferHandler. And remember to do it on both threads.`
 			);
 		return entry;
 	}
