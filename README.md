@@ -25,7 +25,7 @@
 
 ## Introduction
 
-Comlink Serializer makes working with [Comlink](https://github.com/GoogleChromeLabs/comlink) even more enjoyable by providing a framework for the serialization and deserialization of your transfer objects. Your transfer objects come out on the Worker side with their prototypes intact. The framwork supports deep serialization, and comes with collection support for both Array and Map. There is no need to setup multiple tansfer handlers because Comlink Serializer handles that for you. If you are new to Comlink, it's a good idea to start reading that documentation first.
+Comlink Serializer makes working with [Comlink](https://github.com/GoogleChromeLabs/comlink) even more enjoyable by providing a framework for the serialization and deserialization of your transfer objects. Your transfer objects come out on the Worker side with their prototypes intact. The framework supports deep serialization and comes with collection support for both Array and Map. There is no need to setup multiple transfer handlers because Comlink Serializer handles that for you. If you are new to Comlink, it's a good idea to start reading that documentation first.
 
 ---
 
@@ -39,7 +39,7 @@ npm i comlink comlink-serializer
 
 ## Setup
 
-Comlink Serializer leverages [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) to enforce the Serialize and Deserialize methods in your class. Decorators are still an exparimental feature and as such, it is subject to change, but as far as I can tell has very good adoption and has been stable.
+Comlink Serializer leverages [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) to enforce the Serialize and Deserialize methods in your class. Decorators are still an experimental feature and as such, it is subject to change, but as far as I can tell has significant developer adoption.
 
 > **Note**
 > The decorator feature must be enabled in your project. Below are some examples, but consult the documentation for your setup.
@@ -93,7 +93,7 @@ You must apply the Serializable class decorator to any class you'd like to be tr
 
 **_serialize()_**
 
-Automatically called immediately before your object is sent to a another thread. There is no magic happening here to serialize your object. There are many options available to serialize a Class. One highly performant way is using JSON.stringify. The example below takes more of a manual approach, has great performance, and gives you greater control when you have a deep nesting of Serializable objects as you will see later.
+Automatically called immediately before your object is sent to another thread. There is no magic happening here to serialize your object. There are many options available to serialize a Class. One highly performant way is using JSON.stringify. The example below takes more of a manual approach, has great performance, and gives you greater control when you have a deep nesting of Serializable objects as you will see later.
 
 > **Warning**
 > Comlink Serializer does not currently detect or prevent circular references. It is currently up to you to prevent it from happening.
@@ -123,7 +123,7 @@ export class User implements Serializable<SerializedUser> {
 }
 ```
 
-Your class must also implement the Serializable\<T\> interface which takes a generic parmeter that is the interface or serialized representation of your class. That interface must extend Serialized.
+Your class must also implement the Serializable\<T\> interface which takes a generic parameter that is the interface or serialized representation of your class. That interface must extend Serialized.
 
 ```ts
 import { Serialized } from 'comlink-serializer';
@@ -135,9 +135,9 @@ export interface SerializedUser extends Serialized {
 }
 ```
 
-It is also possible to create a deep or nested structure of Serialized objects that all get deserialized with their prototypes intact. How this works is not sorcery, you are doing a lot of the light lifting, but this framwork helps you implement your code in a consistant way, which is not only nice to your fellow developers, but also might save the world.
+It is also possible to create a deep or nested structure of Serialized objects that all get deserialized with their prototypes intact. How this works is not sorcery, you are doing a lot of the light lifting, but this framework helps you implement your code in a consistent way, which is not only nice to your fellow developers but also might save the world.
 
-Let's work off the above example for User and add an Address class. The Address class you'd create would also get the @Serializable decorator and implement Serializable\<T\> and is implmented with serialize() and deserialize(...) in a similar way as User above. The User class requires updates to its serialize() and deserialize(...) functions to properly handle the Address class.
+Let's work from the above example for User and add an Address class. The Address class you'd create would also get the @Serializable decorator and implement Serializable\<T\> and is implemented with serialize() and deserialize(...) in a similar way as User above. The User class requires updates to its serialize() and deserialize(...) functions to properly handle the Address class.
 
 ```ts
 @Serializable
@@ -240,7 +240,9 @@ export interface SerializedUser extends Serialized {
 > **Note**
 > This document assumes a good understanding of how to work with Comlink. If you are new to Comlink, please do your homework.
 
-Comlink supplies a feature called [Transfer Handlers](https://github.com/GoogleChromeLabs/comlink#transfer-handlers-and-event-listeners) which is what Comlink Serializer uses under the covers to assist in marshalling your objects between threads. Just like with Comlink where you need to register your transfer handlers on both sides (eg. Main Thread and Worker Thread - I always think of Space Balls - 'There are two sides to every Schwartz'), you need to do the same with the Comlink Serializer Transfer Handler. This is because each thread has it's own Execution Context. The supplied Transfer Handler takes the place of having to register your own Transfer Handlers, but if you have a need beyond the scope of the one supplied by Comlink Serializer, nothing prevents you from implmenting your own custom handlers.
+Comlink supplies a feature called [Transfer Handlers](https://github.com/GoogleChromeLabs/comlink#transfer-handlers-and-event-listeners) which is what Comlink Serializer uses under the covers to assist in marshaling your objects between threads. Just like with Comlink where you need to register your transfer handlers on both sides (eg. Main Thread and Worker Thread - I always think of Space Balls - 'There are two sides to every Schwartz'), you need to do the same with the Comlink Serializer Transfer Handler. This is because each thread has a dedicated Execution Context.
+
+The supplied Transfer Handler takes the place of having to register any individual Comlink Transfer Handlers. That said, nothing prevents you from creating and registering a custom ComLink Transfer Handler if you need something outside the scope of Comlink Serializer.
 
 **_Worker Thread_**
 
@@ -322,7 +324,7 @@ const users = await myWorker.getUsers();
 return results.map((user) => user);
 ```
 
-From an archetecture prespective, we don't recommend propagating SerializableArray and SerializableMap throughout your code. We've found it better to restrict the use of them to the thread boundries. If you have an extreamly large dataset where converting the Array or Map is a performance concern, SerializableArray and SerializableMap extend Array and Map respectively, and should function exactly the same.
+From an architecture perspective, we don't recommend propagating SerializableArray and SerializableMap throughout your code. We've found it better to restrict the use of them to the thread boundaries. If you have an extremely large dataset and converting the Array or Map is a performance concern, SerializableArray and SerializableMap extend Array and Map respectively, and should function the same.
 
 [build-img]: https://github.com/privichat/comlink-serializer/actions/workflows/release.yml/badge.svg
 [build-url]: https://github.com/privichat/comlink-serializer/actions/workflows/release.yml
