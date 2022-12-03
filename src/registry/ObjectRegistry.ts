@@ -35,7 +35,7 @@ export class ObjectRegistry {
 				`Object: ${entry.name} has the same _SCLASS: ${entry.$SCLASS} as a class with name: ${existing.name}. _SCLASS must be unique.`
 			);
 		this.registry.set(entry.$SCLASS, entry);
-		console.info(`Object: [${entry.name}] $SCLASS: [${entry.$SCLASS}] has been registered as serializable.`);
+		console.info(`Object: [${entry.name}] $SCLASS: [${entry.$SCLASS}] has been registered as Serializable.`);
 		return entry;
 	}
 }
