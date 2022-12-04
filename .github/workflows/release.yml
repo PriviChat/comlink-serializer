@@ -23,10 +23,10 @@ jobs:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock       
     steps:
       - name: Setup SSH
-        run: |
-          mkdir -p /home/runner/.ssh
-          ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null           
+        uses: MrSquaare/ssh-setup-action@v2
+        with:
+          host: github.com
+          private-key: ${{ secrets.SSH_PRIVATE_KEY }}  
         
       - name: Checkout
         uses: actions/checkout@v3
