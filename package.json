@@ -166,6 +166,6 @@
     "uuid": "^9.0.0"
   },
   "peerDependencies": {
-    "comlink": "github:afbarbaro/comlink"
+    "comlink": "^4.3.1"
   }
 }
