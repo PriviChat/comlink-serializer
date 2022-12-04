@@ -21,7 +21,7 @@ jobs:
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
     steps:
       - name: Setup SSH
-        run: |
+      - run: |
           mkdir -p /home/runner/.ssh
           ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/github_actions
@@ -39,13 +39,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           args: '--experimental-worker'
           
-      - name: Install Modules      
+      - name: Install Modules | Run Build | Run Test      
       - run: npm ci
-      
-      - name: Run Build 
       - run: npm run build --if-present
-      
-      - name: Run Tests 
       - run: npm test
   publish:
     name: Publish
