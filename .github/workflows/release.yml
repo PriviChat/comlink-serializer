@@ -19,6 +19,8 @@ jobs:
         node-version: [14, 16, 18]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
+    env: 
+      SSH_AUTH_SOCK: /tmp/ssh_agent.sock       
     steps:
       - name: Setup SSH
       - run: |
@@ -27,9 +29,7 @@ jobs:
           chmod 600 /home/runner/.ssh/github_actions
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
           ssh-add /home/runner/.ssh/github_actions        
-        env: 
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock        
-     
+           
       - name: Checkout
         uses: actions/checkout@v3
         
