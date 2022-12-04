@@ -21,7 +21,6 @@
     "./dist"
   ],
   "scripts": {
-    "postinstall": "npm --prefix ./node_modules/comlink i && npm --prefix ./node_modules/comlink run build",
     "prebuild": "npm run clean",
     "build": "rollup --config rollup.config.ts --configPlugin typescript",
     "clean": "rimraf build",
@@ -29,7 +28,7 @@
     "prepare": "husky install",
     "semantic-release": "semantic-release",
     "test:watch": "jest --watch",
-    "pretest": "npm run clean && rollup --config rollup-jest.config.ts --configPlugin typescript",
+    "pretest": "npm run clean && npm --prefix ./node_modules/comlink i && npm --prefix ./node_modules/comlink run build && rollup --config rollup-jest.config.ts --configPlugin typescript",
     "test": "jest --coverage",
     "typecheck": "tsc --noEmit"
   },
