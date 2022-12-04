@@ -19,17 +19,30 @@ jobs:
         node-version: [14, 16, 18]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
+    env:
+        # Useful when a GH action is using SSH behind-the-scenes
+        SSH_AUTH_SOCK: /tmp/ssh_agent.sock    
     steps:
+      - run: |
+          mkdir -p /home/runner/.ssh
+          # Replace example.com with the hostname of the machine
+          # you're SSH-ing into
+          ssh-keyscan example.com >> /home/runner/.ssh/known_hosts
+          # SSH_KEY is the name of the repository secret
+          #echo "${{ secrets.DOKKU_SSH_KEY }}" > /home/runner/.ssh/github_actions
+          chmod 600 /home/runner/.ssh/github_actions
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
+          ssh-add /home/runner/.ssh/github_actions      
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           args: '--experimental-worker'
-      - name: SSH Agent
-        uses: webfactory/ssh-agent@v0.7.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}      
+      #- name: SSH Agent
+      #  uses: webfactory/ssh-agent@v0.7.0
+      #  with:
+      #    ssh-private-key: ${{ secrets.SSH_KEY }}      
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
