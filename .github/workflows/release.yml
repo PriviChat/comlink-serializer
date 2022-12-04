@@ -36,7 +36,7 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
           ssh-auth-sock: $SSH_AUTH_SOCK          
           
-      - run: npm ci
+      - run: npm i
       - run: npm run build --if-present
       - run: npm test
   publish:
