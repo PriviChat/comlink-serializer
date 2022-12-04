@@ -21,13 +21,7 @@ jobs:
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
     env: 
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock       
-    steps:
-      - name: Setup SSH
-        uses: MrSquaare/ssh-setup-action@v2
-        with:
-          host: github.com
-          private-key: ${{ secrets.SSH_PRIVATE_KEY }}  
-        
+    steps:        
       - name: Checkout
         uses: actions/checkout@v3
         
@@ -36,7 +30,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           args: '--experimental-worker'
-                
+          
+      - uses: webfactory/ssh-agent@v0.4.1
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
