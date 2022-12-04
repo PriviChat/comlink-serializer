@@ -8,8 +8,8 @@ on:
     secrets:
       NPM_TOKEN:
         required: true
-      SSH_KEY:
-        required: true
+      #SSH_KEY:
+      #  required: true
 
 jobs:
   test:
