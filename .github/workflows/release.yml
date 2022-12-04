@@ -22,25 +22,30 @@ jobs:
     steps:
       - name: Add SSH Key
         env: 
-         SSH_AUTH_SOCK: /tmp/ssh_agent.sock        
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock        
       - run: |
           mkdir -p /home/runner/.ssh
           ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/github_actions
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
-          ssh-add /home/runner/.ssh/github_actions    
-      - uses: actions/checkout@v3
+          ssh-add /home/runner/.ssh/github_actions
+          
+      - name: Checkout
+        uses: actions/checkout@v3
+        
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           args: '--experimental-worker'
-      #- name: SSH Agent
-      #  uses: webfactory/ssh-agent@v0.7.0
-      #  with:
-      #    ssh-private-key: ${{ secrets.SSH_KEY }}      
+          
+      - name: Install Modules      
       - run: npm ci
+      
+      - name: Run Build 
       - run: npm run build --if-present
+      
+      - name: Run Tests 
       - run: npm test
   publish:
     name: Publish
