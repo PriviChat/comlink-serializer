@@ -32,6 +32,7 @@ jobs:
           args: '--experimental-worker'   
           
       - run: npm i
+      - run: npm i rollup      
       - run: npm run build --if-present
       - run: npm test
   publish:
