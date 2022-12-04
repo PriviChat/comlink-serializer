@@ -19,20 +19,16 @@ jobs:
         node-version: [14, 16, 18]
         os: [ubuntu-latest, windows-latest, macOS-latest]
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
-    env:
-        # Useful when a GH action is using SSH behind-the-scenes
-        SSH_AUTH_SOCK: /tmp/ssh_agent.sock    
     steps:
+      - name: Add SSH Key
       - run: |
           mkdir -p /home/runner/.ssh
-          # Replace example.com with the hostname of the machine
-          # you're SSH-ing into
-          ssh-keyscan example.com >> /home/runner/.ssh/known_hosts
-          # SSH_KEY is the name of the repository secret
-          #echo "${{ secrets.DOKKU_SSH_KEY }}" > /home/runner/.ssh/github_actions
+          ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/github_actions
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
-          ssh-add /home/runner/.ssh/github_actions      
+          ssh-add /home/runner/.ssh/github_actions
+        env: 
+           SSH_AUTH_SOCK: /tmp/ssh_agent.sock      
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
