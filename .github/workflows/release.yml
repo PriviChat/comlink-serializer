@@ -21,14 +21,14 @@ jobs:
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
     steps:
       - name: Add SSH Key
+        env: 
+         SSH_AUTH_SOCK: /tmp/ssh_agent.sock        
       - run: |
           mkdir -p /home/runner/.ssh
           ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/github_actions
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
-          ssh-add /home/runner/.ssh/github_actions
-        env: 
-           SSH_AUTH_SOCK: /tmp/ssh_agent.sock      
+          ssh-add /home/runner/.ssh/github_actions    
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
