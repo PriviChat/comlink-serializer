@@ -1,4 +1,4 @@
-// rollup.config.js
+// rollup-jest.config.js
 import typescript from '@rollup/plugin-typescript';
 import type { RollupOptions } from 'rollup';
 import { getTsconfig } from 'get-tsconfig';
