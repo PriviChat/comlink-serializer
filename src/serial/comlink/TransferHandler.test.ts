@@ -61,7 +61,7 @@ describe('Comlink passthrough', () => {
 	});
 
 	beforeEach(async () => {
-		worker = new Worker('./lib/test/comlink/Worker.js');
+		worker = new Worker('./build/test/comlink/Worker.js', { type: 'module' });
 		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
 		testWorker = await new comlinkWorker();
 	}, 10000);

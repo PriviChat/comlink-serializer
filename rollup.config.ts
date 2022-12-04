@@ -23,12 +23,12 @@ const rollup: RollupOptions[] = [
 			{
 				name: capitalize(camelCase(pkg.name)),
 				exports: 'named',
-				file: `${outDir}/${pkg.name}.js`,
+				file: `${outDir}/dist/${pkg.name}.js`,
 				format: 'umd',
 				sourcemap: true,
 			},
 			{
-				file: `${outDir}/${pkg.name}.esm.js`,
+				file: `${outDir}/dist/${pkg.name}.esm.js`,
 				format: 'es',
 				sourcemap: true,
 			},
@@ -55,14 +55,25 @@ const rollup: RollupOptions[] = [
 				sourceMap: true,
 			}),
 			copy({
-				targets: [{ src: ['package.json', 'README.md', 'LICENSE'], dest: 'dist' }],
+				targets: [{ src: ['package.json', 'README.md', 'LICENSE'], dest: 'build' }],
 			}),
 		],
 	},
 	{
-		input: `${outDir}/${declDir}/src/index.d.ts`,
-		output: [{ file: `${outDir}/${pkg.name}.d.ts`, format: 'es' }],
-		plugins: [dts(), del({ targets: [`${outDir}/dts`], hook: 'buildEnd' })],
+		input: 'test/comlink/Worker.ts',
+		output: [
+			{
+				file: `${outDir}/test/comlink/Worker.js`,
+				format: 'es',
+				sourcemap: false,
+			},
+		],
+		plugins: [typescript({ declaration: false })],
+	},
+	{
+		input: `${outDir}/dist/${declDir}/src/index.d.ts`,
+		output: [{ file: `${outDir}/dist/${pkg.name}.d.ts`, format: 'es' }],
+		plugins: [dts(), del({ targets: [`${outDir}/dist/dts`], hook: 'buildEnd' })],
 	},
 ];
 
