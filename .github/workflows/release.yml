@@ -23,7 +23,7 @@ jobs:
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock       
     steps:
       - name: Setup SSH
-      - run: |
+        run: |
           mkdir -p /home/runner/.ssh
           ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/github_actions
