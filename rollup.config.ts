@@ -60,17 +60,6 @@ const rollup: RollupOptions[] = [
 		],
 	},
 	{
-		input: 'test/comlink/Worker.ts',
-		output: [
-			{
-				file: `${outDir}/test/comlink/Worker.js`,
-				format: 'es',
-				sourcemap: false,
-			},
-		],
-		plugins: [typescript({ declaration: false })],
-	},
-	{
 		input: `${outDir}/dist/${declDir}/src/index.d.ts`,
 		output: [{ file: `${outDir}/dist/${pkg.name}.d.ts`, format: 'es' }],
 		plugins: [dts(), del({ targets: [`${outDir}/dist/dts`], hook: 'buildEnd' })],

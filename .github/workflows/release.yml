@@ -19,18 +19,18 @@ jobs:
         node-version: [16, 18]
         os: [ubuntu-latest]
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
-    env: 
-      SSH_AUTH_SOCK: /tmp/ssh_agent.sock       
-    steps:        
+    env:
+      SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+    steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           args: '--experimental-worker'
-          
+
       - run: npm i npm@8 --global
       - run: npm i rollup --global
       - run: npm ci
@@ -46,7 +46,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - run: npm ci
-      - run: npm run build
+      - run: npm build
       - run: npx semantic-release
       - name: Upload Code Coverage
         uses: codecov/codecov-action@v3.1.0

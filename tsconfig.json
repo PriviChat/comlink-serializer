@@ -69,5 +69,5 @@
 		"forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
 	},
 	"exclude": ["dist", "src/**/*.test.ts", "test/fixtures/**/*.ts"],
-	"include": ["src/**/*.ts", "test/comlink/**/*.ts", "rollup.config.ts"]
+	"include": ["src/**/*.ts", "test/comlink/**/*.ts", "rollup.config.ts", "rollup-jest.config.ts"]
 }

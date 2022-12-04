@@ -29,7 +29,7 @@
     "prepare": "husky install",
     "semantic-release": "semantic-release",
     "test:watch": "jest --watch",
-    "pretest": "npm run build",
+    "pretest": "npm run clean && rollup --config rollup-jest.config.ts --configPlugin typescript",
     "test": "jest --coverage",
     "typecheck": "tsc --noEmit"
   },
