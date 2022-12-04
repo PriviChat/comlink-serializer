@@ -20,16 +20,16 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
     steps:
-      - name: Add SSH Key
-        env: 
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock        
-      - run: |
+      - name: Setup SSH
+        run: |
           mkdir -p /home/runner/.ssh
           ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
           chmod 600 /home/runner/.ssh/github_actions
           ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
-          ssh-add /home/runner/.ssh/github_actions
-          
+          ssh-add /home/runner/.ssh/github_actions        
+        env: 
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock        
+     
       - name: Checkout
         uses: actions/checkout@v3
         
