@@ -26,9 +26,7 @@ jobs:
         run: |
           mkdir -p /home/runner/.ssh
           ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
-          chmod 600 /home/runner/.ssh/github_actions
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null   
-          ssh-add /home/runner/.ssh/github_actions           
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null           
         
       - name: Checkout
         uses: actions/checkout@v3
