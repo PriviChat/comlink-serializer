@@ -17,7 +17,7 @@ jobs:
     strategy:
       matrix:
         node-version: [16, 18]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, macOS-latest]
     name: Test on Node ${{ matrix.node_version }} and ${{ matrix.os }}
     env: 
       SSH_AUTH_SOCK: /tmp/ssh_agent.sock       
