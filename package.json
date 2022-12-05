@@ -1,7 +1,7 @@
 {
   "name": "comlink-serializer",
   "version": "1.0.4",
-  "description": "ComlinkSerializer makes Comlink and WebWorkers more enjoyable.",
+  "description": "Comlink Serializer makes Comlink and WebWorkers more enjoyable.",
   "keywords": [
     "typescript",
     "comlink",
@@ -9,26 +9,30 @@
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/comlink-serializer.js",
-  "module": "./dist/comlink-serializer.esm.js",
-  "types": "./dist/comlink-serializer.d.ts",
-  "exports": [
-    "./dist/comlink-serializer.js",
-    "./dist/comlink-serializer.esm.js",
-    "./dist/comlink-serializer.d.ts"
-  ],
+  "main": "dist/lib/comlink-serializer.esm.js",
+  "module": "dist/lib/esm/comlink-serializer.mjs",
+  "types": "dist/lib/esm/comlink-serializer.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/esm/comlink-serializer.d.ts",
+      "module": "./dist/lib/esm/comlink-serializer.mjs",
+      "require": "./dist/lib/umd/comlink-serializer.js",
+      "default": "./dist/lib/comlink-serializer.esm.js"
+    }
+  },
   "files": [
-    "./dist"
+    "./dist/**/*"
   ],
   "scripts": {
-    "prebuild": "npm run clean",
-    "build": "rollup --config rollup.config.ts --configPlugin typescript",
-    "clean": "rimraf build",
+    "_compile": "tsc -p tsconfig.esm.json & tsc -p tsconfig.umd.json",
+    "_bundle": "rollup --config rollup.esm.config.ts --configPlugin typescript",
+    "build": "run-s clean _compile _bundle",
+    "clean": "rimraf dist",
     "lint": "eslint ./src/ --fix",
     "prepare": "husky install",
     "semantic-release": "semantic-release",
     "test:watch": "jest --watch",
-    "pretest": "npm run clean && npm --prefix ./node_modules/comlink i && npm --prefix ./node_modules/comlink run build && rollup --config rollup-jest.config.ts --configPlugin typescript",
+    "pretest": "npm run clean && npm --prefix ./node_modules/comlink i && npm --prefix ./node_modules/comlink run build && rollup --config rollup.jest.config.ts --configPlugin typescript",
     "test": "jest --coverage",
     "typecheck": "tsc --noEmit"
   },
@@ -95,6 +99,7 @@
     "rollup-plugin-copy": "^3.4.0",
     "rollup-plugin-delete": "^2.0.0",
     "rollup-plugin-dts": "^5.0.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
     "semantic-release": "^19.0.5",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
