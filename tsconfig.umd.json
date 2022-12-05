@@ -3,8 +3,8 @@
 	"extends": "./tsconfig",
 	"compilerOptions": {
 		"module": "UMD",
-		"outDir": "dist/compiled/umd",
-		"declarationDir": "dist/compiled/umd/dts",
+		"outDir": "dist/lib/umd",
+		"declarationDir": "work/dts",
 		"resolveJsonModule": false
 	},
 	"include": ["src/**/*.ts"]

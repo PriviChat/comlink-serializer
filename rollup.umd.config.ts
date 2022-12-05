@@ -1,12 +1,9 @@
 // rollup.config.js
 import typescript from '@rollup/plugin-typescript';
-import commonjs from '@rollup/plugin-commonjs';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
-import sourcemaps from 'rollup-plugin-sourcemaps';
 import json from '@rollup/plugin-json';
 import dts from 'rollup-plugin-dts';
-import copy from 'rollup-plugin-copy';
 import del from 'rollup-plugin-delete';
 import type { RollupOptions } from 'rollup';
 import { camelCase, capitalize } from 'lodash-es';
@@ -33,7 +30,6 @@ const rollup: RollupOptions[] = [
 			},
 		],
 		plugins: [
-			sourcemaps(),
 			terser({
 				compress: true,
 				mangle: true,
@@ -53,7 +49,6 @@ const rollup: RollupOptions[] = [
 			},
 		],
 		plugins: [
-			sourcemaps(),
 			terser({
 				compress: true,
 				mangle: true,

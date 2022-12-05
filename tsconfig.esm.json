@@ -3,8 +3,8 @@
 	"extends": "./tsconfig",
 	"compilerOptions": {
 		"module": "esnext",
-		"outDir": "dist/compiled/esm",
-		"declarationDir": "dist/compiled/esm/dts",
+		"outDir": "dist/lib/esm",
+		"declarationDir": "work/dts",
 		"resolveJsonModule": true
 	},
 	"include": ["src/**/*.ts", "test/comlink/**/*.ts", "rollup.esm.config.ts", "rollup.jest.config.ts"]
