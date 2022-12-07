@@ -76,4 +76,23 @@ describe('Deserializer', () => {
 		expect(users.get('0')?.firstName).toEqual('John');
 		expect(users.get('0')?.lastName).toEqual('Smith');
 	});
+
+	test('Deserialize error handling', () => {
+		const foo = {};
+		expect(() => {
+			Deserializer.deserialize(foo);
+		}).toThrow();
+
+		const foo2 = {
+			$SCLASS: 'bar',
+		};
+
+		const origError = console.error;
+		console.error = jest.fn();
+		expect(() => {
+			Deserializer.deserialize(foo2);
+		}).toThrow();
+		expect(console.error).toHaveBeenCalled();
+		console.error = origError;
+	});
 });

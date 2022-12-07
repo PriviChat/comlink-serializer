@@ -7,10 +7,12 @@ import del from 'rollup-plugin-delete';
 import { camelCase, capitalize } from 'lodash-es';
 import type { RollupOptions } from 'rollup';
 import { parseTsconfig } from 'get-tsconfig';
-import pkg from './package.json' assert { type: 'json' };
 
-const tsconfig = './tsconfig.json';
-const tsconfigFile = parseTsconfig(tsconfig);
+import pkg from './package.json' assert { type: 'json' };
+const pkgName = pkg.name;
+//const outDir = 'dist/lib';
+//const declDir = 'dist/dts';
+const tsconfigFile = parseTsconfig('./tsconfig.json');
 const outDir = tsconfigFile?.compilerOptions?.outDir ? tsconfigFile.compilerOptions.outDir : 'dist/outDir_not_found';
 const declDir = tsconfigFile?.compilerOptions?.declarationDir
 	? tsconfigFile.compilerOptions.declarationDir
@@ -18,30 +20,30 @@ const declDir = tsconfigFile?.compilerOptions?.declarationDir
 
 const extensions = ['.js', '.ts'];
 
-const rollupEsm: RollupOptions[] = [
+const rollup: RollupOptions[] = [
 	{
 		input: `./src/index.ts`,
 		external: ['uuid', 'comlink'],
 		output: [
 			{
-				file: `${outDir}/esm/${pkg.name}.mjs`,
+				file: `${outDir}/esm/${pkgName}.mjs`,
 				format: 'esm',
 				sourcemap: false,
 			},
 			{
-				file: `${outDir}/esm/${pkg.name}.esm.js`,
+				file: `${outDir}/esm/${pkgName}.esm.js`,
 				format: 'esm',
 				sourcemap: false,
 			},
 			{
-				file: `${outDir}/esm/${pkg.name}.esm.min.js`,
+				file: `${outDir}/esm/${pkgName}.esm.min.js`,
 				format: 'esm',
 				plugins: [terser()],
 				sourcemap: false,
 			},
 			{
-				file: `${outDir}/umd/${pkg.name}.js`,
-				name: capitalize(camelCase(pkg.name)),
+				file: `${outDir}/umd/${pkgName}.js`,
+				name: capitalize(camelCase(pkgName)),
 				exports: 'named',
 				format: 'umd',
 				globals: {
@@ -51,8 +53,8 @@ const rollupEsm: RollupOptions[] = [
 				sourcemap: false,
 			},
 			{
-				file: `${outDir}/umd/${pkg.name}.min.js`,
-				name: capitalize(camelCase(pkg.name)),
+				file: `${outDir}/umd/${pkgName}.min.js`,
+				name: capitalize(camelCase(pkgName)),
 				exports: 'named',
 				format: 'umd',
 				globals: {
@@ -77,11 +79,11 @@ const rollupEsm: RollupOptions[] = [
 		input: `${declDir}/src/index.d.ts`,
 		output: [
 			{
-				file: `${outDir}/esm/${pkg.name}.d.ts`,
+				file: `${outDir}/esm/${pkgName}.d.ts`,
 				format: 'esm',
 			},
 			{
-				file: `${outDir}/umd/${pkg.name}.d.ts`,
+				file: `${outDir}/umd/${pkgName}.d.ts`,
 				format: 'umd',
 			},
 		],
@@ -89,4 +91,4 @@ const rollupEsm: RollupOptions[] = [
 	},
 ];
 
-export default rollupEsm;
+export default rollup;
