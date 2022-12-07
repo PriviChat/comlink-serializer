@@ -1,0 +1,12 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./config/tsbase",
+	"compilerOptions": {
+		"outDir": "build",
+		"declaration": false,
+		"declarationDir": "dts",
+		"resolveJsonModule": true
+	},
+	"include": ["src/**/*.ts", "test/**/*.ts"],
+	"exclude": ["node_modules", "dist"]
+}

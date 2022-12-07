@@ -1,6 +1,5 @@
-import { Serializable } from './';
+import Serializable, { Serialized } from './mixin';
 import { ObjectRegistry } from '../registry';
-import { Serialized } from '.';
 
 export class Deserializer {
 	public static deserialize(obj: Serialized): Serializable {

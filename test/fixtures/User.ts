@@ -1,4 +1,4 @@
-import { Serializable } from '../../src/serial/mixin';
+import { Serializable } from '../../src';
 import { SerializedUser } from './types';
 
 @Serializable

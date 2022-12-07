@@ -1,4 +1,4 @@
-import { Serialized } from '../serial';
+import { Serialized } from '..';
 
 export interface SerializedArray extends Serialized {
 	_array: Serialized[];

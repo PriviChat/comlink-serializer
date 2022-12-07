@@ -5,7 +5,7 @@ import { User } from '../../../test/fixtures/User';
 import type { TestWorker } from '../../../test/comlink/Worker';
 import ComlinkSerializer, { SerializableArray, SerializableMap } from '../..';
 import { serializableObjectTransferHandler } from './TransferHandler';
-import { Deserializer } from '..';
+import { Deserializer } from '../Deserializer';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -61,7 +61,7 @@ describe('Comlink passthrough', () => {
 	});
 
 	beforeEach(async () => {
-		worker = new Worker('./build/test/comlink/Worker.js', { type: 'module' });
+		worker = new Worker('./jest/test/comlink/Worker.js', { type: 'module' });
 		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
 		testWorker = await new comlinkWorker();
 	}, 10000);

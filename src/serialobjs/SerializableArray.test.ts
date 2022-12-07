@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 import { User } from '../../test/fixtures/User';
-import { Serializable } from '../serial/mixin';
+import { Serializable } from '..';
 import { SerializableArray } from './SerializableArray';
 
 describe('SerializableArray Tests', () => {

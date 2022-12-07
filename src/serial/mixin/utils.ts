@@ -1,6 +1,5 @@
-import { Serialized } from '../types';
-import { Serializable } from './Serializable';
-import { AnyConstructor } from './types';
+import Serializable from './Serializable';
+import { AnyConstructor, Serialized } from './types';
 import { v5 as uuidv5 } from 'uuid';
 
 export function generateSCLASS<S extends Serialized>(constructor: AnyConstructor<Serializable<S>>) {

@@ -116,5 +116,6 @@ dist
 .pnp.*
 
 # Compiled code
+jest/
 build/
-work/
+dist/

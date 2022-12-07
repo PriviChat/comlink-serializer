@@ -1,9 +1,15 @@
 import { ObjectRegistry } from '../../registry';
-import { Serialized } from '../types';
-import { AnyConstructor, StaticDeserializable } from './types';
+import { AnyConstructor, Serialized } from './types';
 import { generateSCLASS } from './utils';
 
-export function Serializable<
+interface Serializable<S extends Serialized = Serialized> {
+	serialize(): S;
+}
+interface StaticDeserializable<S extends Serialized, C extends Serializable<S>> {
+	deserialize(data: S): C;
+}
+
+function Serializable<
 	S extends Serialized,
 	C extends Serializable<S>,
 	CtorC extends AnyConstructor<any> & StaticDeserializable<S, C>
@@ -38,6 +44,4 @@ export function Serializable<
 	return serializableObject;
 }
 
-export interface Serializable<S extends Serialized = Serialized> {
-	serialize(): S;
-}
+export default Serializable;
