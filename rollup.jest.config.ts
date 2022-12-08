@@ -12,7 +12,7 @@ const rollupJest: RollupOptions[] = [
 		output: [
 			{
 				file: 'jest/test/comlink/Worker.js',
-				format: 'esm',
+				format: 'cjs',
 				sourcemap: false,
 			},
 		],

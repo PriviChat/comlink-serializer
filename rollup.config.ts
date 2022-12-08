@@ -32,12 +32,12 @@ const rollup: RollupOptions[] = [
 				sourcemap: false,
 			},
 			{
-				file: `${outDir}/esm/${pkgName}.esm.js`,
+				file: `${outDir}/esm/${pkgName}.js`,
 				format: 'esm',
 				sourcemap: false,
 			},
 			{
-				file: `${outDir}/esm/${pkgName}.esm.min.js`,
+				file: `${outDir}/esm/${pkgName}.min.js`,
 				format: 'esm',
 				plugins: [terser()],
 				sourcemap: false,
