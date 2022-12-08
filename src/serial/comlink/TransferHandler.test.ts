@@ -74,6 +74,8 @@ describe('Comlink passthrough', () => {
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 		const userFromWorker = await testWorker.getUser(user);
 		expect(userFromWorker).toBeInstanceOf(User);
+		expect((userFromWorker as any).isSerializable).toBeTruthy();
+		expect(userFromWorker.firstName).toBe('Bob');
 		expect(userFromWorker.email).toBe('foo@example.org');
 		expect(userFromWorker.firstName).toBe('Bob');
 		expect(userFromWorker.lastName).toBe('Smith');

@@ -8,7 +8,6 @@
     "serializer"
   ],
   "type": "module",
-  "sideEffects": false,
   "main": "dist/lib/umd/comlink-serializer.js",
   "module": "dist/lib/esm/comlink-serializer.mjs",
   "types": "dist/lib/umd/comlink-serializer.d.ts",

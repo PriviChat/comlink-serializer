@@ -5,5 +5,5 @@
 		["@babel/plugin-proposal-decorators", { "legacy": true }],
 		["@babel/plugin-proposal-class-properties", { "loose": false }]
 	],
-	"presets": ["@babel/preset-typescript", ["@babel/preset-env", {}]]
+	"presets": ["@babel/preset-typescript", ["@babel/preset-env"]]
 }

@@ -3,11 +3,10 @@
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "ESNext",
-		"lib": ["ESNext", "WebWorker", "DOM"],
+		"lib": ["ESNext", "DOM"],
 		"downlevelIteration": true,
 		"sourceMap": false,
 		"outDir": "dist/lib",
-		"isolatedModules": false,
 		"strict": true,
 		"moduleResolution": "node",
 		"types": ["node", "@types/jest"],
@@ -15,11 +14,11 @@
 		"declaration": false,
 		"declarationDir": "dts",
 		"allowSyntheticDefaultImports": true,
+		"importHelpers": true,
 		"esModuleInterop": true,
 		"resolveJsonModule": false,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": true,
-		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true
 	},
 	"exclude": ["node_modules", "dist", "src/**/*.test.ts", "test/fixtures/**/*.ts"]
