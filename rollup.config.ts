@@ -24,6 +24,7 @@ const rollup: RollupOptions[] = [
 	{
 		input: `./src/index.ts`,
 		external: ['uuid', 'comlink'],
+		treeshake: false,
 		output: [
 			{
 				file: `${outDir}/esm/${pkgName}.mjs`,
