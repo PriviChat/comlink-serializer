@@ -3,7 +3,7 @@ import Serializable from '../serial/mixin';
 import { SerializedArray } from './types';
 
 @Serializable
-export class SerializableArray<S extends Serializable = Serializable>
+class SerializableArray<S extends Serializable = Serializable>
 	extends Array<S>
 	implements Serializable<SerializedArray>
 {
@@ -34,3 +34,5 @@ export class SerializableArray<S extends Serializable = Serializable>
 		return SerializableArray.from<Serializable>(array);
 	}
 }
+
+export { SerializableArray };

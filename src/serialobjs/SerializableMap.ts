@@ -3,10 +3,10 @@ import Serializable from '../serial/mixin';
 import { SerializedMap } from './types';
 
 @Serializable
-export class SerializableMap<
-	K extends boolean | number | bigint | string,
-	V extends Serializable = Serializable
-> extends Map<K, V> {
+class SerializableMap<K extends boolean | number | bigint | string, V extends Serializable = Serializable> extends Map<
+	K,
+	V
+> {
 	serialize(): SerializedMap {
 		const map = new Map();
 		this.forEach((obj, key) => {
@@ -42,3 +42,5 @@ export class SerializableMap<
 		return SerializableMap.from(sm);
 	}
 }
+
+export { SerializableMap };

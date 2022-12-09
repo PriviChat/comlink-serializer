@@ -1,2 +1,2 @@
-export * from './types';
-export * from './TransferHandler';
+export { type TransferHandlerRegistration } from './types';
+export { serializableObjectTransferHandler } from './TransferHandler';

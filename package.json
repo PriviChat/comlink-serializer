@@ -7,15 +7,16 @@
     "comlink",
     "serializer"
   ],
+  "type": "module",
   "main": "dist/lib/umd/comlink-serializer.js",
-  "module": "dist/lib/esm/comlink-serializer.js",
+  "module": "dist/lib/esm/comlink-serializer.mjs",
   "types": "dist/lib/umd/comlink-serializer.d.ts",
   "exports": {
     ".": {
       "types": "./dist/lib/umd/comlink-serializer.d.ts",
-      "module": "./dist/lib/esm/comlink-serializer.js",
+      "module": "./dist/lib/esm/comlink-serializer.mjs",
       "require": "./dist/lib/umd/comlink-serializer.js",
-      "default": "./dist/lib/comlink-serializer.esm.js"
+      "default": "./dist/lib/umd/comlink-serializer.js"
     }
   },
   "files": [

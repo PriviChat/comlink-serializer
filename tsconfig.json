@@ -7,6 +7,6 @@
 		"resolveJsonModule": true,
 		"emitDeclarationOnly": true
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts", "rollup.config.ts", "rollup.jest.config.ts"],
-	"exclude": ["node_modules", "dist"]
+	"include": ["src/**/*.ts", "rollup.config.ts", "rollup.jest.config.ts"],
+	"exclude": ["node_modules/**", "src/**/*.test.ts", "dist"]
 }
