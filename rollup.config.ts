@@ -1,30 +1,24 @@
-// rollup.esm.config.js
-import babel from '@rollup/plugin-babel';
+// rollup.config.js
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
 import del from 'rollup-plugin-delete';
 import { camelCase, capitalize } from 'lodash-es';
 import type { RollupOptions } from 'rollup';
-import { parseTsconfig } from 'get-tsconfig';
 
 import pkg from './package.json' assert { type: 'json' };
 const pkgName = pkg.name;
-//const outDir = 'dist/lib';
-//const declDir = 'dist/dts';
-const tsconfigFile = parseTsconfig('./tsconfig.json');
-const outDir = tsconfigFile?.compilerOptions?.outDir ? tsconfigFile.compilerOptions.outDir : 'dist/outDir_not_found';
-const declDir = tsconfigFile?.compilerOptions?.declarationDir
-	? tsconfigFile.compilerOptions.declarationDir
-	: 'dist/declarationDir_not_found';
+const outDir = 'dist/lib';
+const srcDir = 'dist/src';
+const declDir = 'dist/dts';
 
 const extensions = ['.js', '.ts'];
 
 const rollup: RollupOptions[] = [
 	{
-		input: `./src/index.ts`,
+		input: `${srcDir}/esm/src/index.js`,
 		external: ['uuid', 'comlink'],
-		treeshake: false,
+		treeshake: true,
 		output: [
 			{
 				file: `${outDir}/esm/${pkgName}.mjs`,
@@ -66,18 +60,10 @@ const rollup: RollupOptions[] = [
 				sourcemap: false,
 			},
 		],
-		plugins: [
-			nodeResolve({ extensions }),
-			babel({
-				babelHelpers: 'bundled',
-				include: ['src/**/*.ts'],
-				extensions,
-				exclude: ['test/**/*.ts', 'src/**/*.test.ts', 'node_modules/**'],
-			}),
-		],
+		plugins: [nodeResolve({ extensions }), del({ targets: [srcDir], hook: 'buildEnd', verbose: true })],
 	},
 	{
-		input: `${declDir}/src/index.d.ts`,
+		input: `${declDir}/esm/src/index.d.ts`,
 		output: [
 			{
 				file: `${outDir}/esm/${pkgName}.d.ts`,
@@ -88,7 +74,7 @@ const rollup: RollupOptions[] = [
 				format: 'umd',
 			},
 		],
-		plugins: [dts(), del({ targets: [`${declDir}`], hook: 'buildEnd', verbose: true })],
+		plugins: [dts(), del({ targets: [declDir], hook: 'buildEnd', verbose: true })],
 	},
 ];
 

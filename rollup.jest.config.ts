@@ -1,22 +1,25 @@
 // rollup-jest.config.js
-import typescript from '@rollup/plugin-typescript';
 import nodeResolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 import type { RollupOptions } from 'rollup';
 
-const tsconfig = './tsconfig.jest.json';
-const extensions = ['.ts'];
+const extensions = ['.js'];
+
+const outDir = 'jest';
+const srcDir = 'jest';
 
 const rollupJest: RollupOptions[] = [
 	{
-		input: 'test/comlink/Worker.ts',
+		input: `${srcDir}/test/comlink/Worker.js`,
+		treeshake: true,
 		output: [
 			{
-				file: 'jest/test/comlink/Worker.js',
-				format: 'cjs',
+				file: `${outDir}/Worker.js`,
+				format: 'esm',
 				sourcemap: false,
 			},
 		],
-		plugins: [nodeResolve({ extensions }), typescript({ tsconfig })],
+		plugins: [nodeResolve({ resolveOnly: ['comlink', 'uuid'] }), commonjs()],
 	},
 ];
 

@@ -2,7 +2,7 @@ import * as Comlink from 'comlink';
 import ComlinkSerializer, { SerializableArray, SerializableMap } from '../../src';
 import { User } from '../fixtures/User';
 
-export class TestWorker {
+export default class TestWorker {
 	getUser(user: User) {
 		return user;
 	}
@@ -15,5 +15,5 @@ export class TestWorker {
 		return map;
 	}
 }
-Comlink.expose(TestWorker);
+Comlink.expose(TestWorker, self as any);
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });

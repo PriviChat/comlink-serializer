@@ -1,13 +1,14 @@
 {
-	"preset": "ts-jest/presets/default-esm",
-
+	"preset": "ts-jest",
+	"extensionsToTreatAsEsm": [".ts"],
 	"testEnvironment": "node",
 	"testMatch": ["**/*.(test|spec).ts"],
 	"collectCoverageFrom": ["<rootDir>/src/**/*.ts", "!<rootDir>/src/types/**/*.ts"],
 	"transform": {
-		"^.+\\.ts?$": [
+		"^.+\\.[tj]s?$": [
 			"ts-jest",
 			{
+				"tsconfig": "<rootDir>/tsconfig.jest.json",
 				"diagnostics": {
 					"exclude": ["!**/*.(spec|test).ts", "test/**/*.ts"],
 					"isolatedModules": false

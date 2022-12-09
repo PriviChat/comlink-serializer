@@ -1,8 +1,8 @@
-import Worker from 'web-worker';
 import * as Comlink from 'comlink';
 import { expect, test } from '@jest/globals';
 import { User } from '../../../test/fixtures/User';
-import type { TestWorker } from '../../../test/comlink/Worker';
+import TestWorker from '../../../test/comlink/Worker';
+import { WorkerFactory } from '../../../test/comlink/WorkerFactory';
 import ComlinkSerializer, { SerializableArray, SerializableMap } from '../..';
 import { serializableObjectTransferHandler } from './TransferHandler';
 import { Deserializer } from '../Deserializer';
@@ -61,7 +61,7 @@ describe('Comlink passthrough', () => {
 	});
 
 	beforeEach(async () => {
-		worker = new Worker('./jest/test/comlink/Worker.js', { type: 'module' });
+		worker = WorkerFactory.get();
 		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
 		testWorker = await new comlinkWorker();
 	}, 10000);
