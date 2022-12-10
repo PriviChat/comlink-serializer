@@ -4,6 +4,7 @@
 		"sourceMap": false,
 		"outDir": "dist",
 		"strict": true,
+		"alwaysStrict": true,
 		"moduleResolution": "node",
 		"types": ["node", "@types/jest"],
 		"noEmit": false,
@@ -15,5 +16,6 @@
 		"emitDecoratorMetadata": true,
 		"forceConsistentCasingInFileNames": true
 	},
-	"exclude": ["node_modules", "src/**/*.test.ts", "test/fixtures/**/*.ts"]
+	"include": ["src/**/*.ts"],
+	"exclude": ["node_modules/**", "src/**/*.test.ts", "src/__tests__/**"]
 }

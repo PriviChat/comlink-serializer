@@ -1,15 +1,13 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
-	"extends": "./config/tsbase",
+	"extends": "./config/tsbase.json",
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "ESNext",
-		"lib": ["ES2015", "DOM"],
-		"outDir": "dist/src/esm",
-		"declaration": true,
-		"declarationDir": "dist/dts/esm",
+		"outDir": "dist/esm",
+		"declaration": false,
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*.ts", "rollup.config.ts", "rollup.jest.config.ts"],
-	"exclude": ["node_modules/**", "src/**/*.test.ts"]
+	"include": ["src/**/*.ts", "rollup.config.ts", "rollup.test.config.ts"],
+	"exclude": ["node_modules/**", "src/**/*.test.ts", "src/__tests__/**"]
 }

@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { Product } from '../../test/fixtures/Product';
+import { Product } from '../__tests__/fixtures/Product';
 import { SerializableMap } from './SerializableMap';
 
 describe('SerializableMap Tests', () => {

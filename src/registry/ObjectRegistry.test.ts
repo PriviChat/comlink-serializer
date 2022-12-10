@@ -1,7 +1,6 @@
 import { expect, test } from '@jest/globals';
-import { User } from '../../test/fixtures/User';
+import { User } from '../__tests__/fixtures/User';
 import { ObjectRegistry } from './ObjectRegistry';
-import { ObjectRegistryEntry } from './types';
 
 describe('ObjectRegistry', () => {
 	beforeAll(() => {

@@ -1,5 +1,5 @@
 import { expect, test } from '@jest/globals';
-import { User } from '../../test/fixtures/User';
+import { User } from '../__tests__/fixtures/User';
 import Serializable from '../serial/mixin';
 import { SerializableArray } from './SerializableArray';
 

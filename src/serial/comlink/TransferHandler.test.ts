@@ -1,14 +1,18 @@
 import * as Comlink from 'comlink';
-import { expect, test } from '@jest/globals';
-import { User } from '../../../test/fixtures/User';
-import TestWorker from '../../../test/comlink/Worker';
-import { WorkerFactory } from '../../../test/comlink/WorkerFactory';
+import { jest, expect, test } from '@jest/globals';
+import { User } from '../../__tests__/fixtures/User';
+import TestWorker from '../../__tests__/comlink/Worker';
+import { WorkerFactory } from '../../__tests__/comlink/WorkerFactory';
 import ComlinkSerializer, { SerializableArray, SerializableMap } from '../..';
 import { serializableObjectTransferHandler } from './TransferHandler';
 import { Deserializer } from '../Deserializer';
+import { Serialized, Serializable } from '../..';
+import { SerializedUser } from '../../__tests__/fixtures/types';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
+type SerializeFn<T> = () => T;
+type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
 
 let worker: Worker;
 let testWorker: Comlink.Remote<TestWorker>;
@@ -27,7 +31,7 @@ describe('handler unit tests', () => {
 		const handler = serializableObjectTransferHandler;
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
-		user.serialize = jest.fn();
+		user.serialize = jest.fn<SerializeFn<SerializedUser>>();
 		handler.serialize(user);
 
 		expect(user.serialize).toHaveBeenCalled();
@@ -38,7 +42,7 @@ describe('handler unit tests', () => {
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		const originalDeserialize = Deserializer.deserialize;
-		Deserializer.deserialize = jest.fn();
+		Deserializer.deserialize = jest.fn<DeserializeFn>();
 		const serialized = handler.serialize(user)[0];
 		handler.deserialize(serialized);
 

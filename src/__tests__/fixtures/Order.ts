@@ -1,4 +1,4 @@
-import { SerializableArray, Serializable } from '../../src';
+import { SerializableArray, Serializable } from '../..';
 import { Product } from './Product';
 import { SerializedOrder } from './types';
 import { User } from './User';

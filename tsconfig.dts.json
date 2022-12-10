@@ -1,0 +1,13 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"extends": "./config/tsbase.json",
+	"compilerOptions": {
+		"module": "ES2015",
+		"target": "ESNext",
+		"removeComments": false,
+		"declaration": true,
+		"declarationDir": "dist/dts",
+		"emitDeclarationOnly": true
+	},
+	"include": ["src/**/*.ts"]
+}

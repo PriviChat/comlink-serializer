@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import ComlinkSerializer, { SerializableArray, SerializableMap } from '../../src';
+import ComlinkSerializer, { SerializableArray, SerializableMap } from '../..';
 import { User } from '../fixtures/User';
 
 export default class TestWorker {

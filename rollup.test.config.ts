@@ -5,21 +5,22 @@ import type { RollupOptions } from 'rollup';
 
 const extensions = ['.js'];
 
-const outDir = 'jest';
-const srcDir = 'jest';
+const outDir = 'build';
+const srcDir = 'build';
 
 const rollupJest: RollupOptions[] = [
 	{
-		input: `${srcDir}/test/comlink/Worker.js`,
+		input: `${srcDir}/__tests__/comlink/Worker.js`,
+		external: ['uuid', 'comlink', 'tslib'],
 		treeshake: true,
 		output: [
 			{
-				file: `${outDir}/Worker.js`,
-				format: 'esm',
+				file: `${outDir}/Worker.cjs`,
+				format: 'cjs',
 				sourcemap: false,
 			},
 		],
-		plugins: [nodeResolve({ resolveOnly: ['comlink', 'uuid'] }), commonjs()],
+		plugins: [nodeResolve({ resolveOnly: ['comlink', 'uuid', 'tslib'] }), commonjs()],
 	},
 ];
 

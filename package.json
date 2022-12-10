@@ -8,26 +8,30 @@
     "serializer"
   ],
   "type": "module",
-  "main": "dist/lib/umd/comlink-serializer.js",
-  "module": "dist/lib/esm/comlink-serializer.mjs",
-  "types": "dist/lib/umd/comlink-serializer.d.ts",
+  "main": "dist/lib/cjs/comlink-serializer.js",
+  "module": "dist/lib/esm/comlink-serializer.js",
+  "types": "dist/lib/esm/comlink-serializer.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/lib/umd/comlink-serializer.d.ts",
-      "module": "./dist/lib/esm/comlink-serializer.mjs",
-      "require": "./dist/lib/umd/comlink-serializer.js",
-      "default": "./dist/lib/umd/comlink-serializer.js"
+      "types": "./dist/lib/ems/comlink-serializer.d.ts",
+      "module": "./dist/lib/esm/comlink-serializer.js",
+      "require": "./dist/lib/cjs/comlink-serializer.js",
+      "default": "./dist/lib/cjs/comlink-serializer.js"
     }
   },
   "files": [
     "./dist/**/*"
   ],
   "scripts": {
-    "build:esm": "tsc --module esnext --target es2015 --declarationDir dist/dts/esm --outDir dist/src/esm",
-    "build:test": "tsc -p tsconfig.jest.json --module esnext --target es2015 --outDir jest",
+    "build:esm": "tsc",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:dts": "tsc -p tsconfig.dts.json",
+    "build:test": "tsc -p tsconfig.test.json",
     "bundle": "rollup --config rollup.config.ts --configPlugin typescript",
-    "bundle:test": "rollup --config rollup.jest.config.ts --configPlugin typescript",
-    "build": "run-s clean build:esm bundle",
+    "bundle:test": "rollup --config rollup.test.config.ts --configPlugin typescript",
+    "prebuild": "npm run clean",
+    "build": "run-p build:cjs build:esm build:dts",
+    "postbuild": "npm run bundle",
     "clean": "rimraf dist",
     "clean:test": "rimraf jest",
     "lint": "eslint ./src/ --fix",
@@ -35,8 +39,9 @@
     "semantic-release": "semantic-release",
     "test:watch": "jest --watch",
     "pretest": "run-s clean:test build:test bundle:test",
-    "test": "jest --coverage",
-    "typecheck": "tsc --noEmit"
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "cleanjs": "find ./src -name '*.js' | xargs rm"
   },
   "husky": {
     "hooks": {
@@ -66,6 +71,7 @@
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.1.0",
     "@rollup/plugin-typescript": "^10.0.1",
+    "@rollup/plugin-commonjs": "^23.0.4",
     "@ryansonshine/cz-conventional-changelog": "^3.3.4",
     "@semantic-release/git": "^10.0.1",
     "@types/jest": "^29.2.4",
@@ -99,7 +105,6 @@
     "semantic-release": "^19.0.5",
     "ts-jest": "^29.0.3",
     "ts-node": "^10.9.1",
-    "tslib": "^2.4.1",
     "typescript": "^4.9.3",
     "web-worker": "^1.2.0"
   },
@@ -163,7 +168,7 @@
     ]
   },
   "dependencies": {
-    "@rollup/plugin-commonjs": "^23.0.4",
+    "tslib": "^2.4.1",
     "uuid": "^9.0.0"
   },
   "peerDependencies": {
