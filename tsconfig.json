@@ -8,7 +8,6 @@
 		"declarationDir": "build/dts",
 		"resolveJsonModule": true
 	},
-	"files": ["dist/lib/esm/comlink-serializer.js"],
-	"include": ["src/**/*.ts", "rollup/**/*.ts"],
+	"include": ["src/**/*.ts", "test/fixtures/**/*.ts", "rollup/**/*.ts"],
 	"exclude": ["node_modules", "src/**/*.test.ts", "test/**/*.test.ts"]
 }

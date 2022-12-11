@@ -8,42 +8,41 @@
     "serializer"
   ],
   "type": "module",
-  "main": "dist/lib/cjs/comlink-serializer.js",
-  "module": "dist/lib/esm/comlink-serializer.js",
-  "types": "dist/lib/esm/comlink-serializer.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/lib/ems/comlink-serializer.d.ts",
-      "module": "./dist/lib/esm/comlink-serializer.js",
+      "types": "./dist/lib/dts/comlink-serializer.d.ts",
+      "import": "./dist/lib/esm/comlink-serializer.js",
       "require": "./dist/lib/cjs/comlink-serializer.js",
       "default": "./dist/lib/cjs/comlink-serializer.js"
     }
   },
+  "main": "./dist/lib/cjs/comlink-serializer.js",
+  "types": "./dist/lib/dts/comlink-serializer.d.ts",
   "files": [
     "./dist/**/*"
   ],
   "scripts": {
+    "clean": "rimraf dist",
     "prebuild": "npm run clean",
+    "postbuild": "npm run bundle",
     "build": "run-p build:esm build:cjs build:dts",
     "build:esm": "tsc -p ./tsconfig/esm.json",
     "build:cjs": "tsc -p ./tsconfig/cjs.json",
     "build:dts": "tsc -p ./tsconfig/dts.json",
     "build:test": "tsc -p ./tsconfig/test.json",
-    "postbuild": "npm run bundle",
     "bundle": "run-p bundle:esm bundle:cjs bundle:dts",
     "bundle:esm": "rollup --config ./rollup/esm.ts --configPlugin typescript",
     "bundle:cjs": "rollup --config ./rollup/cjs.ts --configPlugin typescript",
     "bundle:dts": "rollup --config ./rollup/dts.ts --configPlugin typescript",
     "bundle:test": "rollup --config ./rollup/test.ts --configPlugin typescript",
-    "clean": "rimraf dist",
-    "clean:test": "rimraf jest",
+    "prepack": "rimraf dist/src dist/build",
+    "pretest": "run-s clean build build:test bundle:test",
+    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
+    "testCJS": "jest --coverage",
+    "test:watch": "jest --watch",
     "lint": "eslint ./src/ --fix",
     "prepare": "husky install",
     "semantic-release": "semantic-release",
-    "test:watch": "jest --watch",
-    "pretest": "run-s clean:test build:test bundle:test",
-    "test": "NODE_OPTIONS=--experimental-vm-modules npx jest --coverage",
-    "testcjs": "jest --coverage",
     "typecheck": "tsc --noEmit",
     "cleanjs": "find ./src -name '*.js' | xargs rm"
   },
