@@ -2,21 +2,21 @@
 	"preset": "ts-jest/presets/default-esm",
 	"testEnvironment": "node",
 	"testMatch": ["**/*.(test|spec).ts"],
-	"collectCoverageFrom": [
-		"<rootDir>/src/**/*.ts",
-		"!<rootDir>/src/**/types.ts",
-		"!<rootDir>/src/**/index.ts",
-		"!<rootDir>/src/__tests__/**/*.ts"
-	],
 	"extensionsToTreatAsEsm": [".ts"],
 	"moduleNameMapper": {
 		"^(\\.{1,2}/.*)\\.js$": "$1"
 	},
+	"collectCoverageFrom": [
+		"<rootDir>/src/**/*.ts",
+		"!<rootDir>/src/**/types.ts",
+		"!<rootDir>/src/**/index.ts",
+		"!<rootDir>/test/**/*.ts"
+	],
 	"transform": {
-		"^.+\\.[tj]s?$": [
+		"^.+\\.ts?$": [
 			"ts-jest",
 			{
-				"tsconfig": "<rootDir>/tsconfig.test.json",
+				"tsconfig": "<rootDir>/tsconfig/test.json",
 				"useESM": true,
 				"isolatedModules": false,
 				"diagnostics": {
@@ -25,6 +25,5 @@
 				}
 			}
 		]
-	},
-	"transformIgnorePatterns": ["<rootDir>/node_modules/"]
+	}
 }

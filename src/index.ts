@@ -7,6 +7,7 @@ function registerTransferHandler(config: TransferHandlerRegistration) {
 	//Declare these so that the decorators get called (and the classes registered in the registry)
 	new SerializableArray();
 	new SerializableMap();
+
 	Comlink.transferHandlers.set('SerializableObject', serializableObjectTransferHandler);
 }
 

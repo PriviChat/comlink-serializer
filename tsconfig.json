@@ -1,13 +1,14 @@
 {
-	"$schema": "https://json.schemastore.org/tsconfig",
-	"extends": "./config/tsbase.json",
+	"extends": "./tsconfig/base",
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "ESNext",
-		"outDir": "dist/esm",
-		"declaration": false,
+		"outDir": "build",
+		"declaration": true,
+		"declarationDir": "build/dts",
 		"resolveJsonModule": true
 	},
-	"include": ["src/**/*.ts", "rollup.config.ts", "rollup.test.config.ts"],
-	"exclude": ["node_modules/**", "src/**/*.test.ts", "src/__tests__/**"]
+	"files": ["dist/lib/esm/comlink-serializer.js"],
+	"include": ["src/**/*.ts", "rollup/**/*.ts"],
+	"exclude": ["node_modules", "src/**/*.test.ts", "test/**/*.test.ts"]
 }

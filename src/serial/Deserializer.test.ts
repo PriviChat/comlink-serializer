@@ -1,6 +1,5 @@
 import { expect, test, jest } from '@jest/globals';
-import { SerializedUser } from '../__tests__/fixtures/types';
-import { User } from '../__tests__/fixtures/User';
+import { User, SerializedUser } from '../../test';
 import { SerializableArray, SerializableMap } from '../serialobjs';
 import { SerializedArray, SerializedMap } from '../serialobjs/types';
 import { Deserializer } from './Deserializer';

@@ -1,6 +1,6 @@
 import { ObjectRegistry } from '../../registry';
 import { AnyConstructor, Serialized } from './types';
-import { generateSCLASS } from './utils';
+import { applyMixins, generateSCLASS } from './utils';
 
 interface Serializable<S extends Serialized = Serialized> {
 	serialize(): S;
@@ -29,7 +29,7 @@ function Serializable<
 		public serialize(): S {
 			return { ...super.serialize(), $SCLASS: generateSCLASS(base) };
 		}
-	} as AnyConstructor<SerializableObject> & StaticDeserializable<S, C> & any;
+	} as typeof base;
 
 	ObjectRegistry.get().register({
 		deserialize: serializableObject.deserialize,
