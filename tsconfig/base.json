@@ -1,0 +1,21 @@
+{
+	"$schema": "https://json.schemastore.org/tsconfig",
+	"compilerOptions": {
+		"sourceMap": false,
+		"outDir": "dist",
+		"strict": true,
+		"alwaysStrict": true,
+		"moduleResolution": "node",
+		"types": ["node", "@types/jest"],
+		"noEmit": false,
+		"allowSyntheticDefaultImports": true,
+		"importHelpers": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": false,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"forceConsistentCasingInFileNames": true
+	},
+	"include": ["../src/**/*.ts"],
+	"exclude": ["node_modules", "../src/**/*.test.ts", "../test/**/*.test.ts"]
+}

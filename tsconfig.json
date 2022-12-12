@@ -4,9 +4,9 @@
 		"target": "ES2015",
 		"module": "ESNext",
 		"outDir": "build",
-		"declaration": true,
-		"declarationDir": "build/dts",
-		"resolveJsonModule": true
+		"declaration": false,
+		"resolveJsonModule": true,
+		"noEmit": true
 	},
 	"include": ["src/**/*.ts", "test/fixtures/**/*.ts", "rollup/**/*.ts"],
 	"exclude": ["node_modules", "src/**/*.test.ts", "test/**/*.test.ts"]

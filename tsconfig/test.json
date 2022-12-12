@@ -1,0 +1,11 @@
+{
+	"extends": "./base",
+	"compilerOptions": {
+		"target": "ES2015",
+		"module": "ESNext",
+		"outDir": "../dist/build",
+		"allowJs": true
+	},
+	"include": ["../src/**/*.ts", "../test/**/*.ts"],
+	"exclude": []
+}

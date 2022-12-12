@@ -1,0 +1,11 @@
+{
+	"extends": "./base",
+	"compilerOptions": {
+		"target": "ES2015",
+		"module": "ESNext",
+		"removeComments": false,
+		"declaration": true,
+		"declarationDir": "../dist/src/dts",
+		"emitDeclarationOnly": true
+	}
+}
