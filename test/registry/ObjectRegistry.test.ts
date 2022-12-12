@@ -1,34 +1,33 @@
 import { expect, test } from '@jest/globals';
-import { User } from '..';
-import { ObjectRegistry } from '@internal/registry/ObjectRegistry';
+import User from '@test-fixtures/User';
+import { _$ } from '@comlink-serializer';
+
+let user;
 
 describe('ObjectRegistry', () => {
 	beforeAll(() => {
-		User;
+		user = new User('1234', 'John', 'Smith');
 	});
 	test('Returns An Instance', () => {
-		expect(ObjectRegistry.get()).toBeDefined();
+		expect(_$.objectRegistry).toBeDefined();
 	});
 
 	test('Check Registered Object', () => {
-		const reg = ObjectRegistry.get();
-		const entry = reg.getEntry('e45b5b10-1097-5d39-92d5-f66521e79e39'); // user _SCLASS
+		const entry = _$.objectRegistry.getEntry('e45b5b10-1097-5d39-92d5-f66521e79e39'); // user $SCLASS
 		expect(entry).toBeDefined();
 		expect(entry.name).toBe('User');
 		expect(entry.deserialize).toBeDefined();
 	});
 
 	test('Throws exception when entry does not exist for sclass', () => {
-		const reg = ObjectRegistry.get();
 		expect(() => {
-			reg.getEntry('foo');
+			_$.objectRegistry.getEntry('foo');
 		}).toThrow();
 	});
 
 	test('Throws exception when registering class without sclass', () => {
-		const reg = ObjectRegistry.get();
 		expect(() => {
-			reg.register({
+			_$.objectRegistry.register({
 				$SCLASS: '',
 				deserialize: jest.fn(),
 				name: '',
@@ -37,12 +36,11 @@ describe('ObjectRegistry', () => {
 	});
 
 	test('Throws exception when registering class that is already registered', () => {
-		const reg = ObjectRegistry.get();
 		expect(() => {
-			reg.register({
-				$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // user _SCLASS
+			_$.objectRegistry.register({
+				$SCLASS: 'e45b5b10-1097-5d39-92d5-f66521e79e39', // user $SCLASS
 				deserialize: jest.fn(),
-				name: '',
+				name: 'Mock',
 			});
 		}).toThrow();
 	});

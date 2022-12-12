@@ -14,7 +14,7 @@ const rollupEsm: RollupOptions[] = [
 	{
 		input: `${srcDir}/index.js`,
 		external: ['uuid', 'comlink', 'tslib'],
-		treeshake: true,
+		treeshake: false,
 		output: [
 			{
 				file: `${outDir}/esm/${pkgName}.mjs`,
@@ -33,7 +33,7 @@ const rollupEsm: RollupOptions[] = [
 				sourcemap: false,
 			},
 		],
-		plugins: [nodeResolve({ extensions })],
+		plugins: [nodeResolve()],
 	},
 ];
 

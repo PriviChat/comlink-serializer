@@ -37,6 +37,7 @@
     "bundle:test": "rollup --config ./rollup/test.ts --configPlugin typescript",
     "prepack": "npm run bundle",
     "pretest": "npm run build",
+    "pretest:lib": "run-s build bundle",
     "test": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-specifier-resolution=node\" npx jest --config ./jest/src.config.ts --coverage",
     "test:lib": "NODE_OPTIONS=\"--experimental-vm-modules --experimental-specifier-resolution=node\" npx jest --config ./jest/lib.config.ts --coverage",
     "testCJS": "jest --coverage",

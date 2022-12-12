@@ -1,4 +1,4 @@
-import { ObjectRegistry } from '../registry';
+import objectRegistry from '../registry';
 import Serializable from '../serial/mixin';
 import { SerializedMap } from './types';
 
@@ -36,7 +36,7 @@ class SerializableMap<K extends boolean | number | bigint | string, V extends Se
 	static deserialize(obj: SerializedMap): SerializableMap<boolean | number | bigint | string> {
 		const sm = new Map();
 		obj._map.forEach((value, key) => {
-			const objEntry = ObjectRegistry.get().getEntry(value.$SCLASS!);
+			const objEntry = objectRegistry.getEntry(value.$SCLASS!);
 			sm.set(key, objEntry.deserialize(value));
 		});
 		return SerializableMap.from(sm);

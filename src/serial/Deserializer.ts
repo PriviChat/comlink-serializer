@@ -1,5 +1,5 @@
 import Serializable, { Serialized } from './mixin';
-import { ObjectRegistry } from '../registry';
+import objectRegistry from '../registry';
 
 export class Deserializer {
 	public static deserialize(serialObj: Serialized): Serializable {
@@ -10,7 +10,7 @@ export class Deserializer {
 				)}. Make sure you have properly decorated your class with @Serializable`
 			);
 		try {
-			const entry = ObjectRegistry.get().getEntry(serialObj.$SCLASS);
+			const entry = objectRegistry.getEntry(serialObj.$SCLASS);
 			const obj = entry.deserialize(serialObj);
 			if (!(obj as any).isSerializable) throw new TypeError('The deserialized object is not Serializable!');
 			return obj;

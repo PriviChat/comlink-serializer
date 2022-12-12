@@ -1,4 +1,4 @@
-import { ObjectRegistry } from '../registry';
+import objectRegistry from '../registry';
 import Serializable from '../serial/mixin';
 import { SerializedArray } from './types';
 
@@ -30,7 +30,7 @@ class SerializableArray<S extends Serializable = Serializable>
 	}
 
 	static deserialize(obj: SerializedArray): SerializableArray<Serializable> {
-		const array = obj._array.map((value) => ObjectRegistry.get().getEntry(value.$SCLASS!).deserialize(value));
+		const array = obj._array.map((value) => objectRegistry.getEntry(value.$SCLASS!).deserialize(value));
 		return SerializableArray.from<Serializable>(array);
 	}
 }

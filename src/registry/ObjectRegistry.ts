@@ -2,18 +2,8 @@
 
 import { ObjectRegistryEntry } from './types';
 
-export class ObjectRegistry {
-	static _instance: ObjectRegistry;
-	private registry: Map<string, ObjectRegistryEntry>;
-
-	private constructor() {
-		this.registry = new Map();
-	}
-
-	static get(): ObjectRegistry {
-		if (!ObjectRegistry._instance) ObjectRegistry._instance = new ObjectRegistry();
-		return ObjectRegistry._instance;
-	}
+export default class ObjectRegistry {
+	private registry = new Map<string, ObjectRegistryEntry>();
 
 	public getEntry(SCLASS: string): ObjectRegistryEntry {
 		const entry = this.registry.get(SCLASS);

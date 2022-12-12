@@ -2,7 +2,7 @@
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
 		"sourceMap": false,
-		"outDir": "dist",
+		"outDir": "build",
 		"strict": true,
 		"alwaysStrict": true,
 		"moduleResolution": "node",
@@ -12,7 +12,7 @@
 		"esModuleInterop": true,
 		"resolveJsonModule": false,
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": true,
+		"emitDecoratorMetadata": false,
 		"forceConsistentCasingInFileNames": true
 	},
 	"include": ["../src/**/*.ts"],

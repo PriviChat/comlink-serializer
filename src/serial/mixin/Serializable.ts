@@ -1,4 +1,4 @@
-import { ObjectRegistry } from '../../registry';
+import objectRegistry from '../../registry';
 import { AnyConstructor, Serialized } from './types';
 import { applyMixins, generateSCLASS } from './utils';
 
@@ -31,7 +31,7 @@ function Serializable<
 		}
 	} as typeof base;
 
-	ObjectRegistry.get().register({
+	objectRegistry.register({
 		deserialize: serializableObject.deserialize,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,

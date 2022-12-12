@@ -3,7 +3,7 @@ import User from '@test-fixtures/User';
 import { SerializedUser } from '@test-fixtures/types';
 import { SerializedArray, SerializedMap } from '@internal/serialobjs/types';
 import { Deserializer } from '@internal/serial/Deserializer';
-import { SerializableArray, SerializableMap } from '@comlink-serializer';
+import { SerializableArray, SerializableMap, _$ } from '@comlink-serializer';
 
 let user0: SerializedUser;
 let user1: SerializedUser;
@@ -49,7 +49,7 @@ describe('Deserializer', () => {
 	});
 
 	test('Flat Object Deserialize', () => {
-		const user = Deserializer.deserialize(user0) as User;
+		const user = _$.deserializer.deserialize(user0) as User;
 		expect((user as any).isSerializable).toBeTruthy();
 		expect((user as any).$SCLASS).toBeDefined();
 		expect(user.email).toEqual('john.smith-0@email.com');
@@ -58,7 +58,7 @@ describe('Deserializer', () => {
 	});
 
 	test('Array Object Deserialize', () => {
-		const users = Deserializer.deserialize(userArray) as SerializableArray<User>;
+		const users = _$.deserializer.deserialize(userArray) as SerializableArray<User>;
 		expect((users as any).isSerializable).toBeTruthy();
 		expect(users).toBeInstanceOf(SerializableArray);
 		expect((users as any).$SCLASS).toBeDefined();
@@ -68,7 +68,7 @@ describe('Deserializer', () => {
 	});
 
 	test('Map Object Deserialize', () => {
-		const users = Deserializer.deserialize(userMap) as SerializableMap<string, User>;
+		const users = _$.deserializer.deserialize(userMap) as SerializableMap<string, User>;
 		expect((users as any).isSerializable).toBeTruthy();
 		expect(users).toBeInstanceOf(SerializableMap);
 		expect((users as any).$SCLASS).toBeDefined();
@@ -80,7 +80,7 @@ describe('Deserializer', () => {
 	test('Deserialize error handling', () => {
 		const foo = {};
 		expect(() => {
-			Deserializer.deserialize(foo);
+			_$.deserializer.deserialize(foo);
 		}).toThrow();
 
 		const foo2 = {
@@ -90,7 +90,7 @@ describe('Deserializer', () => {
 		const origError = console.error;
 		console.error = jest.fn();
 		expect(() => {
-			Deserializer.deserialize(foo2);
+			_$.deserializer.deserialize(foo2);
 		}).toThrow();
 		expect(console.error).toHaveBeenCalled();
 		console.error = origError;
