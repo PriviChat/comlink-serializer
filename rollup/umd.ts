@@ -6,11 +6,12 @@ import { camelCase, capitalize } from 'lodash-es';
 import pkg from '../package.json' assert { type: 'json' };
 
 const pkgName = pkg.name;
+const srcDir = 'build/src';
 const outDir = 'dist/lib';
 
 const rollupUmd: RollupOptions[] = [
 	{
-		input: 'dist/src/esm/index.js',
+		input: `${srcDir}/index.js`,
 		external: ['uuid', 'comlink', 'tslib'],
 		treeshake: false,
 		output: [
@@ -21,7 +22,7 @@ const rollupUmd: RollupOptions[] = [
 				format: 'umd',
 				globals: {
 					uuid: 'uuid',
-					comlink: 'comlink',
+					comlink: 'Comlink',
 					tslib: 'tslib',
 				},
 				sourcemap: false,
@@ -33,7 +34,7 @@ const rollupUmd: RollupOptions[] = [
 				format: 'umd',
 				globals: {
 					uuid: 'uuid',
-					comlink: 'comlink',
+					comlink: 'Comlink',
 					tslib: 'tslib',
 				},
 				plugins: [terser()],

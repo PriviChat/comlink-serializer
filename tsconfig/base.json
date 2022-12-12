@@ -6,7 +6,6 @@
 		"strict": true,
 		"alwaysStrict": true,
 		"moduleResolution": "node",
-		"types": ["node", "@types/jest"],
 		"noEmit": false,
 		"allowSyntheticDefaultImports": true,
 		"importHelpers": true,

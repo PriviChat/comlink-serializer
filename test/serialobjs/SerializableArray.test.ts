@@ -1,7 +1,6 @@
 import { expect, test } from '@jest/globals';
-import { User } from '../../test';
-import Serializable from '../serial/mixin';
-import { SerializableArray } from './SerializableArray';
+import User from '@test-fixtures/User';
+import { SerializableArray, Serializable } from '@comlink-serializer';
 
 describe('SerializableArray Tests', () => {
 	test('Array implements isEmpty check', () => {

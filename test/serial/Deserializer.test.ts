@@ -1,8 +1,9 @@
 import { expect, test, jest } from '@jest/globals';
-import { User, SerializedUser } from '../../test';
-import { SerializableArray, SerializableMap } from '../serialobjs';
-import { SerializedArray, SerializedMap } from '../serialobjs/types';
-import { Deserializer } from './Deserializer';
+import User from '@test-fixtures/User';
+import { SerializedUser } from '@test-fixtures/types';
+import { SerializedArray, SerializedMap } from '@internal/serialobjs/types';
+import { Deserializer } from '@internal/serial/Deserializer';
+import { SerializableArray, SerializableMap } from '@comlink-serializer';
 
 let user0: SerializedUser;
 let user1: SerializedUser;

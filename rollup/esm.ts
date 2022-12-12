@@ -5,13 +5,14 @@ import type { RollupOptions } from 'rollup';
 import pkg from '../package.json' assert { type: 'json' };
 
 const pkgName = pkg.name;
+const srcDir = 'build/src';
 const outDir = 'dist/lib';
 
 const extensions = ['.js'];
 
 const rollupEsm: RollupOptions[] = [
 	{
-		input: 'dist/src/esm/index.js',
+		input: `${srcDir}/index.js`,
 		external: ['uuid', 'comlink', 'tslib'],
 		treeshake: true,
 		output: [

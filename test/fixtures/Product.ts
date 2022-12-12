@@ -1,4 +1,4 @@
-import { Serializable } from '../../src';
+import { Serializable } from '@comlink-serializer';
 import { SerializedProduct } from './types';
 
 @Serializable

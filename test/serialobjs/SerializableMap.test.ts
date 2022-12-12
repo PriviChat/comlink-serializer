@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
-import { Product } from '../../test';
-import { SerializableMap } from './SerializableMap';
+import Product from '@test-fixtures/Product';
+import { SerializableMap } from '@comlink-serializer';
 
 describe('SerializableMap Tests', () => {
 	test('Map serializes values', () => {

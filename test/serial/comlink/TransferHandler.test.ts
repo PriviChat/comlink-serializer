@@ -1,9 +1,12 @@
 import * as Comlink from 'comlink';
 import { jest, expect, test } from '@jest/globals';
-import User from '../../fixtures/User';
-import TestWorker from '../../fixtures/Worker';
-import { WorkerFactory } from '../../fixtures/WorkerFactory';
-import ComlinkSerializer, { SerializableArray, SerializableMap } from '../../../src';
+import User from '@test-fixtures/User';
+import TestWorker from '@test-fixtures/Worker';
+import WorkerFactory from '@test-fixtures/WorkerFactory';
+import { SerializedUser } from '@test-fixtures/types';
+import { serializableObjectTransferHandler } from '@internal/serial/comlink/TransferHandler';
+import { Deserializer } from '@internal/serial/Deserializer';
+import ComlinkSerializer, { Serialized, Serializable, SerializableArray, SerializableMap } from '@comlink-serializer';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -11,6 +14,51 @@ type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
 let worker: Worker;
 let testWorker: Comlink.Remote<TestWorker>;
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
+
+type SerializeFn<T> = () => T;
+type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
+
+describe('handler unit tests', () => {
+	test('canHandle checks isSerializable', () => {
+		const handler = serializableObjectTransferHandler;
+		expect(handler.canHandle(undefined)).toBe(false);
+		expect(handler.canHandle(null)).toBe(false);
+		expect(handler.canHandle({})).toBe(false);
+		expect(handler.canHandle({ isSerializable: false })).toBe(false);
+		expect(handler.canHandle({ isSerializable: true })).toBe(true);
+	});
+
+	test('serialize calls serialize()', () => {
+		const handler = serializableObjectTransferHandler;
+		const user = new User('foo@example.org', 'Bob', 'Smith');
+
+		user.serialize = jest.fn<SerializeFn<SerializedUser>>();
+		handler.serialize(user);
+
+		expect(user.serialize).toHaveBeenCalled();
+	});
+
+	test('deserialize calls static deserialize()', () => {
+		const handler = serializableObjectTransferHandler;
+		const user = new User('foo@example.org', 'Bob', 'Smith');
+
+		const originalDeserialize = Deserializer.deserialize;
+		Deserializer.deserialize = jest.fn<DeserializeFn>();
+		const serialized = handler.serialize(user)[0];
+		handler.deserialize(serialized);
+
+		expect(Deserializer.deserialize).toHaveBeenCalled();
+
+		Deserializer.deserialize = originalDeserialize;
+	});
+
+	test('deserialize throws exception when object is not Serialized', () => {
+		const handler = serializableObjectTransferHandler;
+		expect(() => {
+			handler.deserialize({});
+		}).toThrow();
+	});
+});
 
 describe('Comlink passthrough', () => {
 	beforeAll(async () => {

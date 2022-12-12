@@ -1,13 +1,19 @@
 {
-	"extends": "./tsconfig/base",
+	"extends": "./tsconfig/base.json",
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "ESNext",
+		"baseUrl": ".",
 		"outDir": "build",
-		"declaration": false,
+		"declaration": true,
+		"declarationDir": "build/dts",
 		"resolveJsonModule": true,
-		"noEmit": true
+		"paths": {
+			"@comlink-serializer": ["src/index"],
+			"@internal/*": ["src/*"],
+			"@test-fixtures/*": ["test/fixtures/*"]
+		}
 	},
-	"include": ["src/**/*.ts", "test/fixtures/**/*.ts", "rollup/**/*.ts"],
-	"exclude": ["node_modules", "src/**/*.test.ts", "test/**/*.test.ts"]
+	"include": ["src/**/*.ts", "test/**/*.ts", "rollup/**/*.ts"],
+	"exclude": ["node_modules"]
 }

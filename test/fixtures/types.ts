@@ -1,4 +1,4 @@
-import { Serialized } from '../../src';
+import { Serialized } from '@comlink-serializer';
 
 export interface SerializedUser extends Serialized {
 	email: string;

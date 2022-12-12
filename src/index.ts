@@ -1,6 +1,6 @@
-import * as Comlink from 'comlink';
-import { serializableObjectTransferHandler, type TransferHandlerRegistration } from './serial/comlink';
-import Serializable, { type Serialized } from './serial/mixin';
+import Comlink from 'comlink';
+import { serializableObjectTransferHandler, TransferHandlerRegistration } from './serial/comlink';
+import Serializable, { Serialized } from './serial/mixin';
 import { SerializableArray, SerializableMap } from './serialobjs';
 
 function registerTransferHandler(config: TransferHandlerRegistration) {

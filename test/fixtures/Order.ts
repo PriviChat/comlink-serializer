@@ -1,4 +1,4 @@
-import { SerializableArray, Serializable } from '../../src';
+import { SerializableArray, Serializable } from '@comlink-serializer';
 import Product from './Product';
 import User from './User';
 import { SerializedOrder } from './types';

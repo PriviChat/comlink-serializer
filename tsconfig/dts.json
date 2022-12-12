@@ -5,7 +5,7 @@
 		"module": "ESNext",
 		"removeComments": false,
 		"declaration": true,
-		"declarationDir": "../dist/src/dts",
+		"declarationDir": "../build/dts",
 		"emitDeclarationOnly": true
 	}
 }

@@ -1,9 +1,0 @@
-{
-	"plugins": [
-		"babel-plugin-transform-typescript-metadata",
-		["@babel/plugin-syntax-dynamic-import"],
-		["@babel/plugin-proposal-decorators", { "version": "2022-03" }],
-		["@babel/plugin-proposal-class-properties", { "loose": false }]
-	],
-	"presets": ["@babel/preset-typescript", ["@babel/preset-env"]]
-}

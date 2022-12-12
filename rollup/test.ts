@@ -13,12 +13,12 @@ const rollupTest: RollupOptions[] = [
 		treeshake: true,
 		output: [
 			{
-				file: `${outDir}/cjs/${pkgName}.cjs`,
-				format: 'cjs',
+				file: `${outDir}/esm/${pkgName}.mjs`,
+				format: 'esm',
 				sourcemap: false,
 			},
 		],
-		plugins: [nodeResolve({ resolveOnly: ['comlink', 'uuid', 'tslib'] }), commonjs()],
+		plugins: [nodeResolve({ resolveOnly: ['comlink', 'uuid', 'tslib'] })],
 	},
 ];
 

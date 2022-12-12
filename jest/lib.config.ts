@@ -6,7 +6,7 @@ const bundleJestConfig: JestConfigWithTsJest = {
 	verbose: true,
 	moduleNameMapper: {
 		...baseJestConfig.moduleNameMapper,
-		'/src$': '<rootDir>/dist/lib/esm/comlink-serializer.js',
+		'^@comlink-serializer$': '<rootDir>/dist/lib/esm/comlink-serializer.mjs',
 	},
 };
 
