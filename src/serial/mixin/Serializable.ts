@@ -22,6 +22,10 @@ function Serializable<
 	const serializableObject = class SerializableObject extends base {
 		readonly $SCLASS = generateSCLASS(base);
 
+		constructor(...args: any[]) {
+			super(...args);
+		}
+
 		public get isSerializable() {
 			return true;
 		}
