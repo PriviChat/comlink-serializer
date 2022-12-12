@@ -16,13 +16,11 @@
     }
   },
   "main": "./dist/lib/umd/comlink-serializer.js",
+  "module": "./dist/lib/esm/comlink-serializer.mjs",
   "types": "./dist/lib/dts/comlink-serializer.d.ts",
   "files": [
     "./dist"
   ],
-  "imports": {
-    "#src/*": "./src/*"
-  },
   "scripts": {
     "clean": "run-p clean:build clean:dist",
     "clean:build": "rimraf build",

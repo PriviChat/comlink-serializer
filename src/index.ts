@@ -1,4 +1,4 @@
-import Comlink from 'comlink';
+import * as Comlink from 'comlink';
 import objectRegistry from './registry';
 import { Deserializer as deserializer } from './serial/Deserializer';
 import { serializableObjectTransferHandler, TransferHandlerRegistration } from './serial/comlink';
