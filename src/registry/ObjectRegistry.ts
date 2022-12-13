@@ -16,7 +16,7 @@ export default class ObjectRegistry {
 
 	public register(entry: ObjectRegistryEntry): ObjectRegistryEntry {
 		if (!entry.$SCLASS) {
-			throw TypeError('Object not serializable!');
+			throw TypeError('Object not Serializable/Deserializable!');
 		}
 
 		const existing = this.registry.get(entry.$SCLASS);

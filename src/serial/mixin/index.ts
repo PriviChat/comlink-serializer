@@ -1,3 +1,3 @@
 import Serializable from './Serializable';
-export { type Serialized } from './types';
+export { Serialized, Deserializable, AnyConstructor } from './types';
 export default Serializable;

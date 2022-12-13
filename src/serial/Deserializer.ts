@@ -11,7 +11,7 @@ export class Deserializer {
 			);
 		try {
 			const entry = objectRegistry.getEntry(serialObj.$SCLASS);
-			const obj = entry.deserialize(serialObj);
+			const obj = entry.constructor.deserialize(serialObj);
 			if (!(obj as any).isSerializable) throw new TypeError('The deserialized object is not Serializable!');
 			return obj;
 		} catch (err) {

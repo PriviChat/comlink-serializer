@@ -1,6 +1,6 @@
 import objectRegistry from '../../registry';
 import { AnyConstructor, Serialized } from './types';
-import { applyMixins, generateSCLASS } from './utils';
+import { generateSCLASS } from './utils';
 
 interface Serializable<S extends Serialized = Serialized> {
 	serialize(): S;
@@ -14,11 +14,6 @@ function Serializable<
 	C extends Serializable<S>,
 	CtorC extends AnyConstructor<any> & StaticDeserializable<S, C>
 >(base: CtorC) {
-	type SerializableObject = C & {
-		isSerializable: boolean;
-		$SCLASS: string;
-		serialize(): S;
-	};
 	const serializableObject = class SerializableObject extends base {
 		readonly $SCLASS = generateSCLASS(base);
 
@@ -36,7 +31,7 @@ function Serializable<
 	} as typeof base;
 
 	objectRegistry.register({
-		deserialize: serializableObject.deserialize,
+		constructor: serializableObject,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,
 	});

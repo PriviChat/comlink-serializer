@@ -7,3 +7,7 @@ export type AnyConstructor<T = any> = new (...input: any[]) => T;
 export interface Serialized {
 	$SCLASS?: string;
 }
+
+export interface Deserializable {
+	deserialize(data: Serialized): Serializable;
+}

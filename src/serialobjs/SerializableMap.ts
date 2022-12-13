@@ -37,7 +37,7 @@ class SerializableMap<K extends boolean | number | bigint | string, V extends Se
 		const sm = new Map();
 		obj._map.forEach((value, key) => {
 			const objEntry = objectRegistry.getEntry(value.$SCLASS!);
-			sm.set(key, objEntry.deserialize(value));
+			sm.set(key, objEntry.constructor.deserialize(value));
 		});
 		return SerializableMap.from(sm);
 	}

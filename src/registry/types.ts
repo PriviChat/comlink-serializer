@@ -1,7 +1,7 @@
-import Serializable, { Serialized } from '../serial/mixin';
+import Serializable, { Deserializable, AnyConstructor } from '../serial/mixin';
 
 export interface ObjectRegistryEntry {
 	name: string;
 	$SCLASS: string;
-	deserialize(data: Serialized): Serializable;
+	constructor: AnyConstructor<Serializable> & Deserializable;
 }
