@@ -1,6 +1,7 @@
 // ./rollup/esm.ts
 import nodeResolve from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
+import copy from 'rollup-plugin-copy';
 import type { RollupOptions } from 'rollup';
 import pkg from '../package.json' assert { type: 'json' };
 
@@ -33,7 +34,12 @@ const rollupEsm: RollupOptions[] = [
 				sourcemap: false,
 			},
 		],
-		plugins: [nodeResolve()],
+		plugins: [
+			nodeResolve(),
+			copy({
+				targets: [{ src: `${srcDir}/*`, dest: `${outDir}/esm` }],
+			}),
+		],
 	},
 ];
 
