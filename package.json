@@ -11,12 +11,12 @@
   "exports": {
     ".": {
       "types": "./dist/lib/dts/comlink-serializer.d.ts",
-      "import": "./dist/lib/esm/index.js",
+      "import": "./dist/lib/esm/comlink-serializer.mjs",
       "default": "./dist/lib/umd/comlink-serializer.js"
     }
   },
   "main": "./dist/lib/umd/comlink-serializer.js",
-  "module": "./dist/lib/esm/index.js",
+  "module": "./dist/lib/esm/comlink-serializer.mjs",
   "types": "./dist/lib/dts/comlink-serializer.d.ts",
   "files": [
     "./dist"

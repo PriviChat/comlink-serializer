@@ -12,7 +12,7 @@ interface StaticDeserializable<S extends Serialized, C extends Serializable<S>> 
 function Serializable<
 	S extends Serialized,
 	C extends Serializable<S>,
-	CtorC extends AnyConstructor<any> & StaticDeserializable<S, C>
+	CtorC extends AnyConstructor<Serializable<S>> & StaticDeserializable<S, C>
 >(base: CtorC) {
 	const serializableObject = class SerializableObject extends base {
 		readonly $SCLASS = generateSCLASS(base);
@@ -28,7 +28,11 @@ function Serializable<
 		public serialize(): S {
 			return { ...super.serialize(), $SCLASS: generateSCLASS(base) };
 		}
-	} as typeof base;
+
+		static deserialize(data: S) {
+			return base.deserialize(data);
+		}
+	};
 
 	objectRegistry.register({
 		constructor: serializableObject,

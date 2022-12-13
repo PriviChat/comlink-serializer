@@ -1,4 +1,4 @@
-import Comlink from 'comlink';
+import * as Comlink from 'comlink';
 import ComlinkSerializer, { SerializableArray, SerializableMap } from '@comlink-serializer';
 import User from '@test-fixtures/User';
 
