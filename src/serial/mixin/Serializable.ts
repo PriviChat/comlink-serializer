@@ -1,6 +1,6 @@
 import objectRegistry from '../../registry';
 import { AnyConstructor, Serialized } from './types';
-import { generateSCLASS, applyMixins } from './utils';
+import { generateSCLASS } from './utils';
 
 interface Serializable<S extends Serialized = Serialized> {
 	serialize(): S;
@@ -31,7 +31,7 @@ function Serializable<
 		}
 
 		static deserialize(data: S) {
-			const obj = base.deserialize.call(this, data);
+			const obj = base.deserialize(data);
 			return obj;
 		}
 	};
