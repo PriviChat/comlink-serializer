@@ -26,21 +26,22 @@ function Serializable<
 		}
 
 		public serialize(): S {
-			return { ...super.serialize(), $SCLASS: generateSCLASS(base) };
+			const baseObj = super.serialize();
+			return { ...baseObj, $SCLASS: generateSCLASS(base) };
 		}
 
 		static deserialize(data: S) {
-			const descBase = base.deserialize(data);
-			const obj = Object.assign(descBase, SerializableObject.prototype);
+			const obj = base.deserialize.call(this, data);
 			return obj;
 		}
 	};
 
 	objectRegistry.register({
-		constructor: serializableObject,
+		constructor: base,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,
 	});
+
 	return serializableObject;
 }
 
