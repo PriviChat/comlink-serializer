@@ -1,6 +1,6 @@
 import objectRegistry from '../../registry';
 import { AnyConstructor, Serialized } from './types';
-import { generateSCLASS } from './utils';
+import { generateSCLASS, applyMixins } from './utils';
 
 interface Serializable<S extends Serialized = Serialized> {
 	serialize(): S;
@@ -28,14 +28,12 @@ function Serializable<
 		public serialize(): S {
 			return { ...super.serialize(), $SCLASS: generateSCLASS(base) };
 		}
-
-		static deserialize(data: S) {
-			return base.deserialize(data);
-		}
 	};
 
+	applyMixins(base, [serializableObject]);
+
 	objectRegistry.register({
-		constructor: serializableObject,
+		constructor: base,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,
 	});
