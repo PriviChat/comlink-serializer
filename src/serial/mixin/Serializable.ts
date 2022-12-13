@@ -1,6 +1,6 @@
 import objectRegistry from '../../registry';
 import { AnyConstructor, Serialized } from './types';
-import { generateSCLASS } from './utils';
+import { generateSCLASS, applyMixins } from './utils';
 
 interface Serializable<S extends Serialized = Serialized> {
 	serialize(): S;
@@ -28,10 +28,16 @@ function Serializable<
 		public serialize(): S {
 			return { ...super.serialize(), $SCLASS: generateSCLASS(base) };
 		}
+
+		static deserialize(data: S) {
+			const descBase = base.deserialize(data);
+			const obj = Object.assign(descBase, SerializableObject.prototype);
+			return obj;
+		}
 	};
 
 	objectRegistry.register({
-		constructor: base,
+		constructor: serializableObject,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,
 	});
