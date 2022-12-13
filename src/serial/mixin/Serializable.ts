@@ -37,7 +37,7 @@ function Serializable<
 	};
 
 	objectRegistry.register({
-		constructor: base,
+		constructor: serializableObject,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,
 	});
