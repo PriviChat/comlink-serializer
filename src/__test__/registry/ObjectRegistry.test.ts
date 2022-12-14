@@ -1,7 +1,7 @@
 import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { _$ } from '@comlink-serializer';
-import Serializable, { AnyConstructor, Deserializable, Serialized } from '@internal/serial/mixin';
+import { Serializable, Serialized, _$ } from '@comlink-serializer';
+import { AnyConstructor, Deserializable } from 'src/serial/mixin';
 
 type SerializeFn<T> = () => T;
 type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
@@ -9,7 +9,7 @@ type ConstructorFn = AnyConstructor<Serializable<Serialized> & Deserializable>;
 
 describe('ObjectRegistry', () => {
 	beforeAll(() => {
-		new User('1234', 'John', 'Smith');
+		User;
 	});
 	test('Returns An Instance', () => {
 		expect(_$.objectRegistry).toBeDefined();

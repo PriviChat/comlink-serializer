@@ -10,10 +10,9 @@
 		"resolveJsonModule": true,
 		"paths": {
 			"@comlink-serializer": ["src/index"],
-			"@internal/*": ["src/*"],
-			"@test-fixtures/*": ["test/fixtures/*"]
+			"@test-fixtures/*": ["src/__test__/fixtures/*"]
 		}
 	},
-	"include": ["src/**/*.ts", "test/**/*.ts", "rollup/**/*.ts"],
+	"include": ["src/**/*.ts", "rollup/**/*.ts"],
 	"exclude": ["node_modules"]
 }

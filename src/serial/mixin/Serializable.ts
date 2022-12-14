@@ -5,20 +5,21 @@ import { generateSCLASS } from './utils';
 interface Serializable<S extends Serialized = Serialized> {
 	serialize(): S;
 }
-interface StaticDeserializable<S extends Serialized, C extends Serializable<S>> {
+interface Deserializable<S extends Serialized, C extends Serializable<S>> {
 	deserialize(data: S): C;
 }
 
 function Serializable<
 	S extends Serialized,
 	C extends Serializable<S>,
-	CtorC extends AnyConstructor<Serializable<S>> & StaticDeserializable<S, C>
+	CtorC extends AnyConstructor<Serializable<S>> & Deserializable<S, C>
 >(base: CtorC) {
-	const serializableObject = class SerializableObject extends base {
-		readonly $SCLASS = generateSCLASS(base);
+	const so = class SerializedObject extends base {
+		public $SCLASS;
 
 		constructor(...args: any[]) {
 			super(...args);
+			this.$SCLASS = generateSCLASS(base);
 		}
 
 		public get isSerializable() {
@@ -26,23 +27,21 @@ function Serializable<
 		}
 
 		public serialize(): S {
-			const baseObj = super.serialize();
-			return { ...baseObj, $SCLASS: generateSCLASS(base) };
+			const parentObj = super.serialize.call(this);
+			return { ...parentObj, $SCLASS: generateSCLASS(base) };
 		}
 
 		static deserialize(data: S) {
-			const obj = base.deserialize(data);
-			return obj;
+			const parent = super.deserialize(data);
+			return parent;
 		}
 	};
-
 	objectRegistry.register({
-		constructor: serializableObject,
+		constructor: so,
 		$SCLASS: generateSCLASS(base),
 		name: base.name,
 	});
-
-	return serializableObject;
+	return so;
 }
 
 export default Serializable;

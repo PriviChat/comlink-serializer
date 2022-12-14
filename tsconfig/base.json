@@ -10,7 +10,7 @@
 		"noEmit": false,
 		"allowSyntheticDefaultImports": true,
 		"importHelpers": true,
-		"esModuleInterop": true,
+		"esModuleInterop": false,
 		"resolveJsonModule": false,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": false,

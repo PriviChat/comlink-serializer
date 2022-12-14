@@ -14,6 +14,7 @@ function registerTransferHandler(config: TransferHandlerRegistration) {
 }
 
 const _$ = {
+	serializableObjectTransferHandler,
 	objectRegistry,
 	deserializer,
 };

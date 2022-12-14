@@ -1,8 +1,8 @@
 import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/User';
 import { SerializedUser } from '@test-fixtures/types';
-import { SerializedArray, SerializedMap } from '@internal/serialobjs/types';
 import { SerializableArray, SerializableMap, _$ } from '@comlink-serializer';
+import { SerializedArray, SerializedMap } from 'src/serialobjs/types';
 
 let user0: SerializedUser;
 let user1: SerializedUser;
@@ -61,6 +61,7 @@ describe('Deserializer', () => {
 		expect((users as any).isSerializable).toBeTruthy();
 		expect(users).toBeInstanceOf(SerializableArray);
 		expect((users as any).$SCLASS).toBeDefined();
+		expect((users[0] as any).isSerializable).toBeTruthy();
 		expect(users[0].email).toEqual('john.smith-0@email.com');
 		expect(users[0].firstName).toEqual('John');
 		expect(users[0].lastName).toEqual('Smith');
