@@ -1,14 +1,16 @@
 import * as Comlink from 'comlink';
 import { jest, expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
-import TestWorker from '@test-fixtures/Worker';
 import WorkerFactory from '@test-fixtures/WorkerFactory';
+import TestWorker from '@test-fixtures/TestWorker';
 import { SerializedUser } from '@test-fixtures/types';
+
 import ComlinkSerializer, {
 	Serialized,
 	Serializable,
 	SerializableArray,
 	SerializableMap,
+	Deserializer,
 	_$,
 } from '@comlink-serializer';
 
@@ -17,10 +19,11 @@ type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
 
 let worker: Worker;
 let testWorker: Comlink.Remote<TestWorker>;
+
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
 
 type SerializeFn<T> = () => T;
-type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
+type DeserializeFn = (serialObj: Serialized) => Serializable;
 
 describe('handler unit tests', () => {
 	test('canHandle checks isSerializable', () => {
@@ -42,19 +45,20 @@ describe('handler unit tests', () => {
 		expect(user.serialize).toHaveBeenCalled();
 	});
 
-	test('deserialize calls static deserialize()', () => {
+	/* test('deserialize calls static deserialize()', () => {
+		const deserializer = new Deserializer();
 		const handler = _$.serializableObjectTransferHandler;
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
-		const originalDeserialize = _$.deserializer.deserialize;
-		_$.deserializer.deserialize = jest.fn<DeserializeFn>();
+		const originalDeserialize = deserializer.deserialize;
+		deserializer.deserialize = jest.fn<DeserializeFn>();
 		const serialized = handler.serialize(user)[0];
 		handler.deserialize(serialized);
 
-		expect(_$.deserializer.deserialize).toHaveBeenCalled();
+		expect(deserializer.deserialize).toHaveBeenCalled();
 
-		_$.deserializer.deserialize = originalDeserialize;
-	});
+		deserializer.deserialize = originalDeserialize;
+	}); */
 
 	test('deserialize throws exception when object is not Serialized', () => {
 		const handler = _$.serializableObjectTransferHandler;

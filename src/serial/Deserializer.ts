@@ -1,8 +1,8 @@
-import Serializable, { Serialized } from './mixin';
+import Serializable from './decorators/Serializable';
+import { Deserializable, Serialized } from './types';
 import objectRegistry from '../registry';
-
-export class Deserializer {
-	public static deserialize(serialObj: Serialized): Serializable {
+export default class Deserializer {
+	public deserialize(serialObj: Serialized): Serializable {
 		if (!serialObj.$SCLASS)
 			throw TypeError(
 				`Object not deserializable, missing internal $SCLASS property: ${JSON.stringify(
@@ -11,8 +11,9 @@ export class Deserializer {
 			);
 		try {
 			const entry = objectRegistry.getEntry(serialObj.$SCLASS);
-			const obj = entry.constructor.deserialize(serialObj);
-			//if (!(obj as any).isSerializable) throw new TypeError('The deserialized object is not Serializable!');
+			const entity = Object.create(entry.constructor.prototype) as Deserializable;
+			const obj = entity.deserialize(serialObj, this);
+			if (!(obj as any).isSerializable) throw new TypeError('The deserialized object is not Serializable!');
 			return obj;
 		} catch (err) {
 			console.error(err);

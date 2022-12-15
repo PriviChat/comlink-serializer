@@ -23,7 +23,7 @@
 			"console": "integratedTerminal",
 			"internalConsoleOptions": "neverOpen",
 			"disableOptimisticBPs": true,
-			"cwd": "/Users/manton/dev/pc/comlink-serializer/src",
+			"cwd": "/Users/manton/dev/pc/comlink-serializer/",
 			"runtimeExecutable": "npm",
 			"args": [
 				"test",

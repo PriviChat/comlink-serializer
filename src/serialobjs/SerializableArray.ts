@@ -1,9 +1,9 @@
-import objectRegistry from '../registry';
-import Serializable from '../serial/mixin';
+import { Deserializer } from 'src/serial';
+import { Serializable } from '../serial/decorators';
 import { SerializedArray } from './types';
 
 @Serializable
-class SerializableArray<S extends Serializable = Serializable>
+export default class SerializableArray<S extends Serializable = Serializable>
 	extends Array<S>
 	implements Serializable<SerializedArray>
 {
@@ -29,10 +29,8 @@ class SerializableArray<S extends Serializable = Serializable>
 		return Array;
 	}
 
-	static deserialize(obj: SerializedArray): SerializableArray<Serializable> {
-		const array = obj._array.map((value) => objectRegistry.getEntry(value.$SCLASS!).constructor.deserialize(value));
+	public deserialize(obj: SerializedArray, deserializer: Deserializer): SerializableArray<Serializable> {
+		const array = obj._array.map((value) => deserializer.deserialize(value));
 		return SerializableArray.from<Serializable>(array);
 	}
 }
-
-export { SerializableArray };

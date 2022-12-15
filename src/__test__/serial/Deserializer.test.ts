@@ -1,9 +1,10 @@
 import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/User';
 import { SerializedUser } from '@test-fixtures/types';
-import { SerializableArray, SerializableMap, _$ } from '@comlink-serializer';
-import { SerializedArray, SerializedMap } from 'src/serialobjs/types';
+import { SerializableArray, SerializableMap, Deserializer } from '@comlink-serializer';
+import { SerializedArray, SerializedMap } from '../../serialobjs/types';
 
+const deserializer = new Deserializer();
 let user0: SerializedUser;
 let user1: SerializedUser;
 let user2: SerializedUser;
@@ -48,7 +49,7 @@ describe('Deserializer', () => {
 	});
 
 	test('Flat Object Deserialize', () => {
-		const user = _$.deserializer.deserialize(user0) as User;
+		const user = deserializer.deserialize(user0) as User;
 		expect((user as any).isSerializable).toBeTruthy();
 		expect((user as any).$SCLASS).toBeDefined();
 		expect(user.email).toEqual('john.smith-0@email.com');
@@ -57,7 +58,7 @@ describe('Deserializer', () => {
 	});
 
 	test('Array Object Deserialize', () => {
-		const users = _$.deserializer.deserialize(userArray) as SerializableArray<User>;
+		const users = deserializer.deserialize(userArray) as SerializableArray<User>;
 		expect((users as any).isSerializable).toBeTruthy();
 		expect(users).toBeInstanceOf(SerializableArray);
 		expect((users as any).$SCLASS).toBeDefined();
@@ -68,7 +69,7 @@ describe('Deserializer', () => {
 	});
 
 	test('Map Object Deserialize', () => {
-		const users = _$.deserializer.deserialize(userMap) as SerializableMap<string, User>;
+		const users = deserializer.deserialize(userMap) as SerializableMap<string, User>;
 		expect((users as any).isSerializable).toBeTruthy();
 		expect(users).toBeInstanceOf(SerializableMap);
 		expect((users as any).$SCLASS).toBeDefined();
@@ -80,7 +81,7 @@ describe('Deserializer', () => {
 	test('Deserialize error handling', () => {
 		const foo = {};
 		expect(() => {
-			_$.deserializer.deserialize(foo);
+			deserializer.deserialize(foo);
 		}).toThrow();
 
 		const foo2 = {
@@ -90,7 +91,7 @@ describe('Deserializer', () => {
 		const origError = console.error;
 		console.error = jest.fn();
 		expect(() => {
-			_$.deserializer.deserialize(foo2);
+			deserializer.deserialize(foo2);
 		}).toThrow();
 		expect(console.error).toHaveBeenCalled();
 		console.error = origError;

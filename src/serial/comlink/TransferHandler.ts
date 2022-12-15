@@ -1,6 +1,9 @@
 import * as Comlink from 'comlink';
-import { Deserializer } from '../Deserializer';
-import Serializable, { Serialized } from '../mixin';
+import { Deserializer } from '..';
+import { Serializable } from '../decorators';
+import { Serialized } from '../types';
+
+const deserializer = new Deserializer();
 
 /* Global Handlers */
 export const serializableObjectTransferHandler: Comlink.TransferHandler<Serializable, Serialized> = {
@@ -14,7 +17,7 @@ export const serializableObjectTransferHandler: Comlink.TransferHandler<Serializ
 		return [serialized, []];
 	},
 	deserialize: (object: Serialized) => {
-		const deserialized = Deserializer.deserialize(object);
+		const deserialized = deserializer.deserialize(object);
 		return deserialized;
 	},
 };

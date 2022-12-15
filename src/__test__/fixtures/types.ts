@@ -9,6 +9,7 @@ export interface SerializedUser extends Serialized {
 export interface SerializedOrder extends Serialized {
 	orderId: string;
 	user: SerializedUser;
+	products: SerializedProduct[];
 }
 
 export interface SerializedProduct extends Serialized {

@@ -1,2 +1,2 @@
-export { SerializableArray } from './SerializableArray';
-export { SerializableMap } from './SerializableMap';
+export { default as SerializableArray } from './SerializableArray';
+export { default as SerializableMap } from './SerializableMap';

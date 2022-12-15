@@ -5,7 +5,7 @@ import { SerializedProduct } from './types';
 class Product implements Serializable<SerializedProduct> {
 	constructor(readonly productId: string, readonly productName: string) {}
 
-	static deserialize(data: SerializedProduct): Product {
+	public deserialize(data: SerializedProduct): Product {
 		return Object.assign(Object.create(Product.prototype), data);
 	}
 

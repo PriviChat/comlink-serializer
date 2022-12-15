@@ -14,7 +14,7 @@ const esmLibJestConfig: JestConfigWithTsJest = {
 		'^.+\\.[t|j]s?$': [
 			'ts-jest',
 			{
-				tsconfig: '../tsconfig.json',
+				tsconfig: '<rootDir>/tsconfig.json',
 				useESM: true,
 				//isolatedModules: false,
 				diagnostics: {

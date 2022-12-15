@@ -1,12 +1,12 @@
-import objectRegistry from '../registry';
-import Serializable from '../serial/mixin';
+import { Deserializer } from 'src/serial';
+import { Serializable } from '../serial/decorators';
 import { SerializedMap } from './types';
 
 @Serializable
-class SerializableMap<K extends boolean | number | bigint | string, V extends Serializable = Serializable> extends Map<
-	K,
-	V
-> {
+export default class SerializableMap<
+	K extends boolean | number | bigint | string,
+	V extends Serializable = Serializable
+> extends Map<K, V> {
 	serialize(): SerializedMap {
 		const map = new Map();
 		this.forEach((obj, key) => {
@@ -33,14 +33,14 @@ class SerializableMap<K extends boolean | number | bigint | string, V extends Se
 		return Map;
 	}
 
-	static deserialize(obj: SerializedMap): SerializableMap<boolean | number | bigint | string> {
+	public deserialize(
+		obj: SerializedMap,
+		deserializer: Deserializer
+	): SerializableMap<boolean | number | bigint | string> {
 		const sm = new Map();
 		obj._map.forEach((value, key) => {
-			const objEntry = objectRegistry.getEntry(value.$SCLASS!);
-			sm.set(key, objEntry.constructor.deserialize(value));
+			sm.set(key, deserializer.deserialize(value));
 		});
 		return SerializableMap.from(sm);
 	}
 }
-
-export { SerializableMap };
