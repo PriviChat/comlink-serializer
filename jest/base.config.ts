@@ -2,13 +2,12 @@ import type { JestConfigWithTsJest } from 'ts-jest';
 
 const baseJestConfig: JestConfigWithTsJest = {
 	rootDir: '../',
-	preset: 'ts-jest/presets/default-esm',
-	//preset: 'ts-jest/presets/default',
+	//preset: 'ts-jest/presets/default-esm',
+	preset: 'ts-jest/presets/default',
 	testEnvironment: 'node',
 	testMatch: ['**/*.(test|spec).ts'],
-	extensionsToTreatAsEsm: ['.ts'],
+	//extensionsToTreatAsEsm: ['.ts'],
 	moduleNameMapper: {
-		'^(\\.{1,2}/.*)\\.js$': '$1',
 		'^@comlink-serializer$': '<rootDir>/src/index',
 		'^@test-fixtures/(.*)$': '<rootDir>/src/__test__/fixtures/$1',
 	},
@@ -22,9 +21,9 @@ const baseJestConfig: JestConfigWithTsJest = {
 		'^.+\\.[t|j]s?$': [
 			'ts-jest',
 			{
-				tsconfig: '../tsconfig.json',
-				useESM: true,
-				isolatedModules: false,
+				tsconfig: '../tsconfig/cjs.json',
+				//useESM: true,
+				//isolatedModules: false,
 				diagnostics: {
 					exclude: ['!src/__test__/**/*.ts'],
 					isolatedModules: false,

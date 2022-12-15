@@ -1,6 +1,7 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
+		"baseUrl": "..",
 		"downlevelIteration": true,
 		"sourceMap": false,
 		"outDir": "build",
@@ -8,14 +9,18 @@
 		"alwaysStrict": true,
 		"moduleResolution": "node",
 		"noEmit": false,
-		"allowSyntheticDefaultImports": true,
 		"importHelpers": true,
-		"esModuleInterop": false,
+		"esModuleInterop": true,
 		"resolveJsonModule": false,
 		"experimentalDecorators": true,
 		"emitDecoratorMetadata": false,
-		"forceConsistentCasingInFileNames": true
+		"forceConsistentCasingInFileNames": true,
+		"allowJs": true,
+		"paths": {
+			"@comlink-serializer": ["src/index"],
+			"@test-fixtures/*": ["src/__test__/fixtures/*"]
+		}
 	},
 	"include": ["../src/**/*.ts"],
-	"exclude": ["node_modules", "../src/**/*.test.ts", "../test/**/*.test.ts"]
+	"exclude": ["node_modules", "../src/__test__/**/*.ts"]
 }

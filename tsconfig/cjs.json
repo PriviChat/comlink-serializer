@@ -1,0 +1,10 @@
+{
+	"extends": "./base",
+	"compilerOptions": {
+		"target": "ES2015",
+		"module": "CommonJS",
+		"outDir": "../build/cjs"
+	},
+	"include": ["../src/**/*.ts"],
+	"exclude": ["node_modules"]
+}

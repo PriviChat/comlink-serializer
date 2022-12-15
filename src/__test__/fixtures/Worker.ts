@@ -15,5 +15,5 @@ export default class TestWorker {
 		return map;
 	}
 }
-Comlink.expose(TestWorker, this);
+Comlink.expose(TestWorker);
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
