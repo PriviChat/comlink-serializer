@@ -19,8 +19,8 @@ describe('SerializableArray Tests', () => {
 
 		const serializedArr = arr.serialize();
 
-		expect(serializedArr.$SCLASS).toBeDefined();
-		expect(serializedArr._array[0].$SCLASS).toBeDefined();
-		expect(serializedArr._array[1].$SCLASS).toBeDefined();
+		expect(serializedArr.__$SCLASS).toBeDefined();
+		expect(serializedArr._array[0].__$SCLASS).toBeDefined();
+		expect(serializedArr._array[1].__$SCLASS).toBeDefined();
 	});
 });

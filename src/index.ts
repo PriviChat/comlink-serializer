@@ -2,7 +2,7 @@ import * as Comlink from 'comlink';
 import objectRegistry from './registry';
 import transferHandler from './serial/comlink';
 import { TransferHandlerRegistration } from './serial/comlink';
-import { Serialized } from './serial';
+import { Serialized, Deserializer } from './serial';
 import { Serializable, Deserializable } from './serial/decorators';
 import { SerializableArray, SerializableMap } from './serialobjs';
 
@@ -11,7 +11,7 @@ function registerTransferHandler(config: TransferHandlerRegistration) {
 	new SerializableArray();
 	new SerializableMap();
 
-	Comlink.transferHandlers.set('SerializableObject', transferHandler.getHandler());
+	Comlink.transferHandlers.set('SerializableObject', transferHandler.handler);
 }
 
 const _$ = {
@@ -24,5 +24,13 @@ const ComlinkSerializer = {
 };
 
 export { _$ };
-export { Serialized, Serializable, Deserializable, SerializableArray, SerializableMap, TransferHandlerRegistration };
+export {
+	Serialized,
+	Serializable,
+	Deserializable,
+	Deserializer,
+	SerializableArray,
+	SerializableMap,
+	TransferHandlerRegistration,
+};
 export default ComlinkSerializer;

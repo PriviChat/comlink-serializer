@@ -6,6 +6,7 @@
 		"sourceMap": false,
 		"outDir": "build",
 		"strict": true,
+		"strictNullChecks": false,
 		"alwaysStrict": true,
 		"moduleResolution": "node",
 		"noEmit": false,

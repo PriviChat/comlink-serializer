@@ -15,17 +15,17 @@ export default class ObjectRegistry {
 	}
 
 	public register(entry: ObjectRegistryEntry): ObjectRegistryEntry {
-		if (!entry.$SCLASS) {
+		if (!entry.SCLASS) {
 			throw TypeError('Object not Serializable/Deserializable!');
 		}
 
-		const existing = this.registry.get(entry.$SCLASS);
+		const existing = this.registry.get(entry.SCLASS);
 		if (existing)
 			throw TypeError(
-				`Object: ${entry.name} has the same _SCLASS: ${entry.$SCLASS} as a class with name: ${existing.name}. _SCLASS must be unique.`
+				`Object: ${entry.name} has the same _SCLASS: ${entry.SCLASS} as a class with name: ${existing.name}. _SCLASS must be unique.`
 			);
-		this.registry.set(entry.$SCLASS, entry);
-		console.info(`Object: [${entry.name}] $SCLASS: [${entry.$SCLASS}] has been registered as Serializable.`);
+		this.registry.set(entry.SCLASS, entry);
+		console.info(`Object: [${entry.name}] $SCLASS: [${entry.SCLASS}] has been registered as Serializable.`);
 		return entry;
 	}
 }

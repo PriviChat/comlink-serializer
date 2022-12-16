@@ -6,14 +6,11 @@ class Product implements Serializable<SerializedProduct> {
 	constructor(readonly productId: string, readonly productName: string) {}
 
 	public deserialize(data: SerializedProduct): Product {
-		return Object.assign(Object.create(Product.prototype), data);
+		return null;
 	}
 
 	public serialize(): SerializedProduct {
-		return {
-			productId: this.productId,
-			productName: this.productName,
-		};
+		return null;
 	}
 }
 

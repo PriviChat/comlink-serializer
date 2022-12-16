@@ -13,9 +13,9 @@ describe('SerializableMap Tests', () => {
 		]);
 		const serializedMap = map.serialize();
 
-		expect(serializedMap.$SCLASS).toBeDefined();
+		expect(serializedMap.__$SCLASS).toBeDefined();
 		serializedMap._map.forEach((value, key) => {
-			expect(value.$SCLASS).toBeDefined();
+			expect(value.__$SCLASS).toBeDefined();
 		});
 
 		const newMap = new SerializableMap[Symbol.species]();

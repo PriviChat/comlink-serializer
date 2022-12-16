@@ -27,7 +27,7 @@ type DeserializeFn = (serialObj: Serialized) => Serializable;
 
 describe('handler unit tests', () => {
 	test('canHandle checks isSerializable', () => {
-		const handler = _$.serializableObjectTransferHandler;
+		const handler = _$.transferHandler.handler;
 		expect(handler.canHandle(undefined)).toBe(false);
 		expect(handler.canHandle(null)).toBe(false);
 		expect(handler.canHandle({})).toBe(false);
@@ -36,7 +36,7 @@ describe('handler unit tests', () => {
 	});
 
 	test('serialize calls serialize()', () => {
-		const handler = _$.serializableObjectTransferHandler;
+		const handler = _$.transferHandler.handler;
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		user.serialize = jest.fn<SerializeFn<SerializedUser>>();
@@ -45,9 +45,9 @@ describe('handler unit tests', () => {
 		expect(user.serialize).toHaveBeenCalled();
 	});
 
-	/* test('deserialize calls static deserialize()', () => {
-		const deserializer = new Deserializer();
-		const handler = _$.serializableObjectTransferHandler;
+	test('deserialize calls static deserialize()', () => {
+		const handler = _$.transferHandler.handler;
+		const deserializer = _$.transferHandler.deserializer;
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		const originalDeserialize = deserializer.deserialize;
@@ -58,10 +58,10 @@ describe('handler unit tests', () => {
 		expect(deserializer.deserialize).toHaveBeenCalled();
 
 		deserializer.deserialize = originalDeserialize;
-	}); */
+	});
 
 	test('deserialize throws exception when object is not Serialized', () => {
-		const handler = _$.serializableObjectTransferHandler;
+		const handler = _$.transferHandler.handler;
 		expect(() => {
 			handler.deserialize({});
 		}).toThrow();

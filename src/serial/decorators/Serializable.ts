@@ -4,7 +4,7 @@ import { AnyConstructor, Serialized } from '../types';
 import { generateSCLASS } from './utils';
 
 export interface Deserializable<S extends Serialized, T extends Serializable<S>> {
-	deserialize(data: S, deserializer: Deserializer): T;
+	deserialize(data: S, deserializer: Deserializer): T | null;
 }
 
 interface Serializable<S extends Serialized = Serialized> {
@@ -12,11 +12,11 @@ interface Serializable<S extends Serialized = Serialized> {
 }
 
 export interface SerializableObject extends Serializable {
-	$SCLASS: string;
-	$SNAME: string;
+	__$SCLASS: string;
+	__$SNAME: string;
 	isSerializable: boolean;
-	doDeserialize(data: Serialized, deserializer: Deserializer): Serializable;
-	doSerialize(): Serialized;
+	deserialize(data: Serialized, deserializer: Deserializer): Serializable;
+	serialize(): Serialized;
 }
 
 type SerializableCtor<S extends Serialized, T extends Serializable<S>> = AnyConstructor<
@@ -27,8 +27,8 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 	base: Ctor
 ) {
 	const serializedObject = class SerializedObject extends base implements SerializableObject {
-		public $SCLASS = generateSCLASS(base.name);
-		public $SNAME = base.name;
+		public __$SCLASS = generateSCLASS(base.name);
+		public __$SNAME = base.name;
 
 		constructor(...args: any[]) {
 			super(...args);
@@ -38,21 +38,28 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 			return true;
 		}
 
-		public doSerialize(): S {
-			const serialObj = super.serialize();
-			if (serialObj) return { ...serialObj, $SCLASS: generateSCLASS(base.name) };
-			else return JSON.stringify(this) as unknown as S;
+		public serialize(): S {
+			let serialObj = super.serialize();
+			if (!serialObj) {
+				serialObj = JSON.stringify(this, (key) => {
+					if (key.startsWith('__$')) {
+						return undefined;
+					}
+				}) as unknown as S;
+			}
+			return { ...serialObj, __$SCLASS: generateSCLASS(base.name) };
 		}
 
-		public doDeserialize(data: S, deserializer: Deserializer): T {
+		public deserialize(data: S, deserializer: Deserializer): T {
 			const deserObj = super.deserialize(data, deserializer);
-			return deserObj;
+			if (deserObj) return deserObj;
+			else return Object.assign(this, data) as unknown as T;
 		}
 	};
 
 	objectRegistry.register({
 		constructor: serializedObject,
-		$SCLASS: generateSCLASS(base.name),
+		SCLASS: generateSCLASS(base.name),
 		name: base.name,
 	});
 	return serializedObject;
