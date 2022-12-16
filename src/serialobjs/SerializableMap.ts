@@ -1,23 +1,15 @@
-import { Deserializer } from 'src/serial';
-import { Serializable } from '../serial/decorators';
+import { Serializable, Deserializable } from '../serial/decorators';
+import { Deserializer } from '../serial';
 import { SerializedMap } from './types';
 
 @Serializable
 export default class SerializableMap<
-	K extends boolean | number | bigint | string,
-	V extends Serializable = Serializable
-> extends Map<K, V> {
-	serialize(): SerializedMap {
-		const map = new Map();
-		this.forEach((obj, key) => {
-			map.set(key, obj.serialize());
-		});
-		const obj = {
-			_map: map,
-		};
-		return obj;
-	}
-
+		K extends boolean | number | bigint | string,
+		V extends Serializable = Serializable
+	>
+	extends Map<K, V>
+	implements Serializable<SerializedMap>, Deserializable<SerializedMap, SerializableMap<K, V>>
+{
 	static from<K extends boolean | number | bigint | string, V extends Serializable>(
 		map: Map<K, V>
 	): SerializableMap<K, V> {
@@ -33,10 +25,18 @@ export default class SerializableMap<
 		return Map;
 	}
 
-	public deserialize(
-		obj: SerializedMap,
-		deserializer: Deserializer
-	): SerializableMap<boolean | number | bigint | string> {
+	public serialize(): SerializedMap {
+		const map = new Map();
+		this.forEach((obj, key) => {
+			map.set(key, obj.serialize());
+		});
+		const obj = {
+			_map: map,
+		};
+		return obj;
+	}
+
+	public deserialize(obj: SerializedMap, deserializer: Deserializer): SerializableMap<K, V> {
 		const sm = new Map();
 		obj._map.forEach((value, key) => {
 			sm.set(key, deserializer.deserialize(value));

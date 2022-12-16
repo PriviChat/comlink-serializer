@@ -1,25 +1,25 @@
 import { Deserializer } from 'src/serial';
-import { Serializable } from '../serial/decorators';
+import { Deserializable, Serializable } from '../serial/decorators';
 import { SerializedArray } from './types';
 
 @Serializable
-export default class SerializableArray<S extends Serializable = Serializable>
-	extends Array<S>
-	implements Serializable<SerializedArray>
+export default class SerializableArray<T extends Serializable = Serializable>
+	extends Array<T>
+	implements Serializable<SerializedArray>, Deserializable<SerializedArray, SerializableArray>
 {
-	isEmpty(): boolean {
+	public isEmpty(): boolean {
 		return this.length === 0;
 	}
 
-	serialize(): SerializedArray {
+	public serialize(): SerializedArray {
 		const obj = {
 			_array: this.map((object) => object.serialize()),
 		};
 		return obj;
 	}
 
-	static from<S extends Serializable>(array: Array<S>): SerializableArray<S> {
-		const sa = new SerializableArray<S>();
+	static from<T extends Serializable>(array: Array<T>): SerializableArray<T> {
+		const sa = new SerializableArray<T>();
 		array.forEach((obj) => sa.push(obj));
 		return sa;
 	}
@@ -29,8 +29,8 @@ export default class SerializableArray<S extends Serializable = Serializable>
 		return Array;
 	}
 
-	public deserialize(obj: SerializedArray, deserializer: Deserializer): SerializableArray<Serializable> {
+	public deserialize(obj: SerializedArray, deserializer: Deserializer): SerializableArray {
 		const array = obj._array.map((value) => deserializer.deserialize(value));
-		return SerializableArray.from<Serializable>(array);
+		return SerializableArray.from(array);
 	}
 }

@@ -3,46 +3,59 @@ import Deserializer from '../Deserializer';
 import { AnyConstructor, Serialized } from '../types';
 import { generateSCLASS } from './utils';
 
-interface Serializable<S extends Serialized = Serialized> {
-	serialize(): S;
-}
-interface Deserializable<S extends Serialized, C extends Serializable<S>> {
-	deserialize(data: S, deserializer: Deserializer): C;
+export interface Deserializable<S extends Serialized, T extends Serializable<S>> {
+	deserialize(data: S, deserializer: Deserializer): T;
 }
 
-function Serializable<
-	S extends Serialized,
-	C extends Serializable<S>,
-	CtorC extends AnyConstructor<Serializable<S> & Deserializable<S, C>>
->(base: CtorC) {
-	const so = class SerializedObject extends base {
-		public $SCLASS;
+interface Serializable<S extends Serialized = Serialized> {
+	serialize(): S | null;
+}
+
+export interface SerializableObject extends Serializable {
+	$SCLASS: string;
+	$SNAME: string;
+	isSerializable: boolean;
+	doDeserialize(data: Serialized, deserializer: Deserializer): Serializable;
+	doSerialize(): Serialized;
+}
+
+type SerializableCtor<S extends Serialized, T extends Serializable<S>> = AnyConstructor<
+	Serializable<S> & Deserializable<S, T>
+>;
+
+function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S, T>>(
+	base: Ctor
+) {
+	const serializedObject = class SerializedObject extends base implements SerializableObject {
+		public $SCLASS = generateSCLASS(base.name);
+		public $SNAME = base.name;
 
 		constructor(...args: any[]) {
 			super(...args);
-			this.$SCLASS = generateSCLASS(base);
 		}
 
 		public get isSerializable() {
 			return true;
 		}
 
-		public serialize(): S {
-			const parentObj = super.serialize.call(this);
-			return { ...parentObj, $SCLASS: generateSCLASS(base) };
+		public doSerialize(): S {
+			const serialObj = super.serialize();
+			if (serialObj) return { ...serialObj, $SCLASS: generateSCLASS(base.name) };
+			else return JSON.stringify(this) as unknown as S;
 		}
 
-		public deserialize(data: S, deserializer: Deserializer) {
-			const parent = super.deserialize(data, deserializer);
-			return parent;
+		public doDeserialize(data: S, deserializer: Deserializer): T {
+			const deserObj = super.deserialize(data, deserializer);
+			return deserObj;
 		}
 	};
+
 	objectRegistry.register({
-		constructor: so,
-		$SCLASS: generateSCLASS(base),
+		constructor: serializedObject,
+		$SCLASS: generateSCLASS(base.name),
 		name: base.name,
 	});
-	return so;
+	return serializedObject;
 }
 
 export default Serializable;
