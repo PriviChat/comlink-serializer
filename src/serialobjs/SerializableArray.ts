@@ -2,6 +2,10 @@ import { Deserializer } from 'src/serial';
 import { Deserializable, Serializable } from '../serial/decorators';
 import { SerializedArray } from './types';
 
+function serializableArrayFactory<T extends Serializable>(): SerializableArray<T> {
+	return new SerializableArray<T>();
+}
+
 @Serializable
 export default class SerializableArray<T extends Serializable = Serializable>
 	extends Array<T>
@@ -19,7 +23,7 @@ export default class SerializableArray<T extends Serializable = Serializable>
 	}
 
 	static from<T extends Serializable>(array: Array<T>): SerializableArray<T> {
-		const sa = new SerializableArray<T>();
+		const sa = serializableArrayFactory<T>();
 		array.forEach((obj) => sa.push(obj));
 		return sa;
 	}

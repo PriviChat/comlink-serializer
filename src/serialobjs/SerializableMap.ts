@@ -2,6 +2,12 @@ import { Serializable, Deserializable } from '../serial/decorators';
 import { Deserializer } from '../serial';
 import { SerializedMap } from './types';
 
+function serializableMapFactory<
+	K extends boolean | number | bigint | string,
+	V extends Serializable
+>(): SerializableMap<K, V> {
+	return new SerializableMap<K, V>();
+}
 @Serializable
 export default class SerializableMap<
 		K extends boolean | number | bigint | string,
@@ -13,7 +19,7 @@ export default class SerializableMap<
 	static from<K extends boolean | number | bigint | string, V extends Serializable>(
 		map: Map<K, V>
 	): SerializableMap<K, V> {
-		const sm = new SerializableMap<K, V>();
+		const sm = serializableMapFactory<K, V>();
 		map.forEach((obj, key) => {
 			sm.set(key, obj);
 		});
