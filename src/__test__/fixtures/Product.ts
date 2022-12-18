@@ -2,7 +2,7 @@ import { Serializable } from '@comlink-serializer';
 import { SerializedProduct } from './types';
 
 @Serializable
-class Product implements Serializable<SerializedProduct> {
+class Product {
 	constructor(readonly productId: string, readonly productName: string) {}
 
 	public deserialize(data: SerializedProduct): Product {
