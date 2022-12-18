@@ -168,7 +168,7 @@ export class User {
 		readonly address: Address
 	) {}
 
-	static deserialize(data: SerializedUser, deserializer: Deserializer): User {
+	public deserialize(data: SerializedUser, deserializer: Deserializer): User {
 		const address = deserializer.deserialize(data.address);
 		return Object.assign(this, { ...data, address });
 	}
@@ -215,7 +215,7 @@ export class User {
 		readonly addresses: Address[]
 	) {}
 
-	static deserialize(data: SerializedUser, deserializer: Deserializer): User {
+	public deserialize(data: SerializedUser, deserializer: Deserializer): User {
 		const addresses = data.addresses.map((address) => deserializer.deserialize(address));
 		return Object.assign(this, { ...data, addresses });
 	}
