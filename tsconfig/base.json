@@ -1,9 +1,9 @@
 {
 	"$schema": "https://json.schemastore.org/tsconfig",
 	"compilerOptions": {
-		"baseUrl": "..",
+		"baseUrl": "../",
 		"downlevelIteration": true,
-		"sourceMap": false,
+		"sourceMap": true,
 		"outDir": "build",
 		"strict": true,
 		"strictNullChecks": false,
@@ -23,5 +23,5 @@
 		}
 	},
 	"include": ["../src/**/*.ts"],
-	"exclude": ["node_modules", "../src/__test__/**/*.ts"]
+	"exclude": ["../src/__test__/**/*.ts"]
 }

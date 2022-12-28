@@ -3,7 +3,7 @@ import Product from './Product';
 import User from './User';
 import { SerializedOrder } from './types';
 
-@Serializable
+@Serializable()
 class Order implements Serializable<SerializedOrder> {
 	constructor(readonly orderId: string, readonly user: User, readonly products: Product[]) {}
 

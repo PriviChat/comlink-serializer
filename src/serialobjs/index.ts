@@ -1,2 +1,3 @@
-export { default as SerializableArray } from './SerializableArray';
-export { default as SerializableMap } from './SerializableMap';
+export { default as SerialArray } from './SerialArray';
+export { default as SerialMap } from './SerialMap';
+export * from './types';

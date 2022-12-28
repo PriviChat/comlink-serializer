@@ -5,6 +5,5 @@
 		"module": "CommonJS",
 		"outDir": "../build/cjs"
 	},
-	"include": ["../src/**/*.ts"],
-	"exclude": ["node_modules"]
+	"exclude": []
 }

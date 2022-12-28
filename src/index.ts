@@ -1,22 +1,28 @@
 import * as Comlink from 'comlink';
 import objectRegistry from './registry';
-import transferHandler from './serial/comlink';
+import { serializableTransferHandler } from './serial/comlink';
+import { iterableTransferHandler } from './serial/comlink';
 import { TransferHandlerRegistration } from './serial/comlink';
-import { Serialized, Deserializer } from './serial';
+import { Serialized, Deserializer, SerialSymbol } from './serial';
 import { Serializable, Deserializable } from './serial/decorators';
-import { SerializableArray, SerializableMap } from './serialobjs';
+import { SerialIterator } from './serial/iterators';
+import { SerialArray, SerialMap } from './serialobjs';
 
-function registerTransferHandler(config: TransferHandlerRegistration) {
+function registerTransferHandler(reg: TransferHandlerRegistration) {
 	//Declare these so that the decorators get called (and the classes registered in the registry)
-	new SerializableArray();
-	new SerializableMap();
+	new SerialArray();
+	new SerialMap();
 
-	Comlink.transferHandlers.set('SerializableObject', transferHandler.handler);
+	Comlink.transferHandlers.set('ComlinkSerializer.SerializableTransferHandler', serializableTransferHandler.handler);
+	Comlink.transferHandlers.set('ComlinkSerializer.IterableTransferHandler', iterableTransferHandler.handler);
 }
 
 const _$ = {
-	transferHandler,
+	serializableTransferHandler,
+	iterableTransferHandler,
 	objectRegistry,
+	SerialSymbol,
+	SerialIterator,
 };
 
 const ComlinkSerializer = {
@@ -24,13 +30,5 @@ const ComlinkSerializer = {
 };
 
 export { _$ };
-export {
-	Serialized,
-	Serializable,
-	Deserializable,
-	Deserializer,
-	SerializableArray,
-	SerializableMap,
-	TransferHandlerRegistration,
-};
+export { Serialized, Serializable, Deserializable, Deserializer, SerialArray, SerialMap, TransferHandlerRegistration };
 export default ComlinkSerializer;

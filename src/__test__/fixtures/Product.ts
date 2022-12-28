@@ -1,7 +1,7 @@
 import { Serializable } from '@comlink-serializer';
 import { SerializedProduct } from './types';
 
-@Serializable
+@Serializable()
 class Product {
 	constructor(readonly productId: string, readonly productName: string) {}
 

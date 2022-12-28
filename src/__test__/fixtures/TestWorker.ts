@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import ComlinkSerializer, { SerializableArray, SerializableMap } from '@comlink-serializer';
+import ComlinkSerializer, { SerialArray, SerialMap } from '@comlink-serializer';
 import User from '@test-fixtures/User';
 
 export default class TestWorker {
@@ -7,11 +7,23 @@ export default class TestWorker {
 		return user;
 	}
 
-	getArray(arr: SerializableArray<User>) {
-		return arr;
+	async getArray(users: SerialArray<User>) {
+		return await users;
 	}
 
-	getMap(map: SerializableMap<string, User>) {
+	getArrayLength(arr: SerialArray<User>): number {
+		return arr.length;
+	}
+
+	async getTotalOrders(userArray: SerialArray<User>): Promise<number> {
+		let total = 0;
+		for await (const user of userArray) {
+			total += user.totalOrders;
+		}
+		return total;
+	}
+
+	getMap(map: SerialMap<string, User>) {
 		return map;
 	}
 }

@@ -8,8 +8,8 @@ import { SerializedUser } from '@test-fixtures/types';
 import ComlinkSerializer, {
 	Serialized,
 	Serializable,
-	SerializableArray,
-	SerializableMap,
+	SerialArray,
+	SerialMap,
 	Deserializer,
 	_$,
 } from '@comlink-serializer';
@@ -25,9 +25,9 @@ ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
 type SerializeFn<T> = () => T;
 type DeserializeFn = (serialObj: Serialized) => Serializable;
 
-describe('handler unit tests', () => {
+describe('SerializableTransferHandler unit tests', () => {
 	test('canHandle checks isSerializable', () => {
-		const handler = _$.transferHandler.handler;
+		const handler = _$.serializableTransferHandler.handler;
 		expect(handler.canHandle(undefined)).toBe(false);
 		expect(handler.canHandle(null)).toBe(false);
 		expect(handler.canHandle({})).toBe(false);
@@ -36,7 +36,7 @@ describe('handler unit tests', () => {
 	});
 
 	test('serialize calls serialize()', () => {
-		const handler = _$.transferHandler.handler;
+		const handler = _$.serializableTransferHandler.handler;
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		user.serialize = jest.fn<SerializeFn<SerializedUser>>();
@@ -46,8 +46,8 @@ describe('handler unit tests', () => {
 	});
 
 	test('deserialize calls static deserialize()', () => {
-		const handler = _$.transferHandler.handler;
-		const deserializer = _$.transferHandler.deserializer;
+		const handler = _$.serializableTransferHandler.handler;
+		const deserializer = _$.serializableTransferHandler.deserializer;
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		const originalDeserialize = deserializer.deserialize;
@@ -61,7 +61,7 @@ describe('handler unit tests', () => {
 	});
 
 	test('deserialize throws exception when object is not Serialized', () => {
-		const handler = _$.transferHandler.handler;
+		const handler = _$.serializableTransferHandler.handler;
 		expect(() => {
 			handler.deserialize({});
 		}).toThrow();
@@ -91,12 +91,12 @@ describe('Comlink passthrough', () => {
 	});
 
 	test('Check that User array can pass through Comlink', async () => {
-		const arr = new SerializableArray<User>(
+		const arr = new SerialArray<User>(
 			new User('foo@example.org', 'Bob', 'Smith'),
 			new User('foo2@example.org', 'Bob2', 'Smith2')
 		);
 		const arrFromWorker = await testWorker.getArray(arr);
-		expect(arrFromWorker).toBeInstanceOf(SerializableArray);
+		expect(arrFromWorker).toBeInstanceOf(SerialArray);
 		expect(arrFromWorker[0]).toBeInstanceOf(User);
 		expect(arrFromWorker[1]).toBeInstanceOf(User);
 		expect(arrFromWorker[0].email).toBe('foo@example.org');
@@ -104,12 +104,12 @@ describe('Comlink passthrough', () => {
 	});
 
 	test('Check that User map can pass through Comlink', async () => {
-		const map = new SerializableMap<string, User>([
+		const map = new SerialMap<string, User>([
 			['foo', new User('foo@example.org', 'Bob', 'Smith')],
 			['foo2', new User('foo2@example.org', 'Bob2', 'Smith2')],
 		]);
 		const mapFromWorker = await testWorker.getMap(map);
-		expect(mapFromWorker).toBeInstanceOf(SerializableMap);
+		expect(mapFromWorker).toBeInstanceOf(SerialMap);
 		expect(mapFromWorker.get('foo')).toBeInstanceOf(User);
 		expect(mapFromWorker.get('foo2')).toBeInstanceOf(User);
 		expect(mapFromWorker.get('foo')?.email).toBe('foo@example.org');
