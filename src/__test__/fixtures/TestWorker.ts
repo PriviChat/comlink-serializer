@@ -11,13 +11,14 @@ export default class TestWorker {
 		return await users;
 	}
 
-	getArrayLength(arr: SerialArray<User>): number {
-		return arr.length;
+	async getArrayLength(arr: SerialArray<User>): Promise<number> {
+		const len = await arr.length;
+		return len;
 	}
 
-	async getTotalOrders(userArray: SerialArray<User>): Promise<number> {
+	async getTotalOrders(arr: SerialArray<User>): Promise<number> {
 		let total = 0;
-		for await (const user of userArray) {
+		for await (const user of arr) {
 			total += user.totalOrders;
 		}
 		return total;

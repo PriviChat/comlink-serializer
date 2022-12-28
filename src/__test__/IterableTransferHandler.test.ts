@@ -37,7 +37,7 @@ describe('IterableTransferHandler unit tests', () => {
 	});
 });
 
-describe('Comlink Iterator Passthrough', () => {
+describe('Comlink SerialArray pass-through', () => {
 	beforeAll(async () => {
 		worker = WorkerFactory.get();
 		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
@@ -48,28 +48,23 @@ describe('Comlink Iterator Passthrough', () => {
 		worker.terminate();
 	});
 
-	test('Check that SerialArray<User> can pass-through Comlink', async () => {
+	test('Sum user orders', async () => {
 		const user0 = new User('bob0@example.org', 'Bob', 'Smith', 0);
 		const user1 = new User('bob1@example.org', 'Bob', 'Smith', 1);
 		const user2 = new User('bob2@example.org', 'Bob', 'Smith', 2);
 		const user3 = new User('bob3@example.org', 'Bob', 'Smith', 3);
 		const array = new SerialArray<User>(user0, user1, user2, user3);
-		//const itr = new _$.SerialIterator(array);
 		const total = await testWorker.getTotalOrders(array);
 		expect(total).toEqual(6);
-		//expect(returnArray).toBeInstanceOf(SerialArray);
-		//expect((returnArray as any).isIterable).toBeTruthy();
-		//expect((returnArray as any)[_$.SerialSymbol.registryId]).toBeDefined();
+	});
 
-		//expect((returnArray as any)[_$.SerialSymbol.registryId]).toEqual(IdMap.SerialArray);
-
-		//expect(returnArray.length).toEqual(1);
-		//expect(returnArray[0]).toBeInstanceOf(User);
-		//expect((returnArray[0] as any).isSerializable).toBeTruthy();
-		//expect((returnArray[0] as any)[_$.SerialSymbol.registryId]).toBeDefined();
-		//expect((returnArray[0] as any)[_$.SerialSymbol.registryId]).toEqual(IdMap.User);
-		//expect(returnArray[0].firstName).toBe('Bob');
-		//expect(returnArray[0].lastName).toBe('Smith');
-		//expect(returnArray[0].email).toBe('foo@example.org');
-	}, 100000);
+	test('Array length check', async () => {
+		const user0 = new User('bob0@example.org', 'Bob', 'Smith', 0);
+		const user1 = new User('bob1@example.org', 'Bob', 'Smith', 1);
+		const user2 = new User('bob2@example.org', 'Bob', 'Smith', 2);
+		const user3 = new User('bob3@example.org', 'Bob', 'Smith', 3);
+		const array = new SerialArray<User>(user0, user1, user2, user3);
+		const length = await testWorker.getArrayLength(array);
+		expect(length).toEqual(4);
+	});
 });

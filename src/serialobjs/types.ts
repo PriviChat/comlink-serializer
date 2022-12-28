@@ -1,4 +1,4 @@
-import { SerialIterator } from '../serial/iterators';
+import { SerializeIterator } from '../serial/iterators';
 import { Serialized, SerialSymbol } from '../serial';
 
 export interface SerializedArray extends Serialized {
@@ -12,5 +12,5 @@ export interface SerializedMap extends Serialized {
 export interface IterableObject {
 	[SerialSymbol.registryId]: string;
 	[SerialSymbol.iterable]: boolean;
-	[SerialSymbol.iterator](): SerialIterator;
+	[SerialSymbol.iterator](): SerializeIterator;
 }

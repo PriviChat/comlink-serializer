@@ -4,14 +4,14 @@ import { _$ } from '@comlink-serializer';
 import IdMap from '@test-fixtures/IdMap';
 import { SerializedUser } from '@test-fixtures/types';
 
-describe('SerialIterator Tests', () => {
+describe('SerializeIterator Tests', () => {
 	test('Iterator has symbol', () => {
-		const userItr = new _$.SerialIterator<User>([]);
+		const userItr = new _$.SerializeIterator<User>([]);
 		expect(userItr[_$.SerialSymbol.iterator]).toBeTruthy();
 	});
 
 	test('Iterator accepts empty array', () => {
-		const userItr = new _$.SerialIterator<User>([]);
+		const userItr = new _$.SerializeIterator<User>([]);
 		let idx = 0;
 		let total = 0;
 
@@ -28,7 +28,7 @@ describe('SerialIterator Tests', () => {
 	test('Iterator properly serializes', () => {
 		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 5);
 		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
-		const userItr = new _$.SerialIterator<User>([user0, user1]);
+		const userItr = new _$.SerializeIterator<User>([user0, user1]);
 
 		let idx = 0;
 		let total = 0;
@@ -48,7 +48,7 @@ describe('SerialIterator Tests', () => {
 	test('Iterator properly returns', () => {
 		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 3);
 		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
-		const userItr = new _$.SerialIterator<User>([user0, user1]);
+		const userItr = new _$.SerializeIterator<User>([user0, user1]);
 		let idx = 0;
 		let total = 0;
 

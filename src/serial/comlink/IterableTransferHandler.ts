@@ -1,8 +1,7 @@
 import * as Comlink from 'comlink';
 import { IterableObject } from '../../serialobjs';
 import Deserializer from '../Deserializer';
-import { IteratorMessageType } from '../iterators';
-import DeserializeIterator from '../iterators/DeserializeIterator';
+import { IteratorMessageType, DeserializeIterator } from '../iterators';
 import SerialSymbol from '../SerialSymbol';
 
 export default class IterableTransferHandler {

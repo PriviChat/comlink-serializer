@@ -5,7 +5,7 @@ import { iterableTransferHandler } from './serial/comlink';
 import { TransferHandlerRegistration } from './serial/comlink';
 import { Serialized, Deserializer, SerialSymbol } from './serial';
 import { Serializable, Deserializable } from './serial/decorators';
-import { SerialIterator } from './serial/iterators';
+import { SerializeIterator } from './serial/iterators';
 import { SerialArray, SerialMap } from './serialobjs';
 
 function registerTransferHandler(reg: TransferHandlerRegistration) {
@@ -22,7 +22,7 @@ const _$ = {
 	iterableTransferHandler,
 	objectRegistry,
 	SerialSymbol,
-	SerialIterator,
+	SerializeIterator,
 };
 
 const ComlinkSerializer = {
