@@ -8,7 +8,6 @@ export default class DeserializeIterator<T extends Serialized = Serialized>
 	implements AsyncIterableIterator<Serializable>
 {
 	[SerialSymbol.iterator] = true;
-	private index: number;
 	private done: boolean;
 
 	constructor(private port: MessagePort, private deserializer: Deserializer) {
@@ -42,7 +41,7 @@ export default class DeserializeIterator<T extends Serialized = Serialized>
 			this.done = true;
 			return {
 				done: this.done,
-				value: undefined, //this.index, //may want to return an index representing how many records processed
+				value: undefined,
 			};
 		}
 

@@ -1,17 +1,9 @@
 import * as Comlink from 'comlink';
-import { SerialArray, IterableObject } from '../../serialobjs';
+import { IterableObject } from '../../serialobjs';
 import Deserializer from '../Deserializer';
 import { IteratorMessageType } from '../iterators';
 import DeserializeIterator from '../iterators/DeserializeIterator';
 import SerialSymbol from '../SerialSymbol';
-import { Serialized } from '../types';
-
-type SerializedIterator = (Transferable | Transferable[])[];
-
-interface IteratorMessage extends MessageEvent {
-	type: IteratorMessageType;
-	value: Serialized;
-}
 
 export default class IterableTransferHandler {
 	constructor() {}
@@ -27,43 +19,40 @@ export default class IterableTransferHandler {
 					break;
 				case IteratorMessageType.Throw:
 					port.postMessage(await iterator.throw(value));
+					break;
+				default:
+					return;
 			}
 		};
 	};
 
 	public get handler() {
-		const comlink: Comlink.TransferHandler<IterableObject, Transferable> = {
+		const comlink: Comlink.TransferHandler<Comlink.Remote<IterableObject> | IterableObject, Transferable> = {
 			canHandle: function (value: any): value is IterableObject {
 				return value[SerialSymbol.iterable];
 			},
 			serialize: (obj: IterableObject) => {
 				const { port1, port2 } = new MessageChannel();
-				const registryId = obj[SerialSymbol.registryId];
+				// mark and expose the object on the port
+				Comlink.expose(Comlink.proxy(obj), port1);
 				const iterator = obj[SerialSymbol.iterator]();
-				//port1.postMessage({
-				//	type: IteratorMessageType.RegistryId,
-				//	value: registryId,
-				//});
 				this.expose(iterator, port1);
 				return [port2, [port2]];
 			},
 			deserialize: (port: MessagePort) => {
-				const array = new SerialArray();
+				port.start();
+				const remote = Comlink.wrap<IterableObject>(port);
 				const iterator = new DeserializeIterator(port, new Deserializer());
-				(array as any)[Symbol.asyncIterator] = () => iterator;
-				/* const pxy = new Proxy(new SerialArray(), {
+				const proxy = new Proxy(remote, {
 					get: (target, prop, receiver) => {
 						if (prop === Symbol.asyncIterator) {
-							return new DeserializeIterator(port, new Deserializer());
-						} else return Reflect.get(target, prop, receiver);
-					},
-					has: (target, prop) => {
-						if (prop === Symbol.asyncIterator) return true;
-						else return prop in target;
+							return () => iterator;
+						} else {
+							return Reflect.get(target, prop, receiver);
+						}
 					},
 				});
-				return pxy; */
-				return array;
+				return proxy;
 			},
 		};
 		return comlink;

@@ -58,6 +58,8 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 			}
 
 			public deserialize(data: S, deserializer: Deserializer): T {
+				Object.assign(this, { [SerialSymbol.registryId]: generateId(settings.name ?? base.name) });
+				Object.assign(this, { [SerialSymbol.class]: settings.name ?? base.name });
 				const deserObj = super.deserialize(data, deserializer);
 				if (deserObj) return deserObj;
 				else return Object.assign(this, data) as unknown as T;
