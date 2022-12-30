@@ -4,6 +4,6 @@ import SerialSymbol from './SerialSymbol';
 export type AnyConstructor<T = void> = new (...input: any[]) => T;
 
 export interface Serialized {
-	[SerialSymbol.registryId]?: string;
-	[SerialSymbol.class]?: string;
+	'ComSer.registryId'?: string;
+	'ComSer.class'?: string;
 }

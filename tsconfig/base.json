@@ -6,7 +6,6 @@
 		"sourceMap": true,
 		"outDir": "build",
 		"strict": true,
-		"strictNullChecks": false,
 		"alwaysStrict": true,
 		"moduleResolution": "node",
 		"noEmit": false,
@@ -19,6 +18,7 @@
 		"allowJs": true,
 		"paths": {
 			"@comlink-serializer": ["src/index"],
+			"@comlink-serializer-internal": ["src/internal/index"],
 			"@test-fixtures/*": ["src/__test__/fixtures/*"]
 		}
 	},

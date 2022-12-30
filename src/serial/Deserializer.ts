@@ -4,8 +4,9 @@ import objectRegistry from '../registry';
 import SerialSymbol from './SerialSymbol';
 export default class Deserializer {
 	public deserialize(serialObj: Serialized): Serializable {
-		const regIdKey = SerialSymbol.registryId.toString() as unknown as keyof Serialized;
-		const classKey = SerialSymbol.class.toString() as unknown as keyof Serialized;
+		const regIdKey = SerialSymbol.registryId.description as keyof Serialized;
+		const classKey = SerialSymbol.class.description as keyof Serialized;
+		const serializableKey = SerialSymbol.serializable as keyof SerializableObject;
 		let regId;
 		let className;
 		if (regIdKey in serialObj) {
@@ -20,7 +21,7 @@ export default class Deserializer {
 			}
 			if (!className) {
 				console.warn(
-					`Object with ${regIdKey.toString()}: ${regId} is missing ${SerialSymbol.class.toString()}. 
+					`Object with ${regIdKey.toString()}: ${regId} is missing ${classKey.toString()}. 
 					 Object: ${JSON.stringify(serialObj)}`
 				);
 			}
@@ -36,17 +37,16 @@ export default class Deserializer {
 			const regEntry = objectRegistry.getEntry(regId);
 			if (!regEntry) {
 				throw Error(
-					`Object with ${regIdKey.toString()}: ${regId} and ${SerialSymbol.class.toString()}: ${className} not found in registry.
+					`Object with ${regIdKey.toString()}: ${regId} and ${classKey.toString()}: ${className} not found in registry.
 					 Make sure you are property configuring the transfer handler.`
 				);
 			}
 			const instance = Object.create(regEntry.constructor.prototype) as SerializableObject;
 			const obj = instance.deserialize(serialObj, this);
-			if (!(obj as any).isSerializable)
+			if (instance[serializableKey] !== true)
 				throw new TypeError(
-					`The deserialized object is not Serializable [${
-						instance[SerialSymbol.class]
-					}]! There is a known issue with babel and using legacy decorators. See README for a workaround.`
+					`The deserialized object is not Serializable [${className}]
+					}]. There is a known issue with babel and using legacy decorators. See README for a workaround.`
 				);
 			return obj;
 		} catch (err) {

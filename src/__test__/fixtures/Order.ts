@@ -20,6 +20,10 @@ class Order implements Serializable<SerializedOrder> {
 			products: this.products.map((product) => product.serialize()),
 		};
 	}
+
+	public equals(other: unknown): boolean {
+		return other instanceof Order && other.orderId === this.orderId;
+	}
 }
 
 export default Order;

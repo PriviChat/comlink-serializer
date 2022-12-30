@@ -1,7 +1,7 @@
 import { Serializable, Deserializable } from '@comlink-serializer';
 import { SerializedUser } from './types';
 
-@Serializable({ name: 'User' })
+@Serializable({ class: 'User' })
 export default class User implements Serializable<SerializedUser>, Deserializable<SerializedUser, User> {
 	constructor(
 		readonly email: string,
@@ -21,5 +21,9 @@ export default class User implements Serializable<SerializedUser>, Deserializabl
 			lastName: this.lastName,
 			totalOrders: this.totalOrders,
 		};
+	}
+
+	equals(other: unknown): boolean {
+		return other instanceof User && other.email === this.email;
 	}
 }

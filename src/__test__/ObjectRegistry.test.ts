@@ -1,7 +1,7 @@
 import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { _$ } from '@comlink-serializer';
-import IdMap from '@test-fixtures/IdMap';
+import { objectRegistry } from '@comlink-serializer-internal';
+import { SymRegIdMap } from '@test-fixtures/SymMap';
 
 //type SerializeFn<T> = () => T;
 //type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
@@ -12,11 +12,11 @@ describe('ObjectRegistry', () => {
 		User;
 	});
 	test('Returns An Instance', () => {
-		expect(_$.objectRegistry).toBeDefined();
+		expect(objectRegistry).toBeDefined();
 	});
 
 	test('Check Registered Object', () => {
-		const entry = _$.objectRegistry.getEntry(IdMap.User);
+		const entry = objectRegistry.getEntry(SymRegIdMap.User);
 		expect(entry).toBeDefined();
 		expect(entry.name).toBe('User');
 		expect(entry.constructor).toBeDefined();
@@ -24,7 +24,7 @@ describe('ObjectRegistry', () => {
 
 	test('Throws exception when entry does not exist for sclass', () => {
 		expect(() => {
-			_$.objectRegistry.getEntry('foo');
+			objectRegistry.getEntry('foo');
 		}).toThrow();
 	});
 

@@ -1,30 +1,19 @@
 import Deserializer from '../Deserializer';
-import SerialSymbol from '../SerialSymbol';
 import { Serializable } from '../decorators';
 import { Serialized } from '../types';
-import { IteratorMessageType } from './types';
 
-export default class DeserializeIterator<T extends Serialized = Serialized>
+export default class DeserializableIterable<T extends Serialized = Serialized>
 	implements AsyncIterableIterator<Serializable>
 {
-	[SerialSymbol.iterator] = true;
 	private done: boolean;
 
-	constructor(private port: MessagePort, private deserializer: Deserializer) {
+	constructor(private iterator: AsyncIterator<Serialized, Serialized>, private deserializer: Deserializer) {
 		this.done = false;
 	}
 
 	[Symbol.asyncIterator](): AsyncIterableIterator<Serializable> {
 		return this;
 	}
-
-	private awaitNext = async () => {
-		return new Promise<IteratorResult<Serialized, Serialized>>((resolve) => {
-			this.port.onmessage = ({ data }) => {
-				resolve(data);
-			};
-		});
-	};
 
 	async next(...args: [] | [undefined]): Promise<IteratorResult<Serializable>> {
 		if (this.done) {
@@ -34,8 +23,7 @@ export default class DeserializeIterator<T extends Serialized = Serialized>
 			};
 		}
 
-		this.port.postMessage({ type: IteratorMessageType.Next, ...args });
-		const next = await this.awaitNext();
+		const next = await this.iterator.next(...args);
 
 		if (next.done) {
 			this.done = true;
@@ -54,8 +42,7 @@ export default class DeserializeIterator<T extends Serialized = Serialized>
 	}
 
 	async return?(serialObj?: T): Promise<IteratorResult<Serializable>> {
-		this.port.postMessage({ type: IteratorMessageType.Return, serialObj });
-		const next = await this.awaitNext();
+		const next = await this.iterator.return(serialObj);
 		this.done = true;
 		return {
 			done: this.done,

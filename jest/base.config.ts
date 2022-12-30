@@ -7,6 +7,7 @@ const baseJestConfig: JestConfigWithTsJest = {
 	testMatch: ['**/*.(test|spec).ts'],
 	moduleNameMapper: {
 		'^@comlink-serializer$': '<rootDir>/src/index',
+		'^@comlink-serializer-internal$': '<rootDir>/src/internal/index',
 		'^@test-fixtures/(.*)$': '<rootDir>/src/__test__/fixtures/$1',
 	},
 	modulePathIgnorePatterns: ['<rootDir>/build/'],

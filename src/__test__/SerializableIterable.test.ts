@@ -1,21 +1,17 @@
 import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { _$ } from '@comlink-serializer';
-import IdMap from '@test-fixtures/IdMap';
+import { Serialized } from '@comlink-serializer';
+import { SerializableIterable, SerialSymbol } from '@comlink-serializer-internal';
+import { SymRegIdMap } from '@test-fixtures/SymMap';
 import { SerializedUser } from '@test-fixtures/types';
 
-describe('SerializeIterator Tests', () => {
-	test('Iterator has symbol', () => {
-		const userItr = new _$.SerializeIterator<User>([]);
-		expect(userItr[_$.SerialSymbol.iterator]).toBeTruthy();
-	});
-
-	test('Iterator accepts empty array', () => {
-		const userItr = new _$.SerializeIterator<User>([]);
+describe('SerializableIterable Tests', () => {
+	test('Iterator accepts empty array', async () => {
+		const userItr = new SerializableIterable<User>([]);
 		let idx = 0;
 		let total = 0;
 
-		for (const serial of userItr) {
+		for await (const serial of userItr) {
 			const user = serial as SerializedUser;
 			total += user.totalOrders;
 			idx += 1;
@@ -25,15 +21,16 @@ describe('SerializeIterator Tests', () => {
 		expect(total).toEqual(0);
 	});
 
-	test('Iterator properly serializes', () => {
+	test('Iterator properly serializes', async () => {
 		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 5);
 		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
-		const userItr = new _$.SerializeIterator<User>([user0, user1]);
+		const userItr = new SerializableIterable<User>([user0, user1]);
 
 		let idx = 0;
 		let total = 0;
-		for (const serial of userItr) {
-			expect(serial[_$.SerialSymbol.registryId]).toEqual(IdMap.User);
+		for await (const serial of userItr) {
+			const regIdKey = SerialSymbol.registryId.description as keyof Serialized;
+			expect(serial[regIdKey]).toEqual(SymRegIdMap.User);
 			const user = serial as SerializedUser;
 			expect(user.email).toEqual('roy@example.org_' + idx);
 			expect(user.firstName).toEqual('Roy_' + idx);
@@ -45,14 +42,14 @@ describe('SerializeIterator Tests', () => {
 		expect(total).toEqual(15);
 	});
 
-	test('Iterator properly returns', () => {
+	test('Iterator properly returns', async () => {
 		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 3);
 		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
-		const userItr = new _$.SerializeIterator<User>([user0, user1]);
+		const userItr = new SerializableIterable<User>([user0, user1]);
 		let idx = 0;
 		let total = 0;
 
-		for (const serial of userItr) {
+		for await (const serial of userItr) {
 			const user = serial as SerializedUser;
 			total += user.totalOrders;
 			idx += 1;

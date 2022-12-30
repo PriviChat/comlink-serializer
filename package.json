@@ -1,6 +1,6 @@
 {
   "name": "comlink-serializer",
-  "version": "1.0.30",
+  "version": "0.5.2",
   "description": "Comlink Serializer makes Comlink and WebWorkers more enjoyable.",
   "keywords": [
     "typescript",
@@ -13,7 +13,8 @@
       "import": "./dist/lib/esm/comlink-serializer.mjs",
       "require": "./dist/lib/cjs/comlink-serializer.cjs",
       "default": "./dist/lib/umd/comlink-serializer.js"
-    }
+    },
+    "./internal": "./build/internal/index.js"
   },
   "main": "./dist/lib/cjs/comlink-serializer.cjs",
   "module": "./dist/lib/esm/comlink-serializer.mjs",
@@ -114,7 +115,8 @@
     "ts-node": "^10.9.1",
     "tsc-alias": "^1.8.2",
     "typescript": "^4.9.4",
-    "web-worker": "^1.2.0"
+    "web-worker": "^1.2.0",
+    "fluent-iterable": "^0.1.6"
   },
   "config": {
     "commitizen": {

@@ -1,23 +1,22 @@
 import * as Comlink from 'comlink';
-import { IterableObject } from '../../serialobjs';
 import Deserializer from '../Deserializer';
-import { IteratorMessageType, DeserializeIterator } from '../iterators';
-import SerialSymbol from '../SerialSymbol';
+import { AsyncSerialIterable, DeserializableIterable, IteratorMessageType, SerializableIterable } from '../iterators';
+import { Serialized } from '../types';
 
-export default class IterableTransferHandler {
-	constructor() {}
+export default class IteratorTransferHandler {
+	constructor(readonly deserializer: Deserializer) {}
 
-	private expose = async (iterator: Iterator<any>, port: MessagePort) => {
+	private exposeIterator = async (iterable: SerializableIterable, port: MessagePort) => {
 		port.onmessage = async ({ data: { type, value } }) => {
 			switch (type) {
 				case IteratorMessageType.Next:
-					port.postMessage(await iterator.next(value));
+					port.postMessage(await iterable.next(value));
 					break;
 				case IteratorMessageType.Return:
-					port.postMessage(await iterator.return(value));
+					port.postMessage(await iterable.return(value));
 					break;
 				case IteratorMessageType.Throw:
-					port.postMessage(await iterator.throw(value));
+					//port.postMessage(await iterator.throw(value));
 					break;
 				default:
 					return;
@@ -25,33 +24,48 @@ export default class IterableTransferHandler {
 		};
 	};
 
-	public get handler() {
-		const comlink: Comlink.TransferHandler<Comlink.Remote<IterableObject> | IterableObject, Transferable> = {
-			canHandle: function (value: any): value is IterableObject {
-				return value[SerialSymbol.iterable];
+	private wrapIterator = (port: MessagePort) => {
+		const iterator: AsyncIterableIterator<Serialized> = {
+			[Symbol.asyncIterator](): AsyncIterableIterator<Serialized> {
+				return this;
 			},
-			serialize: (obj: IterableObject) => {
+
+			next: function (...args: [] | [undefined]): Promise<IteratorResult<Serialized, Serialized>> {
+				port.postMessage({ type: IteratorMessageType.Next, ...args });
+				return new Promise<IteratorResult<Serialized, Serialized>>((resolve) => {
+					port.onmessage = ({ data }) => {
+						resolve(data);
+					};
+				});
+			},
+
+			return: function (serialObj?: Serialized): Promise<IteratorResult<Serialized, Serialized>> {
+				port.postMessage({ type: IteratorMessageType.Return, serialObj });
+				return new Promise<IteratorResult<Serialized, Serialized>>((resolve) => {
+					port.onmessage = ({ data }) => {
+						resolve(data);
+					};
+				});
+			},
+		};
+		return iterator;
+	};
+
+	public get handler() {
+		const comlink: Comlink.TransferHandler<AsyncSerialIterable, Transferable> = {
+			canHandle: function (value: any): value is SerializableIterable {
+				return value instanceof SerializableIterable ?? false;
+			},
+			serialize: (iterable: SerializableIterable) => {
 				const { port1, port2 } = new MessageChannel();
-				// mark and expose the object on the port
-				Comlink.expose(Comlink.proxy(obj), port1);
-				const iterator = obj[SerialSymbol.iterator]();
-				this.expose(iterator, port1);
+				this.exposeIterator(iterable, port1);
 				return [port2, [port2]];
 			},
 			deserialize: (port: MessagePort) => {
 				port.start();
-				const remote = Comlink.wrap<IterableObject>(port);
-				const iterator = new DeserializeIterator(port, new Deserializer());
-				const proxy = new Proxy(remote, {
-					get: (target, prop, receiver) => {
-						if (prop === Symbol.asyncIterator) {
-							return () => iterator;
-						} else {
-							return Reflect.get(target, prop, receiver);
-						}
-					},
-				});
-				return proxy;
+				const wrapped = this.wrapIterator(port);
+				const iterator = new DeserializableIterable(wrapped, this.deserializer);
+				return iterator;
 			},
 		};
 		return comlink;

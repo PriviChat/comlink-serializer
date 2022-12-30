@@ -2,69 +2,70 @@ import * as Comlink from 'comlink';
 import { jest, expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
 import WorkerFactory from '@test-fixtures/WorkerFactory';
-import TestWorker from '@test-fixtures/TestWorker';
-import { SerializedUser } from '@test-fixtures/types';
-
-import ComlinkSerializer, {
-	Serialized,
-	Serializable,
-	SerialArray,
-	SerialMap,
-	Deserializer,
-	_$,
-} from '@comlink-serializer';
-import IdMap from '@test-fixtures/IdMap';
+import IterableTestWorker from '@test-fixtures/IterableTestWorker';
+import { iterableTransferHandler, SerializableIterable } from '@comlink-serializer-internal';
+import ComlinkSerializer, { SerialArray, serialIterable } from '@comlink-serializer';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
 
 let worker: Worker;
-let testWorker: Comlink.Remote<TestWorker>;
+let testWorker: Comlink.Remote<IterableTestWorker>;
 
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
 
-type SerializeFn<T> = () => T;
-type DeserializeFn = (serialObj: Serialized) => Serializable;
-
 describe('IterableTransferHandler unit tests', () => {
 	test('canHandle checks isIterable', () => {
-		const handler = _$.iterableTransferHandler.handler;
+		const handler = iterableTransferHandler.handler;
 		expect(handler.canHandle(undefined)).toBe(false);
 		expect(handler.canHandle(null)).toBe(false);
 		expect(handler.canHandle({})).toBe(false);
-		expect(handler.canHandle({ isIterable: false })).toBe(false);
-		expect(handler.canHandle({ isIterable: true })).toBe(true);
+		expect(handler.canHandle(new SerialArray())).toBe(false);
+		expect(handler.canHandle(new SerializableIterable([]))).toBe(true);
 	});
 });
 
-describe('Comlink SerialArray pass-through', () => {
+describe('SerialArray', () => {
+	let user0: User;
+	let user1: User;
+	let user2: User;
+	let user3: User;
+	let array: SerialArray<User>;
+	let totalOrders: number;
+
 	beforeAll(async () => {
-		worker = WorkerFactory.get();
-		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<TestWorker>;
+		worker = WorkerFactory.getIterableTestWorker();
+		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<IterableTestWorker>;
 		testWorker = await new comlinkWorker();
+	});
+
+	beforeEach(() => {
+		user0 = new User('bob0@example.org_0', 'Bob_0', 'Smith_0', 0);
+		user1 = new User('bob1@example.org_1', 'Bob_1', 'Smith_1', 1);
+		user2 = new User('bob2@example.org_2', 'Bob_2', 'Smith_2', 2);
+		user3 = new User('bob3@example.org_3', 'Bob_3', 'Smith_3', 3);
+		array = new SerialArray<User>(user0, user1, user2, user3);
+		totalOrders = array.reduce((accum, user) => {
+			return accum + user.totalOrders;
+		}, 0);
 	});
 
 	afterAll(() => {
 		worker.terminate();
 	});
 
-	test('Sum user orders', async () => {
-		const user0 = new User('bob0@example.org', 'Bob', 'Smith', 0);
-		const user1 = new User('bob1@example.org', 'Bob', 'Smith', 1);
-		const user2 = new User('bob2@example.org', 'Bob', 'Smith', 2);
-		const user3 = new User('bob3@example.org', 'Bob', 'Smith', 3);
-		const array = new SerialArray<User>(user0, user1, user2, user3);
-		const total = await testWorker.getTotalOrders(array);
-		expect(total).toEqual(6);
-	});
+	test('Array sum user orders (for-await)', async () => {
+		const total = await testWorker.getTotalOrders(serialIterable(array), 'for-await');
+		expect(total).toEqual(totalOrders);
+	}, 100000);
+
+	test('Array sum user orders (reduce)', async () => {
+		const total = await testWorker.getTotalOrders(serialIterable(array), 'reduce');
+		expect(total).toEqual(totalOrders);
+	}, 100000000);
 
 	test('Array length check', async () => {
-		const user0 = new User('bob0@example.org', 'Bob', 'Smith', 0);
-		const user1 = new User('bob1@example.org', 'Bob', 'Smith', 1);
-		const user2 = new User('bob2@example.org', 'Bob', 'Smith', 2);
-		const user3 = new User('bob3@example.org', 'Bob', 'Smith', 3);
-		const array = new SerialArray<User>(user0, user1, user2, user3);
-		const length = await testWorker.getArrayLength(array);
-		expect(length).toEqual(4);
+		const length = await testWorker.getUserCount(serialIterable(array));
+		expect(length).toEqual(array.length);
 	});
 });
