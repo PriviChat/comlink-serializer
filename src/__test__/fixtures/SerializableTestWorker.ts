@@ -20,17 +20,17 @@ export default class SerializableTestWorker {
 	}
 
 	async getTotalOrders(arr: SerialArray<User>, method: 'for-await' | 'reduce'): Promise<number> {
+		let total = 0;
 		if (method === 'for-await') {
-			let total = 0;
 			for await (const user of arr) {
 				total += user.totalOrders;
 			}
-			return total;
 		} else if (method === 'reduce') {
-			return arr.reduce((accum, user) => {
+			total = arr.reduce((accum, user) => {
 				return accum + user.totalOrders;
 			}, 0);
 		}
+		return total;
 	}
 
 	async getMap(map: SerialMap<string, User>) {

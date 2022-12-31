@@ -14,19 +14,26 @@ describe('SerialMap Tests', () => {
 			['0', product0],
 			['1', product1],
 		]);
-		const serializedMap = map.serialize();
+		const serMap = map.serialize();
 
-		expect(symDes(SerialSymbol.registryId) in serializedMap).toBeTruthy();
-		expect(serializedMap['ComSer.registryId']).toEqual(SymRegIdMap.SerialMap);
-		expect(serializedMap['ComSer.class']).toEqual(SymClassMap.SerialMap);
+		expect(SerialSymbol.serializable in serMap).toBeDefined();
+		const serMapMeta = serMap[SerialSymbol.serializable]!();
+		expect(serMapMeta).toBeDefined();
+		expect(serMapMeta?.rid).toEqual(SymRegIdMap.SerialMap);
+		expect(serMapMeta?.cln).toEqual(SymClassMap.SerialMap);
+		expect(serMapMeta?.hsh).toBeDefined();
 
 		let idx = 0;
-		serializedMap._map.forEach((value, key) => {
-			const serialProd = value as SerializedProduct;
-			expect(serialProd['ComSer.registryId']).toEqual(SymRegIdMap.Product);
-			expect(serialProd['ComSer.class']).toEqual(SymClassMap.Product);
-			expect(serialProd.productId).toEqual(idx.toString());
-			expect(serialProd.productName).toEqual('product_' + idx);
+		serMap._map.forEach((value, key) => {
+			const serProd = value as SerializedProduct;
+			expect(SerialSymbol.serializable in serProd).toBeDefined();
+			const serProdMeta = serProd[SerialSymbol.serializable]!();
+			expect(serProdMeta).toBeDefined();
+			expect(serProdMeta?.rid).toEqual(SymRegIdMap.Product);
+			expect(serProdMeta?.cln).toEqual(SymClassMap.Product);
+			expect(serProdMeta?.hsh).toBeDefined();
+			expect(serProd.productId).toEqual(idx.toString());
+			expect(serProd.productName).toEqual('product_' + idx);
 			idx += 1;
 		});
 		expect(idx).toEqual(2);

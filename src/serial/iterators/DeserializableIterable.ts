@@ -42,11 +42,18 @@ export default class DeserializableIterable<T extends Serialized = Serialized>
 	}
 
 	async return?(serialObj?: T): Promise<IteratorResult<Serializable>> {
-		const next = await this.iterator.return(serialObj);
 		this.done = true;
-		return {
-			done: this.done,
-			value: next.value ? this.deserializer.deserialize(next.value) : undefined,
-		};
+		if (this.iterator.return) {
+			const next = await this.iterator.return(serialObj);
+			return {
+				done: this.done,
+				value: next.value ? this.deserializer.deserialize(next.value) : undefined,
+			};
+		} else {
+			return {
+				done: this.done,
+				value: undefined,
+			};
+		}
 	}
 }

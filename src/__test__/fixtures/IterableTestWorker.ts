@@ -13,18 +13,18 @@ export default class IterableTestWorker {
 	}
 
 	async getTotalOrders(users: AsyncSerialIterable<User>, method: 'for-await' | 'reduce'): Promise<number> {
+		let total = 0;
 		if (method === 'for-await') {
-			let total = 0;
 			for await (const user of users) {
 				total += user.totalOrders;
 			}
-			return total;
 		} else if (method === 'reduce') {
 			const flUsers = fluentAsync(users);
 			flUsers.reduce((total, user) => {
 				return total + user.totalOrders;
 			}, 0);
 		}
+		return total;
 	}
 
 	getMap(map: SerialMap<string, User>) {

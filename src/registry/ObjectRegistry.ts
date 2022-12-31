@@ -5,12 +5,8 @@ import { ObjectRegistryEntry } from './types';
 export default class ObjectRegistry {
 	private registry = new Map<string, ObjectRegistryEntry>();
 
-	public getEntry(id: string): ObjectRegistryEntry {
+	public getEntry(id: string): ObjectRegistryEntry | undefined {
 		const entry = this.registry.get(id);
-		if (!entry)
-			throw Error(
-				`Entry for SerialId: ${id} not found in registry! You need to make sure you register the class with the registerTransferHandler. And remember to do it for both threads.`
-			);
 		return entry;
 	}
 

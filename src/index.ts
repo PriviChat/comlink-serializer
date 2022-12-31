@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-
+import stringHash from 'string-hash';
 import { serialIterable, serializableTransferHandler, iterableTransferHandler } from './serial/comlink';
 import { TransferHandlerRegistration, SerialTransferHandlers } from './serial/comlink';
 import { Serialized, Deserializer } from './serial';
@@ -31,5 +31,6 @@ export {
 	SerialArray,
 	SerialMap,
 	TransferHandlerRegistration,
+	stringHash as hash,
 };
 export default ComlinkSerializer;

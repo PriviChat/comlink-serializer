@@ -1,11 +1,13 @@
 import { expect, test, jest } from '@jest/globals';
+import hash from 'object-hash';
 import User from '@test-fixtures/User';
 import { SerializedOrder, SerializedProduct, SerializedUser } from '@test-fixtures/types';
 import { SerialArray, Deserializer } from '@comlink-serializer';
-import { SerialSymbol, SerializedMap, SerializedArray, symDes } from '@comlink-serializer-internal';
+import { SerialSymbol, SerializedMap, SerializedArray } from '@comlink-serializer-internal';
 import Product from '@test-fixtures/Product';
 import Order from '@test-fixtures/Order';
 import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
+import { getSerializableSymbol } from '@test-fixtures/utils';
 
 const deserializer = new Deserializer();
 let user0: SerializedUser;
@@ -15,10 +17,9 @@ let prod0: SerializedProduct;
 let prod1: SerializedProduct;
 let prod2: SerializedProduct;
 let order0: SerializedOrder;
-let userArray: SerializedArray;
-let productArray: SerializedArray;
-let userMap: SerializedMap;
-let userMap2: SerializedMap;
+let userArr0: SerializedArray;
+let prodArr0: SerializedArray;
+let userMap0: SerializedMap;
 
 describe('Deserializer', () => {
 	beforeEach(() => {
@@ -26,106 +27,172 @@ describe('Deserializer', () => {
 		User;
 		Product;
 		Order;
+
 		user0 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.User,
-			[symDes(SerialSymbol.class)]: 'User',
-			email: 'john.smith-0@email.com',
-			firstName: 'John',
-			lastName: 'Smith',
+			email: 'john.smith@email.com_0',
+			firstName: 'John_0',
+			lastName: 'Smith_0',
 			totalOrders: 0,
 		};
+		user0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.User,
+				cln: SymClassMap.User,
+				hsh: hash(user0),
+			};
+		};
+
 		user1 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.User,
-			[symDes(SerialSymbol.class)]: 'User',
-			email: 'john.smith-1@email.com',
-			firstName: 'John',
-			lastName: 'Smith',
+			email: 'john.smith@email.com_1',
+			firstName: 'John_1',
+			lastName: 'Smith_1',
 			totalOrders: 1,
 		};
+		user1[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.User,
+				cln: SymClassMap.User,
+				hsh: hash(user1),
+			};
+		};
+
 		user2 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.User,
-			[symDes(SerialSymbol.class)]: 'User',
-			email: 'john.smith-2@email.com',
-			firstName: 'John',
-			lastName: 'Smith',
+			email: 'john.smith@email.com_2',
+			firstName: 'John_2',
+			lastName: 'Smith_2',
 			totalOrders: 2,
 		};
+		user2[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.User,
+				cln: SymClassMap.User,
+				hsh: hash(user2),
+			};
+		};
+
 		prod0 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.Product,
-			[symDes(SerialSymbol.class)]: 'Product',
-			productId: 'DO00',
-			productName: 'Doorbell',
+			productId: 'DOBL_0',
+			productName: 'Doorbell_0',
 		};
+		prod0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.Product,
+				cln: SymClassMap.Product,
+				hsh: hash(prod0),
+			};
+		};
+
 		prod1 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.Product,
-			[symDes(SerialSymbol.class)]: 'Product',
-			productId: 'FL01',
-			productName: 'Flashlight',
+			productId: 'DOBL_1',
+			productName: 'Doorbell_1',
 		};
+		prod1[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.Product,
+				cln: SymClassMap.Product,
+				hsh: hash(prod1),
+			};
+		};
+
 		prod2 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.Product,
-			[symDes(SerialSymbol.class)]: 'Product',
-			productId: 'RU02',
-			productName: "Rubik's Cube",
+			productId: 'DOBL_2',
+			productName: 'Doorbell_2',
 		};
+		prod2[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.Product,
+				cln: SymClassMap.Product,
+				hsh: hash(prod2),
+			};
+		};
+
 		order0 = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.Order,
-			[symDes(SerialSymbol.class)]: 'Order',
-			orderId: 'ORDER0',
+			orderId: 'ORDR_0',
 			user: user0,
 			products: [prod0, prod1, prod2],
 		};
-		userArray = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.SerialArray,
+		order0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.Order,
+				cln: SymClassMap.Order,
+				hsh: hash(order0),
+			};
+		};
+
+		userArr0 = {
 			_array: [user0, user1, user2],
 		};
-		productArray = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.SerialArray,
+		userArr0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.SerialArray,
+				cln: SymClassMap.SerialArray,
+				hsh: hash(userArr0),
+			};
+		};
+
+		prodArr0 = {
 			_array: [prod0, prod1, prod2],
 		};
-		userMap = {
-			[symDes(SerialSymbol.registryId)]: SymRegIdMap.SerialMap,
+		prodArr0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.SerialArray,
+				cln: SymClassMap.SerialArray,
+				hsh: hash(prodArr0),
+			};
+		};
+
+		userMap0 = {
 			_map: new Map([
 				['0', user0],
 				['1', user1],
 				['2', user2],
 			]),
 		};
+		userMap0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.SerialMap,
+				cln: SymClassMap.SerialMap,
+				hsh: hash(userMap0),
+			};
+		};
 	});
 
 	test('Flat object manual deserialize', () => {
-		const user = deserializer.deserialize(user0) as User;
+		const user = deserializer.deserialize<User>(user0);
 		expect(SerialSymbol.serializable in user).toBeTruthy();
-		expect(SerialSymbol.registryId in user).toBeTruthy();
-		expect((user as any)[SerialSymbol.registryId]).toEqual(SymRegIdMap.User);
-		expect(SerialSymbol.class in user).toBeTruthy();
-		expect((user as any)[SerialSymbol.class]).toEqual(SymClassMap.User);
+		const meta = getSerializableSymbol(user);
+		expect(meta).toBeDefined();
+		expect(meta?.rid).toEqual(SymRegIdMap.User);
+		expect(meta?.cln).toEqual(SymClassMap.User);
+		expect(meta?.hsh).toBeUndefined();
 		expect(user.email).toEqual(user0.email);
 		expect(user.firstName).toEqual(user0.firstName);
 		expect(user.lastName).toEqual(user0.lastName);
 	});
 
 	test('Flat object auto deserialize', () => {
-		const prod = deserializer.deserialize(prod0) as Product;
+		const prod = deserializer.deserialize<Product>(prod0);
 		expect(SerialSymbol.serializable in prod).toBeTruthy();
-		expect(SerialSymbol.registryId in prod).toBeTruthy();
-		expect((prod as any)[SerialSymbol.registryId]).toEqual(SymRegIdMap.Product);
-		expect(SerialSymbol.class in prod).toBeTruthy();
-		expect((prod as any)[SerialSymbol.class]).toEqual(SymClassMap.Product);
+		const meta = getSerializableSymbol(prod);
+		expect(meta).toBeDefined();
+		expect(meta?.rid).toEqual(SymRegIdMap.Product);
+		expect(meta?.cln).toEqual(SymClassMap.Product);
+		expect(meta?.hsh).toBeUndefined();
 		expect(prod.productId).toEqual(prod0.productId);
 		expect(prod.productName).toEqual(prod0.productName);
 	});
 
 	test('Nested object deserialize', () => {
-		const order = deserializer.deserialize(order0) as Order;
+		const order = deserializer.deserialize<Order>(order0);
 		expect(order.orderId).toEqual(order0.orderId);
 
 		const user = order.user;
 		expect(SerialSymbol.serializable in user).toBeTruthy();
-		expect(SerialSymbol.registryId in user).toBeTruthy();
-		expect((user as any)[SerialSymbol.registryId]).toEqual(SymRegIdMap.User);
-		expect(SerialSymbol.class in user).toBeTruthy();
-		expect((user as any)[SerialSymbol.class]).toEqual(SymClassMap.User);
+		const userMeta = getSerializableSymbol(user);
+		expect(userMeta).toBeDefined();
+		expect(userMeta?.rid).toEqual(SymRegIdMap.User);
+		expect(userMeta?.cln).toEqual(SymClassMap.User);
+		expect(userMeta?.hsh).toBeUndefined();
 		expect(user.email).toEqual(user0.email);
 		expect(user.firstName).toEqual(user0.firstName);
 		expect(user.lastName).toEqual(user0.lastName);
@@ -135,22 +202,31 @@ describe('Deserializer', () => {
 
 		const prodObj0 = products[0];
 		expect(SerialSymbol.serializable in prodObj0).toBeTruthy();
-		expect((prodObj0 as any)[SerialSymbol.registryId]).toEqual(SymRegIdMap.Product);
-		expect((prodObj0 as any)[SerialSymbol.class]).toEqual(SymClassMap.Product);
+		const prod0Meta = getSerializableSymbol(prodObj0);
+		expect(prod0Meta).toBeDefined();
+		expect(prod0Meta?.rid).toEqual(SymRegIdMap.Product);
+		expect(prod0Meta?.cln).toEqual(SymClassMap.Product);
+		expect(prod0Meta?.hsh).toBeUndefined();
 		expect(prodObj0.productId).toEqual(prod0.productId);
 		expect(prodObj0.productName).toEqual(prod0.productName);
 
 		const prodObj1 = products[1];
 		expect(SerialSymbol.serializable in prodObj1).toBeTruthy();
-		expect((prodObj1 as any)[SerialSymbol.registryId]).toEqual(SymRegIdMap.Product);
-		expect((prodObj1 as any)[SerialSymbol.class]).toEqual(SymClassMap.Product);
+		const prod1Meta = getSerializableSymbol(prodObj1);
+		expect(prod1Meta).toBeDefined();
+		expect(prod1Meta?.rid).toEqual(SymRegIdMap.Product);
+		expect(prod1Meta?.cln).toEqual(SymClassMap.Product);
+		expect(prod1Meta?.hsh).toBeUndefined();
 		expect(prodObj1.productId).toEqual(prod1.productId);
 		expect(prodObj1.productName).toEqual(prod1.productName);
 
 		const prodObj2 = products[2];
 		expect(SerialSymbol.serializable in prodObj2).toBeTruthy();
-		expect((prodObj2 as any)[SerialSymbol.registryId]).toEqual(SymRegIdMap.Product);
-		expect((prodObj2 as any)[SerialSymbol.class]).toEqual(SymClassMap.Product);
+		const prod2Meta = getSerializableSymbol(prodObj2);
+		expect(prod2Meta).toBeDefined();
+		expect(prod2Meta?.rid).toEqual(SymRegIdMap.Product);
+		expect(prod2Meta?.cln).toEqual(SymClassMap.Product);
+		expect(prod2Meta?.hsh).toBeUndefined();
 		expect(prodObj2.productId).toEqual(prod2.productId);
 		expect(prodObj2.productName).toEqual(prod2.productName);
 	});
@@ -162,19 +238,63 @@ describe('Deserializer', () => {
 		}).toThrow();
 	});
 
-	test('Deserialize error handling invalid registryId', () => {
-		const error = jest.spyOn(console, 'error').mockImplementation(() => {});
-		(user0['ComSer.registryId'] = 'foo'),
-			expect(() => {
-				deserializer.deserialize(user0);
-			}).toThrow();
-		expect(error.mock.calls).toHaveLength(1);
-		error.mockReset();
+	test('Deserialize error handling missing rid', () => {
+		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
+		user0[SerialSymbol.serializable] = () => {
+			return {
+				rid: '',
+				cln: SymClassMap.User,
+				hsh: hash(user0),
+			};
+		};
+		expect(() => {
+			deserializer.deserialize(user0);
+		}).toThrow();
+		expect(err.mock.calls).toHaveLength(1);
+		err.mockReset();
 	});
 
-	test('Deserialize error handling no class', () => {
+	test('Deserialize error handling invalid rid', () => {
+		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
+		user0[SerialSymbol.serializable] = () => {
+			return {
+				rid: 'foo',
+				cln: SymClassMap.User,
+				hsh: hash(user0),
+			};
+		};
+		expect(() => {
+			deserializer.deserialize(user0);
+		}).toThrow();
+		expect(err.mock.calls).toHaveLength(1);
+		err.mockReset();
+	});
+
+	test('Deserialize error handling no hsh', () => {
+		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
+		user0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.User,
+				cln: SymClassMap.User,
+				hsh: '',
+			};
+		};
+		expect(() => {
+			deserializer.deserialize(user0);
+		}).toThrow();
+		expect(err.mock.calls).toHaveLength(1);
+		err.mockReset();
+	});
+
+	test('Deserialize warn handling no class', () => {
 		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-		user0['ComSer.class'] = '';
+		user0[SerialSymbol.serializable] = () => {
+			return {
+				rid: SymRegIdMap.User,
+				cln: '',
+				hsh: hash(user0),
+			};
+		};
 		deserializer.deserialize(user0);
 		expect(warn.mock.calls).toHaveLength(1);
 		warn.mockReset();

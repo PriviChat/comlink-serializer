@@ -1,11 +1,11 @@
 import { Serializable } from '../decorators';
-import SerialSymbol from '../SerialSymbol';
+import { Serialized } from '../types';
 
-export default class SerializableIterable<T extends Serializable = Serializable> implements AsyncIterableIterator<any> {
+export default class SerializableIterable<S extends Serialized = Serialized> implements AsyncIterableIterator<S> {
 	private done: boolean;
-	private iterator: Iterator<T, T>;
+	private iterator: Iterator<any, any>;
 
-	constructor(iterable: Iterable<T> | AsyncIterable<T>) {
+	constructor(iterable: Iterable<Serializable> | AsyncIterable<Serializable>) {
 		if (Symbol.iterator in iterable) {
 			this.iterator = (iterable as any)[Symbol.iterator]();
 		} else if (Symbol.asyncIterator in iterable) {
@@ -16,11 +16,11 @@ export default class SerializableIterable<T extends Serializable = Serializable>
 		this.done = false;
 	}
 
-	[Symbol.asyncIterator](): AsyncIterableIterator<any> {
+	[Symbol.asyncIterator](): AsyncIterableIterator<S> {
 		return this;
 	}
 
-	public async next(...args: [] | [undefined]): Promise<IteratorResult<any>> {
+	public async next(...args: [] | [undefined]): Promise<IteratorResult<S, S | undefined>> {
 		if (this.done) {
 			return {
 				done: this.done,
@@ -45,7 +45,7 @@ export default class SerializableIterable<T extends Serializable = Serializable>
 		};
 	}
 
-	public async return(value?: T): Promise<IteratorResult<any>> {
+	public async return(value?: any): Promise<IteratorResult<S, S | undefined>> {
 		this.done = true;
 		return {
 			done: this.done,

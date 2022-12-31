@@ -1,6 +1,7 @@
 import { Serializable, Deserializable } from '../serial/decorators';
 import { Deserializer, Serialized } from '../serial';
 import { SerializedMap } from './types';
+import { hash } from '@comlink-serializer';
 
 function serialMapFactory<K extends boolean | number | bigint | string, V extends Serializable>(): SerialMap<K, V> {
 	return new SerialMap<K, V>();
@@ -40,5 +41,15 @@ export default class SerialMap<K extends boolean | number | bigint | string, V e
 			sm.set(key, deserializer.deserialize(value));
 		});
 		return SerialMap.from(sm);
+	}
+
+	public equals(other: unknown): boolean {
+		//TODO update to figure out how to check for array equality
+		return other instanceof SerialMap;
+	}
+
+	public hashCode(): number {
+		//TODO update to figure out how to hash equality. It probably needs to be recalculated as items are added.
+		return hash('ABCDEFT');
 	}
 }

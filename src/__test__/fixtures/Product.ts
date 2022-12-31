@@ -1,4 +1,4 @@
-import { Serializable } from '@comlink-serializer';
+import { Serializable, hash } from '@comlink-serializer';
 import { SerializedProduct } from './types';
 
 @Serializable()
@@ -13,6 +13,10 @@ class Product implements Serializable<SerializedProduct> {
 
 	public equals(other: unknown): boolean {
 		return other instanceof Product && other.productId === this.productId;
+	}
+
+	public hashCode(): number {
+		return hash(this.productId);
 	}
 }
 

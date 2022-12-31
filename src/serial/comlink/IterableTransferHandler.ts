@@ -52,7 +52,7 @@ export default class IteratorTransferHandler {
 	};
 
 	public get handler() {
-		const comlink: Comlink.TransferHandler<AsyncSerialIterable, Transferable> = {
+		const comlink: Comlink.TransferHandler<SerializableIterable | DeserializableIterable, Transferable> = {
 			canHandle: function (value: any): value is SerializableIterable {
 				return value instanceof SerializableIterable ?? false;
 			},

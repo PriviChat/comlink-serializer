@@ -4,11 +4,14 @@ import { serializableTransferHandler, iterableTransferHandler } from '../serial/
 import { SerializableIterable } from '../serial/iterators';
 import { SerializedArray, SerializedMap } from '../serialobjs';
 import { SerialSymbol, symDes } from '../serial';
+import { SerialMeta, SerializableObject } from '../serial/decorators';
 
 export {
 	objectRegistry,
 	SerializableIterable,
+	SerializableObject,
 	SerialSymbol,
+	SerialMeta,
 	SerializedArray,
 	SerializedMap,
 	serializableTransferHandler,

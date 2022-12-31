@@ -1,3 +1,4 @@
+import { hash } from '@comlink-serializer';
 import { Deserializer } from '../serial';
 import { Serializable } from '../serial/decorators';
 import { SerializedArray } from './types';
@@ -32,5 +33,15 @@ export default class SerialArray<T extends Serializable = Serializable> extends 
 	public deserialize(obj: SerializedArray, deserializer: Deserializer): SerialArray {
 		const array = obj._array.map((value) => deserializer.deserialize(value));
 		return SerialArray.from(array);
+	}
+
+	public equals(other: unknown): boolean {
+		//TODO update to figure out how to check for array equality
+		return other instanceof SerialArray;
+	}
+
+	public hashCode(): number {
+		//TODO update to figure out how to hash equality. It probably needs to be recalculated as items are added.
+		return hash('ABCDEFT');
 	}
 }

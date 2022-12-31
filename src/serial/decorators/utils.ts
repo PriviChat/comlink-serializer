@@ -1,4 +1,6 @@
 import { v5 as uuidv5 } from 'uuid';
+import SerialSymbol from '../SerialSymbol';
+import { Serialized } from '../types';
 
 export function generateId(name: string) {
 	const namespace = '22547e41-5fab-482d-9524-19d9d3872596';

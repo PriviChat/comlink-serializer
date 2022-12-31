@@ -17,7 +17,7 @@ let testWorker: Comlink.Remote<SerializableTestWorker>;
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
 
 type SerializeFn<T> = () => T;
-type DeserializeFn = (serialObj: Serialized) => Serializable;
+type DeserializeFn<T extends Serializable> = (serialObj: Serialized) => T;
 
 describe('SerializableTransferHandler unit tests', () => {
 	test('canHandle checks isSerializable', () => {
@@ -45,7 +45,7 @@ describe('SerializableTransferHandler unit tests', () => {
 		const user = new User('foo@example.org', 'Bob', 'Smith');
 
 		const originalDeserialize = deserializer.deserialize;
-		deserializer.deserialize = jest.fn<DeserializeFn>();
+		deserializer.deserialize = jest.fn<DeserializeFn<any>>();
 		const serialized = handler.serialize(user)[0];
 		handler.deserialize(serialized);
 

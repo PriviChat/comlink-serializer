@@ -1,4 +1,4 @@
-import { Serializable, Deserializable } from '@comlink-serializer';
+import { Serializable, Deserializable, hash } from '@comlink-serializer';
 import { SerializedUser } from './types';
 
 @Serializable({ class: 'User' })
@@ -23,7 +23,11 @@ export default class User implements Serializable<SerializedUser>, Deserializabl
 		};
 	}
 
-	equals(other: unknown): boolean {
+	public equals(other: unknown): boolean {
 		return other instanceof User && other.email === this.email;
+	}
+
+	public hashCode(): number {
+		return hash(this.email);
 	}
 }

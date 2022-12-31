@@ -1,27 +1,23 @@
+import hash from 'object-hash';
 import objectRegistry from '../../registry';
 import Deserializer from '../Deserializer';
 import SerialSymbol, { symDes } from '../SerialSymbol';
 import { AnyConstructor, Serialized } from '../types';
+import { SerialMeta, ValueObject } from './types';
 import { generateId } from './utils';
 
 export interface Deserializable<S extends Serialized, T extends Serializable<S>> {
 	deserialize?(data: S, deserializer: Deserializer): T;
 }
 
-interface Serializable<S extends Serialized = Serialized> {
+interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	serialize(): S;
-	/**
-	 * True if 'this' and the 'other' object which is being serialized are equal.
-	 */
-	equals(other: unknown): boolean;
 }
 
-export interface SerializableObject extends Serializable {
-	[SerialSymbol.registryId]: string;
-	[SerialSymbol.class]: string;
-	[SerialSymbol.serializable]: boolean;
-	serialize(): Serialized;
-	deserialize(data: Serialized, deserializer: Deserializer): Serializable;
+export interface SerializableObject<S extends Serialized, T extends Serializable<S>> extends Serializable<S> {
+	[SerialSymbol.serializable](): SerialMeta;
+	serialize(): S;
+	deserialize(data: Serialized, deserializer: Deserializer): T;
 }
 
 interface SerializableSettings {
@@ -37,46 +33,69 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 ): (base: Ctor) => any {
 	return function (base: Ctor) {
 		const className = settings?.class ?? base.name;
-		const serializedObject = class SerializedObject extends base implements SerializableObject {
-			[SerialSymbol.serializable] = true;
-			[SerialSymbol.registryId] = generateId(className);
-			[SerialSymbol.class] = className;
-
+		const serializedObject = class SerializedObject extends base implements SerializableObject<S, T> {
 			constructor(...args: any[]) {
 				super(...args);
 			}
 
+			[SerialSymbol.serializable](): SerialMeta {
+				return {
+					rid: generateId(className),
+					cln: className,
+				};
+			}
+
+			/**
+			 * > This function is used to serialize a deserialized object of type `T` into an object of type `S`
+			 * @returns The serialized object.
+			 */
 			public serialize(): S {
 				let serialObj = super.serialize();
 				if (Object.keys(serialObj).length === 0) {
-					serialObj = JSON.stringify(this) as unknown as S;
+					serialObj = JSON.parse(JSON.stringify(this)) as unknown as S;
 				}
-				serialObj = {
-					...serialObj,
-					[symDes(SerialSymbol.registryId)]: this[SerialSymbol.registryId],
-					[symDes(SerialSymbol.class)]: this[SerialSymbol.class],
-				};
+				const meta = this[SerialSymbol.serializable]();
+				meta.hsh = hash(serialObj);
+				// this get's through comlink
+				serialObj = Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
+				// this gets stripped out when it goes through comlink
+				// it's here to satisfy the interface
+				serialObj = Object.assign(serialObj, { [SerialSymbol.serializable]: () => meta });
 				return serialObj;
 			}
 
+			/**
+			 * > This function is used to deserialize a serialized object of type `S` into an object of type `T`
+			 * @param {S} serialObj - S - the serialized object
+			 * @param {Deserializer} deserializer - Deserializer - the deserializer that is deserializing the
+			 * object
+			 * @returns The object that was deserialized.
+			 */
 			public deserialize(serialObj: S, deserializer: Deserializer): T {
-				delete serialObj[symDes(SerialSymbol.registryId) as keyof S];
-				delete serialObj[symDes(SerialSymbol.class) as keyof S];
-				Object.assign(this, { [SerialSymbol.serializable]: true });
-				Object.assign(this, { [SerialSymbol.registryId]: generateId(className) });
-				Object.assign(this, { [SerialSymbol.class]: className });
+				delete serialObj[symDes(SerialSymbol.serializable) as keyof S];
+				let obj: T;
 				if (super.deserialize) {
-					const obj = super.deserialize(serialObj, deserializer);
-					return obj;
+					// if super implements deserialize
+					obj = super.deserialize(serialObj, deserializer);
 				} else {
-					return Object.assign(this, serialObj) as unknown as T;
+					// default deserializer
+					obj = Object.assign(this, serialObj) as unknown as T;
 				}
+				Object.assign(this, {
+					[SerialSymbol.serializable](): SerialMeta {
+						return {
+							rid: generateId(className),
+							cln: className,
+						};
+					},
+				});
+				return obj;
 			}
 		};
 		objectRegistry.register({
 			constructor: serializedObject,
-			id: generateId(base.name),
-			name: base.name,
+			id: generateId(className),
+			name: className,
 		});
 
 		return serializedObject;

@@ -24,6 +24,10 @@ class Order implements Serializable<SerializedOrder> {
 	public equals(other: unknown): boolean {
 		return other instanceof Order && other.orderId === this.orderId;
 	}
+
+	public hashCode(): number {
+		throw new Error('Method not implemented.');
+	}
 }
 
 export default Order;
