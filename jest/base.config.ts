@@ -2,12 +2,11 @@ import type { JestConfigWithTsJest } from 'ts-jest';
 
 const baseJestConfig: JestConfigWithTsJest = {
 	rootDir: '../',
-	preset: 'ts-jest/presets/default-esm',
+	preset: 'ts-jest/presets/default',
 	testEnvironment: 'node',
 	testMatch: ['**/*.(test|spec).ts'],
 	moduleNameMapper: {
 		'^@comlink-serializer$': '<rootDir>/src/index',
-		'^@comlink-serializer-internal$': '<rootDir>/src/internal/index',
 		'^@test-fixtures/(.*)$': '<rootDir>/src/__test__/fixtures/$1',
 	},
 	modulePathIgnorePatterns: ['<rootDir>/build/'],

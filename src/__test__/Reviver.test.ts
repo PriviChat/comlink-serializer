@@ -1,12 +1,14 @@
 import { expect, test, jest } from '@jest/globals';
 import hash from 'object-hash';
 import User from '@test-fixtures/User';
-import { Reviver } from '@comlink-serializer';
-import { SerialSymbol } from '@comlink-serializer-internal';
+import { Reviver, toSerialObject } from '@comlink-serializer';
 import Product from '@test-fixtures/Product';
 import Order from '@test-fixtures/Order';
 import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
 import { getSerializableSymbol } from '@test-fixtures/utils';
+
+import { SerialSymbol } from '../serial';
+import { SerialArray, SerialMap } from '../serialobjs';
 
 describe('Reviver', () => {
 	let reviver: Reviver;
@@ -20,6 +22,8 @@ describe('Reviver', () => {
 	let userArr0: Array<User>;
 	let prodArr0: Array<Product>;
 	let userMap0: Map<string, User>;
+	let userMap1: Map<number, User>;
+	let userMap2: Map<boolean, User>;
 
 	beforeEach(() => {
 		//must create a new reviver before each
@@ -44,6 +48,22 @@ describe('Reviver', () => {
 				['0', user0],
 				['1', user1],
 				['2', user2],
+			])
+		);
+
+		userMap1 = new Map(
+			new Map([
+				[0, user0],
+				[1, user1],
+				[2, user2],
+			])
+		);
+
+		userMap2 = new Map(
+			new Map([
+				[false, user0],
+				[true, user2],
+				[true, user1],
 			])
 		);
 	});
@@ -73,7 +93,7 @@ describe('Reviver', () => {
 		expect(prod.productName).toEqual(prod0.productName);
 	});
 
-	test('Nested object revive', () => {
+	test('Nested object with array revive', () => {
 		const order = reviver.revive<Order>(order0.serialize(), true);
 		expect(order.orderId).toEqual(order0.orderId);
 
@@ -122,6 +142,91 @@ describe('Reviver', () => {
 		expect(prodObj2.productName).toEqual(prod2.productName);
 	});
 
+	test('Array revive', () => {
+		const arr = reviver.revive<SerialArray<User>>(toSerialObject(userArr0).serialize(), true);
+		expect(SerialSymbol.serializable in arr).toBeTruthy();
+		const meta = getSerializableSymbol(arr);
+		expect(meta).toBeDefined();
+
+		let idx = 0;
+		for (const user of arr) {
+			expect(SerialSymbol.serializable in user).toBeTruthy();
+			const userMeta = getSerializableSymbol(user);
+			expect(userMeta).toBeDefined();
+			expect(userMeta?.rid).toEqual(SymRegIdMap.User);
+			expect(userMeta?.cln).toEqual(SymClassMap.User);
+			expect(userMeta?.hsh).toBeUndefined();
+			expect(user.email).toEqual('john.smith@email.com_' + idx);
+			expect(user.firstName).toEqual('John_' + idx);
+			expect(user.lastName).toEqual('Smith_' + idx);
+			expect(user.totalOrders).toEqual(idx);
+			idx += 1;
+		}
+		expect(arr.length).toEqual(userArr0.length);
+	});
+
+	test('Map string keys revive', () => {
+		const map = reviver.revive<SerialMap<string, User>>(toSerialObject(userMap0).serialize(), true);
+		expect(SerialSymbol.serializable in map).toBeTruthy();
+		const meta = getSerializableSymbol(map);
+		expect(meta).toBeDefined();
+
+		let idx = 0;
+		for (const [key, user] of map) {
+			expect(SerialSymbol.serializable in user).toBeTruthy();
+			const userMeta = getSerializableSymbol(user);
+			expect(userMeta).toBeDefined();
+			expect(userMeta?.rid).toEqual(SymRegIdMap.User);
+			expect(userMeta?.cln).toEqual(SymClassMap.User);
+			expect(userMeta?.hsh).toBeUndefined();
+			expect(key).toEqual(idx.toString());
+			expect(user.email).toEqual('john.smith@email.com_' + idx);
+			expect(user.firstName).toEqual('John_' + idx);
+			expect(user.lastName).toEqual('Smith_' + idx);
+			expect(user.totalOrders).toEqual(idx);
+			idx += 1;
+		}
+		expect(map.size).toEqual(userMap0.size);
+	});
+
+	test('Map number keys revive', () => {
+		const map = reviver.revive<SerialMap<number, User>>(toSerialObject(userMap1).serialize(), true);
+		expect(SerialSymbol.serializable in map).toBeTruthy();
+		const meta = getSerializableSymbol(map);
+		expect(meta).toBeDefined();
+
+		let idx = 0;
+		for (const [key, user] of map) {
+			expect(SerialSymbol.serializable in user).toBeTruthy();
+			const userMeta = getSerializableSymbol(user);
+			expect(userMeta).toBeDefined();
+			expect(key).toEqual(idx);
+			expect(user.email).toEqual('john.smith@email.com_' + idx);
+			expect(user.totalOrders).toEqual(idx);
+			idx += 1;
+		}
+		expect(map.size).toEqual(userMap1.size);
+	});
+
+	test('Map boolean keys revive', () => {
+		const map = reviver.revive<SerialMap<boolean, User>>(toSerialObject(userMap2).serialize(), true);
+		expect(SerialSymbol.serializable in map).toBeTruthy();
+		const meta = getSerializableSymbol(map);
+		expect(meta).toBeDefined();
+
+		let idx = 0;
+		for (const [key, user] of map) {
+			expect(SerialSymbol.serializable in user).toBeTruthy();
+			const userMeta = getSerializableSymbol(user);
+			expect(userMeta).toBeDefined();
+			expect(key).toEqual(idx === 1);
+			expect(user.email).toEqual('john.smith@email.com_' + idx);
+			expect(user.totalOrders).toEqual(idx);
+			idx += 1;
+		}
+		expect(map.size).toEqual(userMap1.size - 1);
+	});
+
 	test('Reviver error handling empty object', () => {
 		const foo = {};
 		expect(() => {
@@ -161,7 +266,7 @@ describe('Reviver', () => {
 		err.mockReset();
 	});
 
-	test('Reviver error handling no hsh', () => {
+	/* test('Reviver error handling no hsh', () => {
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
 		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
@@ -175,7 +280,7 @@ describe('Reviver', () => {
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
-	});
+	}); */
 
 	test('Reviver warn handling no class', () => {
 		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});

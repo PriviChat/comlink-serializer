@@ -3,7 +3,8 @@ import User from '@test-fixtures/User';
 import { Serializable, toSerialObject } from '@comlink-serializer';
 import { SymRegIdMap, SymClassMap } from '@test-fixtures/SymMap';
 import { SerializedUser } from '@test-fixtures/types';
-import { SerialSymbol } from '@comlink-serializer-internal';
+
+import { SerialSymbol } from '../serial';
 
 describe('SerialArray Tests', () => {
 	test('Array implements isEmpty check', () => {
@@ -31,29 +32,29 @@ describe('SerialArray Tests', () => {
 		const arr = toSerialObject(new Array<User>(user0, user1));
 		const serializedArr = arr.serialize();
 
-		const arrMeta = serializedArr[SerialSymbol.serializable]!();
+		const arrMeta = serializedArr[SerialSymbol.serialized];
 		expect(arrMeta).toBeDefined();
-		expect(arrMeta.rid).toEqual(SymRegIdMap.Array);
-		expect(arrMeta.cln).toEqual(SymClassMap.Array);
-		expect(arrMeta.hsh).toBeDefined();
+		expect(arrMeta?.rid).toEqual(SymRegIdMap.SerialArray);
+		expect(arrMeta?.cln).toEqual(SymClassMap.SerialArray);
+		expect(arrMeta?.hsh).toBeDefined();
 
 		const serUser0 = serializedArr.$array[0] as SerializedUser;
-		const serUser0Meta = serUser0[SerialSymbol.serializable]!();
+		const serUser0Meta = serUser0[SerialSymbol.serialized];
 		expect(serUser0Meta).toBeDefined();
-		expect(serUser0Meta.rid).toEqual(SymRegIdMap.User);
-		expect(serUser0Meta.cln).toEqual(SymClassMap.User);
-		expect(serUser0Meta.hsh).toBeDefined();
+		expect(serUser0Meta?.rid).toEqual(SymRegIdMap.User);
+		expect(serUser0Meta?.cln).toEqual(SymClassMap.User);
+		expect(serUser0Meta?.hsh).toBeDefined();
 		expect(serUser0.email).toEqual(user0.email);
 		expect(serUser0.firstName).toEqual(user0.firstName);
 		expect(serUser0.lastName).toEqual(user0.lastName);
 		expect(serUser0.totalOrders).toEqual(user0.totalOrders);
 
 		const serUser1 = serializedArr.$array[1] as SerializedUser;
-		const serUser1Meta = serUser1[SerialSymbol.serializable]!();
+		const serUser1Meta = serUser1[SerialSymbol.serialized];
 		expect(serUser1Meta).toBeDefined();
-		expect(serUser1Meta.rid).toEqual(SymRegIdMap.User);
-		expect(serUser1Meta.cln).toEqual(SymClassMap.User);
-		expect(serUser1Meta.hsh).toBeDefined();
+		expect(serUser1Meta?.rid).toEqual(SymRegIdMap.User);
+		expect(serUser1Meta?.cln).toEqual(SymClassMap.User);
+		expect(serUser1Meta?.hsh).toBeDefined();
 		expect(serUser1.email).toEqual(user1.email);
 		expect(serUser1.firstName).toEqual(user1.firstName);
 		expect(serUser1.lastName).toEqual(user1.lastName);

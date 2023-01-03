@@ -18,7 +18,6 @@
 		"allowJs": true,
 		"paths": {
 			"@comlink-serializer": ["src/index"],
-			"@comlink-serializer-internal": ["src/internal/index"],
 			"@test-fixtures/*": ["src/__test__/fixtures/*"]
 		}
 	},

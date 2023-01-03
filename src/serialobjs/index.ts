@@ -1,3 +1,5 @@
-export { default as SerialArray } from './SerialArray';
-export { default as SerialMap } from './SerialMap';
+import SerialArray from './SerialArray';
+import SerialMap from './SerialMap';
+
+export { SerialArray, SerialMap };
 export * from './types';

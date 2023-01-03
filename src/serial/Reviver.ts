@@ -6,7 +6,7 @@ import SerialSymbol from './SerialSymbol';
 import { SerialMeta } from './decorators';
 import { isSerializableObject, isSerializedObject } from './decorators/utils';
 import { ObjectRegistryEntry } from '../registry/types';
-import { SerialArray, SerialMap } from '@comlink-serializer-internal';
+import { SerialArray, SerialMap } from '../serialobjs';
 
 export default class Reviver {
 	private revivedMap = new Map<string, SerializableObject<any, any>>();
@@ -17,7 +17,7 @@ export default class Reviver {
 	 * @param {ObjectRegistryEntry} entry - ObjectRegistryEntry
 	 * @returns An object that is an instance of the constructor function.
 	 */
-	private create(entry: ObjectRegistryEntry) {
+	private create(entry: ObjectRegistryEntry): Serializable {
 		if (entry.name === 'SerialArray') {
 			return new SerialArray();
 		} else if (entry.name === 'SerialMap') {
@@ -27,24 +27,16 @@ export default class Reviver {
 		}
 	}
 
-	private reviveSerializableSymbol(serialObj: any) {
-		if (isSerializedObject(serialObj)) return serialObj;
-
-		const serSymStr = "'" + SerialSymbol.serializable.toString() + "'";
-		if (serSymStr in serialObj) {
-			const meta = serialObj[serSymStr] as SerialMeta;
-			if (meta) {
-				Object.assign(serialObj, {
-					[SerialSymbol.serializable]: () => {
-						return {
-							...meta,
-						};
-					},
-				});
-				delete (serialObj as any)[serSymStr];
-			}
+	private reviveSerializedSymbol(obj: any) {
+		if (isSerializedObject(obj)) return obj;
+		const serSymStr = "'" + SerialSymbol.serialized.toString() + "'";
+		const meta = obj[serSymStr] as SerialMeta;
+		if (meta) {
+			Object.assign(obj, { [SerialSymbol.serialized]: meta });
+			delete obj[serSymStr];
 		}
-		return serialObj;
+
+		return obj;
 	}
 	public revive<T extends Serializable>(serialObj: Serialized, rootObj = false): T {
 		// make sure obj is parse-able
@@ -59,10 +51,9 @@ export default class Reviver {
 				throw TypeError(err);
 			}
 		}
-		serialObj = this.reviveSerializableSymbol(serialObj);
-
-		if (isSerializedObject(serialObj) && serialObj[SerialSymbol.serializable]()) {
-			const { rid, cln, hsh } = serialObj[SerialSymbol.serializable]();
+		serialObj = this.reviveSerializedSymbol(serialObj);
+		if (isSerializedObject(serialObj)) {
+			const { rid, cln, hsh } = serialObj[SerialSymbol.serialized];
 			if (!rid) {
 				const err = `ERR_MISSING_RID: Object not deserializable. Missing meta property: rid. Object: ${JSON.stringify(
 					serialObj
@@ -93,7 +84,7 @@ export default class Reviver {
 				throw new Error(err);
 			}
 
-			const revived = this.create(entry);
+			const revived = this.create(entry) as T;
 			if (!isSerializableObject<T>(revived)) {
 				const err = `ERR_DESERIAL_FAIL: The deserialized object with rid: ${rid} and cln: ${cln} is missing Symbol: [${SerialSymbol.serializable.toString()}]. There is a known issue with babel and using legacy decorators. See README for a workaround.`;
 				console.error(err);
@@ -120,7 +111,7 @@ export default class Reviver {
 		// null when called from root
 		if (parent && key) {
 			if (isSerializedObject(parent)) {
-				const serialMeta = parent[SerialSymbol.serializable]();
+				const serialMeta = parent[SerialSymbol.serialized];
 				const hash = serialMeta.hsh;
 				if (!hash) {
 					const err = `ERR_MISSING_HSH: Parent Object: ${JSON.stringify(
@@ -136,7 +127,7 @@ export default class Reviver {
 					throw TypeError(err);
 				}
 				if (typeof value === 'object') {
-					value = this.reviveSerializableSymbol(value);
+					value = this.reviveSerializedSymbol(value);
 					if (isSerializedObject(value)) {
 						const childRev = this.revive(value);
 						parentRev.assign(key, childRev);

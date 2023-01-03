@@ -1,7 +1,11 @@
 import * as Comlink from 'comlink';
 import stringHash from 'string-hash';
-import { serializableTransferHandler, iterableTransferHandler } from './serial/comlink';
-import { TransferHandlerRegistration, SerialTransferHandlers } from './serial/comlink';
+import {
+	iterableTransferHandler,
+	serializableTransferHandler,
+	SerialTransferHandlers,
+	TransferHandlerRegistration,
+} from './serial/comlink';
 import { Serialized, Reviver, toSerialObject, toSerialIterable } from './serial';
 import { Serializable } from './serial/decorators';
 import { AsyncSerialIterable } from './serial/iterable';
@@ -16,7 +20,7 @@ defaultRegistryObjects.forEach((entry) => {
 	});
 });
 
-function registerTransferHandler(reg: TransferHandlerRegistration) {
+export function registerTransferHandler(reg: TransferHandlerRegistration) {
 	new SerialArray();
 	new SerialMap();
 	Comlink.transferHandlers.set(SerialTransferHandlers.SerializableTransferHandler, serializableTransferHandler.handler);
@@ -25,7 +29,7 @@ function registerTransferHandler(reg: TransferHandlerRegistration) {
 
 const ComlinkSerializer = {
 	registerTransferHandler,
-	makeSerialObject: toSerialObject,
+	toSerialObject,
 };
 
 export {

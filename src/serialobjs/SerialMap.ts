@@ -1,7 +1,7 @@
+import stringHash from 'string-hash';
 import { Serializable } from '../serial/decorators';
-import { Reviver, Serialized, SerialPrimitive } from '../serial';
-import { SerializedMap } from './types';
-import { hash } from '@comlink-serializer';
+import { Reviver, SerialPrimitive } from '../serial';
+import { SerializedMap, SerializedMapKeyType } from './types';
 
 function serialMapFactory<K extends SerialPrimitive, V extends Serializable>(...args: any[]): SerialMap<K, V> {
 	return new SerialMap<K, V>(...args);
@@ -25,17 +25,44 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 	}
 
 	public serialize(): SerializedMap {
-		const serialObj: SerializedMap = { $map: {} };
+		let $keyType: SerializedMapKeyType | undefined;
+		let $size = this.size;
+		if ($size) {
+			$keyType = (typeof this.keys().next().value).valueOf() as SerializedMapKeyType;
+		}
+
+		const serialObj: SerializedMap = { $size, $keyType, $map: [] };
 		this.forEach((obj, key) => {
-			serialObj.$map[key as K] = obj.serialize();
+			serialObj.$map.push([key.toString(), obj.serialize()]);
 		});
+
 		return serialObj;
 	}
 
 	public revive?(serialObj: SerializedMap, reviver: Reviver) {
-		for (const key in serialObj.$map) {
-			const value = reviver.revive(serialObj.$map[key]);
-			this.set(key as K, value as V);
+		if (serialObj.$size) {
+			const keyType = serialObj.$keyType;
+			for (const [serKey, serVal] of serialObj.$map) {
+				let key: SerialPrimitive;
+				switch (keyType) {
+					case 'boolean':
+						key = serKey === 'true' ? true : false;
+						break;
+					case 'string':
+						key = serKey;
+						break;
+					case 'number':
+						key = Number(serKey);
+						break;
+					case 'bigint':
+						key = BigInt(serKey);
+						break;
+					default:
+						key = serKey;
+				}
+				const val = reviver.revive(serVal);
+				this.set(key as K, val as V);
+			}
 		}
 	}
 
@@ -46,6 +73,6 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 
 	public hashCode(): number {
 		//TODO update to figure out how to hash equality. It probably needs to be recalculated as items are added.
-		return hash('ABCDEFT');
+		return stringHash('ABCDEFT');
 	}
 }

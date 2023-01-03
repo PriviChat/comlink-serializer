@@ -1,6 +1,8 @@
-import { Serializable, Serialized } from '@comlink-serializer';
 import hash from 'object-hash';
-import { SerializedArray, SerialMeta, SerialSymbol } from '@comlink-serializer-internal';
+import { Serializable, Serialized } from '@comlink-serializer';
+
+import { SerialSymbol } from '../../serial';
+import { SerialMeta } from '../../serial/decorators';
 import { SymClassMap, SymRegIdMap } from './SymMap';
 import { SerializedOrder, SerializedProduct, SerializedUser } from './types';
 
@@ -36,15 +38,6 @@ export function applySymOrder(serialObj: SerializedOrder) {
 	return Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
 }
 
-export function applySymArray<S extends Serialized>(serialObj: SerializedArray<S>): SerializedArray<S> {
-	const meta = {
-		rid: SymRegIdMap.Array,
-		cln: SymClassMap.Array,
-		hsh: hash(serialObj),
-	};
-	return Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
-}
-
 export function applySymMap<S extends Serialized>(serialObj: Map<any, S>) {
 	const meta = {
 		rid: SymRegIdMap.SerialMap,
@@ -54,3 +47,12 @@ export function applySymMap<S extends Serialized>(serialObj: Map<any, S>) {
 
 	return Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
 }
+
+/* export function toSerializedMap<V extends Serialized>(map: Map<SerialPrimitive, V>): SerializedMap<V> {
+    const serial
+	const serializedArray: SerializedMap<V> = {
+		$map: map,
+	};
+	return applySymArray(serializedArray);
+}
+ */

@@ -1,10 +1,11 @@
 import hash from 'object-hash';
-import objectRegistry from '../../registry';
+import objectRegistry, { getRegId } from '../../registry';
 import Reviver from '../Reviver';
 import SerialSymbol from '../SerialSymbol';
 import { AnyConstructor, Serialized } from '../types';
+import { toSerializedArray } from '../utils';
 import { SerialMeta, ValueObject } from './types';
-import { generateId } from './utils';
+import { isSerializableCollection, isSerializedObject } from './utils';
 
 interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	serialize(): S;
@@ -28,6 +29,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 ): (base: Ctor) => any {
 	return function (base: Ctor) {
 		const className = settings?.class ?? base.name;
+		const regId = getRegId(className);
 		const serializedObject = class SerializedObject extends base implements SerializableObject<S, T> {
 			constructor(...args: any[]) {
 				super(...args);
@@ -35,7 +37,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 
 			[SerialSymbol.serializable](): SerialMeta {
 				return {
-					rid: generateId(className),
+					rid: regId,
 					cln: className,
 					hsh: undefined,
 				};
@@ -52,9 +54,27 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				}
 				const meta = this[SerialSymbol.serializable]();
 				meta.hsh = hash(serialObj);
-				// escaped for serialization
-				Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
 
+				// need for Serialized interface
+				Object.assign(serialObj, { [SerialSymbol.serialized]: meta });
+
+				if (!isSerializableCollection(this)) {
+					for (let [key, val] of Object.entries(serialObj)) {
+						if (val instanceof Object) {
+							if (Array.isArray(val)) {
+								if (!isSerializedObject(val) && val.length > 0) {
+									if (isSerializedObject(val[0])) {
+										delete serialObj[key as keyof S];
+										Object.assign(serialObj, { [key]: toSerializedArray(val) });
+									}
+								}
+							}
+						}
+					}
+				}
+				// escaped for serialization
+				const escSerSym = "'" + SerialSymbol.serialized.toString() + "'";
+				Object.assign(serialObj, { [escSerSym]: meta });
 				return serialObj;
 			}
 
@@ -71,7 +91,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 		};
 		objectRegistry.register({
 			constructor: serializedObject,
-			id: generateId(className),
+			id: getRegId(className),
 			name: className,
 		});
 

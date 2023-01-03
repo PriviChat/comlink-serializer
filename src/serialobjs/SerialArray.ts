@@ -1,4 +1,4 @@
-import { hash } from '@comlink-serializer';
+import stringHash from 'string-hash';
 import { Reviver } from '../serial';
 import { Serializable } from '../serial/decorators';
 import { Serialized } from '../serial';
@@ -50,6 +50,6 @@ export default class SerialArray<T extends Serializable = Serializable>
 
 	public hashCode(): number {
 		//TODO update to figure out how to hash equality. It probably needs to be recalculated as items are added.
-		return hash('ABCDEFT');
+		return stringHash('ABCDEFT');
 	}
 }

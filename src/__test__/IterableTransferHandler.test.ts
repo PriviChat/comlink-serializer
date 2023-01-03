@@ -3,8 +3,9 @@ import { jest, expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
 import WorkerFactory from '@test-fixtures/WorkerFactory';
 import IterableTestWorker from '@test-fixtures/IterableTestWorker';
-import { iterableTransferHandler } from '@comlink-serializer-internal';
-import ComlinkSerializer, { Serializable, toSerialIterable, toSerialObject } from '@comlink-serializer';
+import ComlinkSerializer, { toSerialIterable } from '@comlink-serializer';
+
+import { iterableTransferHandler } from '../serial/comlink';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;

@@ -1,9 +1,9 @@
 import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { SerialSymbol } from '@comlink-serializer-internal';
 import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
-import { toSerialIterable } from 'src/serial';
 import { SerializedUser } from '@test-fixtures/types';
+
+import { SerialSymbol, toSerialIterable } from '../serial';
 
 describe('SerializableIterable Tests', () => {
 	test('Iterator accepts empty array', async () => {
@@ -28,7 +28,7 @@ describe('SerializableIterable Tests', () => {
 		let idx = 0;
 		let total = 0;
 		for await (const serUser of userItr as AsyncIterable<SerializedUser>) {
-			const meta = serUser[SerialSymbol.serializable]!();
+			const meta = serUser[SerialSymbol.serialized];
 			expect(meta).toBeDefined();
 			expect(meta?.rid).toEqual(SymRegIdMap.User);
 			expect(meta?.cln).toEqual(SymClassMap.User);

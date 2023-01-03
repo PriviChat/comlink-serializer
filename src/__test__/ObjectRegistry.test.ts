@@ -1,7 +1,8 @@
 import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { objectRegistry } from '@comlink-serializer-internal';
 import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
+
+import objectRegistry from '../registry';
 
 //type SerializeFn<T> = () => T;
 //type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
