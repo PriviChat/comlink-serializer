@@ -1,17 +1,17 @@
 import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { SerializableIterable, SerialSymbol } from '@comlink-serializer-internal';
+import { SerialSymbol } from '@comlink-serializer-internal';
 import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
+import { toSerialIterable } from 'src/serial';
 import { SerializedUser } from '@test-fixtures/types';
 
 describe('SerializableIterable Tests', () => {
 	test('Iterator accepts empty array', async () => {
-		const userItr = new SerializableIterable<SerializedUser>([]);
+		const userItr = toSerialIterable(new Array<User>());
 		let idx = 0;
 		let total = 0;
 
-		for await (const serial of userItr) {
-			const user = serial as SerializedUser;
+		for await (const user of userItr as AsyncIterable<SerializedUser>) {
 			total += user.totalOrders;
 			idx += 1;
 			return;
@@ -23,11 +23,11 @@ describe('SerializableIterable Tests', () => {
 	test('Iterator properly serializes', async () => {
 		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 5);
 		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
-		const userItr = new SerializableIterable<SerializedUser>([user0, user1]);
+		const userItr = toSerialIterable([user0, user1]);
 
 		let idx = 0;
 		let total = 0;
-		for await (const serUser of userItr) {
+		for await (const serUser of userItr as AsyncIterable<SerializedUser>) {
 			const meta = serUser[SerialSymbol.serializable]!();
 			expect(meta).toBeDefined();
 			expect(meta?.rid).toEqual(SymRegIdMap.User);
@@ -46,11 +46,12 @@ describe('SerializableIterable Tests', () => {
 	test('Iterator properly returns', async () => {
 		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 3);
 		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
-		const userItr = new SerializableIterable<SerializedUser>([user0, user1]);
+		const arr = new Array<User>(user0, user1);
+		const userItr = toSerialIterable(arr);
 		let idx = 0;
 		let total = 0;
 
-		for await (const serUser of userItr) {
+		for await (const serUser of userItr as AsyncIterable<SerializedUser>) {
 			total += serUser.totalOrders;
 			idx += 1;
 			return;

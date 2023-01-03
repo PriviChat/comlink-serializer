@@ -3,8 +3,8 @@ import { jest, expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
 import WorkerFactory from '@test-fixtures/WorkerFactory';
 import IterableTestWorker from '@test-fixtures/IterableTestWorker';
-import { iterableTransferHandler, SerializableIterable } from '@comlink-serializer-internal';
-import ComlinkSerializer, { SerialArray, serialIterable } from '@comlink-serializer';
+import { iterableTransferHandler } from '@comlink-serializer-internal';
+import ComlinkSerializer, { Serializable, toSerialIterable, toSerialObject } from '@comlink-serializer';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -20,8 +20,8 @@ describe('IterableTransferHandler unit tests', () => {
 		expect(handler.canHandle(undefined)).toBe(false);
 		expect(handler.canHandle(null)).toBe(false);
 		expect(handler.canHandle({})).toBe(false);
-		expect(handler.canHandle(new SerialArray())).toBe(false);
-		expect(handler.canHandle(new SerializableIterable([]))).toBe(true);
+		expect(handler.canHandle([])).toBe(false);
+		expect(handler.canHandle(toSerialIterable(new Array()))).toBe(true);
 	});
 });
 
@@ -30,7 +30,7 @@ describe('SerialArray', () => {
 	let user1: User;
 	let user2: User;
 	let user3: User;
-	let array: SerialArray<User>;
+	let array: Array<User>;
 	let totalOrders: number;
 
 	beforeAll(async () => {
@@ -44,7 +44,7 @@ describe('SerialArray', () => {
 		user1 = new User('bob1@example.org_1', 'Bob_1', 'Smith_1', 1);
 		user2 = new User('bob2@example.org_2', 'Bob_2', 'Smith_2', 2);
 		user3 = new User('bob3@example.org_3', 'Bob_3', 'Smith_3', 3);
-		array = new SerialArray<User>(user0, user1, user2, user3);
+		array = new Array<User>(user0, user1, user2, user3);
 		totalOrders = array.reduce((accum, user) => {
 			return accum + user.totalOrders;
 		}, 0);
@@ -55,7 +55,7 @@ describe('SerialArray', () => {
 	});
 
 	test('Array sum user orders (for-await)', async () => {
-		const total = await testWorker.getTotalOrders(serialIterable(array), 'for-await');
+		const total = await testWorker.getTotalOrders(toSerialIterable(array), 'for-await');
 		expect(total).toEqual(totalOrders);
 	});
 
@@ -66,7 +66,7 @@ describe('SerialArray', () => {
 	}); */
 
 	test('Array length check', async () => {
-		const length = await testWorker.getUserCount(serialIterable(array));
+		const length = await testWorker.getUserCount(toSerialIterable(array));
 		expect(length).toEqual(array.length);
 	});
 });

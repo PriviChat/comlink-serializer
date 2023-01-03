@@ -1,34 +1,29 @@
 import hash from 'object-hash';
 import objectRegistry from '../../registry';
-import Deserializer from '../Deserializer';
-import SerialSymbol, { symDes } from '../SerialSymbol';
+import Reviver from '../Reviver';
+import SerialSymbol from '../SerialSymbol';
 import { AnyConstructor, Serialized } from '../types';
 import { SerialMeta, ValueObject } from './types';
 import { generateId } from './utils';
 
-export interface Deserializable<S extends Serialized, T extends Serializable<S>> {
-	deserialize?(data: S, deserializer: Deserializer): T;
-}
-
 interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	serialize(): S;
+	revive?(serialObj: S, reviver: Reviver): void;
 }
 
 export interface SerializableObject<S extends Serialized, T extends Serializable<S>> extends Serializable<S> {
 	[SerialSymbol.serializable](): SerialMeta;
 	serialize(): S;
-	deserialize(data: Serialized, deserializer: Deserializer): T;
+	assign(key: string, value: any): SerializableObject<S, T>;
 }
 
 interface SerializableSettings {
 	class?: string;
 }
 
-type SerializableCtor<S extends Serialized, T extends Serializable<S>> = AnyConstructor<
-	Serializable<S> & Deserializable<S, T>
->;
+type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S>>;
 
-function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S, T>>(
+function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S>>(
 	settings?: SerializableSettings
 ): (base: Ctor) => any {
 	return function (base: Ctor) {
@@ -42,6 +37,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				return {
 					rid: generateId(className),
 					cln: className,
+					hsh: undefined,
 				};
 			}
 
@@ -56,40 +52,21 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				}
 				const meta = this[SerialSymbol.serializable]();
 				meta.hsh = hash(serialObj);
-				// this get's through comlink
-				serialObj = Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
-				// this gets stripped out when it goes through comlink
-				// it's here to satisfy the interface
-				serialObj = Object.assign(serialObj, { [SerialSymbol.serializable]: () => meta });
+				// escaped for serialization
+				Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
+
 				return serialObj;
 			}
 
 			/**
-			 * > This function is used to deserialize a serialized object of type `S` into an object of type `T`
-			 * @param {S} serialObj - S - the serialized object
-			 * @param {Deserializer} deserializer - Deserializer - the deserializer that is deserializing the
-			 * object
-			 * @returns The object that was deserialized.
+			 * Assigns a value to a key (property) in an object.
+			 * @param {string} key - The name of the property to assign.
+			 * @param {any} value - The value to be assigned to the key.
+			 * @returns The object itself.
 			 */
-			public deserialize(serialObj: S, deserializer: Deserializer): T {
-				delete serialObj[symDes(SerialSymbol.serializable) as keyof S];
-				let obj: T;
-				if (super.deserialize) {
-					// if super implements deserialize
-					obj = super.deserialize(serialObj, deserializer);
-				} else {
-					// default deserializer
-					obj = Object.assign(this, serialObj) as unknown as T;
-				}
-				Object.assign(this, {
-					[SerialSymbol.serializable](): SerialMeta {
-						return {
-							rid: generateId(className),
-							cln: className,
-						};
-					},
-				});
-				return obj;
+			public assign(key: string, value: any) {
+				Object.assign(this, { [key]: value });
+				return this;
 			}
 		};
 		objectRegistry.register({

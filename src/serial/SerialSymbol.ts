@@ -1,6 +1,6 @@
 export default class SerialSymbol {
 	static readonly serializable: unique symbol = Symbol('ComSer.serializable');
-	static readonly iterator: unique symbol = Symbol('ComSer.iterator');
+	static readonly serializableIterable: unique symbol = Symbol('ComSer.serializableIterable');
 }
 
 export function symDes(symbol: Symbol) {

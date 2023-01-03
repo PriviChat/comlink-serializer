@@ -1,28 +1,34 @@
 import { hash } from '@comlink-serializer';
-import { Deserializer } from '../serial';
+import { Reviver } from '../serial';
 import { Serializable } from '../serial/decorators';
+import { Serialized } from '../serial';
 import { SerializedArray } from './types';
 
-function serialArrayFactory<T extends Serializable>(): SerialArray<T> {
-	return new SerialArray<T>();
+function serialArrayFactory<T extends Serializable>(...args: any[]): SerialArray<T> {
+	return new SerialArray<T>(...args);
 }
 @Serializable({ class: 'SerialArray' })
-export default class SerialArray<T extends Serializable = Serializable> extends Array<T> implements Iterable<T> {
+export default class SerialArray<T extends Serializable = Serializable>
+	extends Array<T>
+	implements Serializable<SerializedArray>
+{
 	public isEmpty(): boolean {
 		return this.length === 0;
 	}
 
 	public serialize(): SerializedArray {
-		const obj = {
-			_array: this.map((object) => object.serialize()),
+		const arr = new Array<Serialized>();
+		for (const item of this) {
+			arr.push(item.serialize());
+		}
+		const serialObj: SerializedArray = {
+			$array: arr,
 		};
-		return obj;
+		return serialObj;
 	}
 
-	static from<T extends Serializable>(array: Array<T>): SerialArray<T> {
-		const sa = serialArrayFactory<T>();
-		array.forEach((obj) => sa.push(obj));
-		return sa;
+	static from<T extends Serializable>(arr: Array<T>): SerialArray<T> {
+		return serialArrayFactory<T>(arr);
 	}
 
 	// built-in methods will use this as the constructor
@@ -30,9 +36,11 @@ export default class SerialArray<T extends Serializable = Serializable> extends 
 		return Array;
 	}
 
-	public deserialize(obj: SerializedArray, deserializer: Deserializer): SerialArray {
-		const array = obj._array.map((value) => deserializer.deserialize(value));
-		return SerialArray.from(array);
+	public revive?(obj: SerializedArray, reviver: Reviver) {
+		for (const item of obj.$array) {
+			const revived = reviver.revive(item) as T;
+			this.push(revived);
+		}
 	}
 
 	public equals(other: unknown): boolean {

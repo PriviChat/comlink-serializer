@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 import { fluentAsync } from 'fluent-iterable';
-import ComlinkSerializer, { SerialMap, AsyncSerialIterable } from '@comlink-serializer';
+import ComlinkSerializer, { AsyncSerialIterable } from '@comlink-serializer';
 import User from '@test-fixtures/User';
 
 export default class IterableTestWorker {
@@ -27,7 +27,7 @@ export default class IterableTestWorker {
 		return total;
 	}
 
-	getMap(map: SerialMap<string, User>) {
+	getMap(map: Map<string, User>) {
 		return map;
 	}
 }

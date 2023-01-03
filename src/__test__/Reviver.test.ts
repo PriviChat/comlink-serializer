@@ -1,164 +1,55 @@
 import { expect, test, jest } from '@jest/globals';
 import hash from 'object-hash';
 import User from '@test-fixtures/User';
-import { SerializedOrder, SerializedProduct, SerializedUser } from '@test-fixtures/types';
-import { SerialArray, Deserializer } from '@comlink-serializer';
-import { SerialSymbol, SerializedMap, SerializedArray } from '@comlink-serializer-internal';
+import { Reviver } from '@comlink-serializer';
+import { SerialSymbol } from '@comlink-serializer-internal';
 import Product from '@test-fixtures/Product';
 import Order from '@test-fixtures/Order';
 import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
 import { getSerializableSymbol } from '@test-fixtures/utils';
 
-const deserializer = new Deserializer();
-let user0: SerializedUser;
-let user1: SerializedUser;
-let user2: SerializedUser;
-let prod0: SerializedProduct;
-let prod1: SerializedProduct;
-let prod2: SerializedProduct;
-let order0: SerializedOrder;
-let userArr0: SerializedArray;
-let prodArr0: SerializedArray;
-let userMap0: SerializedMap;
+describe('Reviver', () => {
+	let reviver: Reviver;
+	let user0: User;
+	let user1: User;
+	let user2: User;
+	let prod0: Product;
+	let prod1: Product;
+	let prod2: Product;
+	let order0: Order;
+	let userArr0: Array<User>;
+	let prodArr0: Array<Product>;
+	let userMap0: Map<string, User>;
 
-describe('Deserializer', () => {
 	beforeEach(() => {
-		SerialArray;
-		User;
-		Product;
-		Order;
+		//must create a new reviver before each
+		reviver = new Reviver();
 
-		user0 = {
-			email: 'john.smith@email.com_0',
-			firstName: 'John_0',
-			lastName: 'Smith_0',
-			totalOrders: 0,
-		};
-		user0[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.User,
-				cln: SymClassMap.User,
-				hsh: hash(user0),
-			};
-		};
+		user0 = new User('john.smith@email.com_0', 'John_0', 'Smith_0', 0);
+		user1 = new User('john.smith@email.com_1', 'John_1', 'Smith_1', 1);
+		user2 = new User('john.smith@email.com_2', 'John_2', 'Smith_2', 2);
 
-		user1 = {
-			email: 'john.smith@email.com_1',
-			firstName: 'John_1',
-			lastName: 'Smith_1',
-			totalOrders: 1,
-		};
-		user1[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.User,
-				cln: SymClassMap.User,
-				hsh: hash(user1),
-			};
-		};
+		prod0 = new Product('DOBL_0', 'Doorbell_0');
+		prod1 = new Product('DOBL_1', 'Doorbell_1');
+		prod2 = new Product('DOBL_2', 'Doorbell_2');
 
-		user2 = {
-			email: 'john.smith@email.com_2',
-			firstName: 'John_2',
-			lastName: 'Smith_2',
-			totalOrders: 2,
-		};
-		user2[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.User,
-				cln: SymClassMap.User,
-				hsh: hash(user2),
-			};
-		};
+		order0 = new Order('ORDR_0', user0, [prod0, prod1, prod2]);
 
-		prod0 = {
-			productId: 'DOBL_0',
-			productName: 'Doorbell_0',
-		};
-		prod0[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.Product,
-				cln: SymClassMap.Product,
-				hsh: hash(prod0),
-			};
-		};
+		userArr0 = [user0, user1, user2];
 
-		prod1 = {
-			productId: 'DOBL_1',
-			productName: 'Doorbell_1',
-		};
-		prod1[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.Product,
-				cln: SymClassMap.Product,
-				hsh: hash(prod1),
-			};
-		};
+		prodArr0 = [prod0, prod1, prod2];
 
-		prod2 = {
-			productId: 'DOBL_2',
-			productName: 'Doorbell_2',
-		};
-		prod2[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.Product,
-				cln: SymClassMap.Product,
-				hsh: hash(prod2),
-			};
-		};
-
-		order0 = {
-			orderId: 'ORDR_0',
-			user: user0,
-			products: [prod0, prod1, prod2],
-		};
-		order0[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.Order,
-				cln: SymClassMap.Order,
-				hsh: hash(order0),
-			};
-		};
-
-		userArr0 = {
-			_array: [user0, user1, user2],
-		};
-		userArr0[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.SerialArray,
-				cln: SymClassMap.SerialArray,
-				hsh: hash(userArr0),
-			};
-		};
-
-		prodArr0 = {
-			_array: [prod0, prod1, prod2],
-		};
-		prodArr0[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.SerialArray,
-				cln: SymClassMap.SerialArray,
-				hsh: hash(prodArr0),
-			};
-		};
-
-		userMap0 = {
-			_map: new Map([
+		userMap0 = new Map(
+			new Map([
 				['0', user0],
 				['1', user1],
 				['2', user2],
-			]),
-		};
-		userMap0[SerialSymbol.serializable] = () => {
-			return {
-				rid: SymRegIdMap.SerialMap,
-				cln: SymClassMap.SerialMap,
-				hsh: hash(userMap0),
-			};
-		};
+			])
+		);
 	});
 
-	test('Flat object manual deserialize', () => {
-		const user = deserializer.deserialize<User>(user0);
+	test('Flat object manual revive', () => {
+		const user = reviver.revive<User>(user0.serialize(), true);
 		expect(SerialSymbol.serializable in user).toBeTruthy();
 		const meta = getSerializableSymbol(user);
 		expect(meta).toBeDefined();
@@ -170,8 +61,8 @@ describe('Deserializer', () => {
 		expect(user.lastName).toEqual(user0.lastName);
 	});
 
-	test('Flat object auto deserialize', () => {
-		const prod = deserializer.deserialize<Product>(prod0);
+	test('Flat object auto revive', () => {
+		const prod = reviver.revive<Product>(prod0.serialize(), true);
 		expect(SerialSymbol.serializable in prod).toBeTruthy();
 		const meta = getSerializableSymbol(prod);
 		expect(meta).toBeDefined();
@@ -182,8 +73,8 @@ describe('Deserializer', () => {
 		expect(prod.productName).toEqual(prod0.productName);
 	});
 
-	test('Nested object deserialize', () => {
-		const order = deserializer.deserialize<Order>(order0);
+	test('Nested object revive', () => {
+		const order = reviver.revive<Order>(order0.serialize(), true);
 		expect(order.orderId).toEqual(order0.orderId);
 
 		const user = order.user;
@@ -231,16 +122,16 @@ describe('Deserializer', () => {
 		expect(prodObj2.productName).toEqual(prod2.productName);
 	});
 
-	test('Deserialize error handling empty object', () => {
+	test('Reviver error handling empty object', () => {
 		const foo = {};
 		expect(() => {
-			deserializer.deserialize(foo);
+			reviver.revive(foo);
 		}).toThrow();
 	});
 
-	test('Deserialize error handling missing rid', () => {
+	test('Reviver error handling missing rid', () => {
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
-		user0[SerialSymbol.serializable] = () => {
+		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
 				rid: '',
 				cln: SymClassMap.User,
@@ -248,15 +139,15 @@ describe('Deserializer', () => {
 			};
 		};
 		expect(() => {
-			deserializer.deserialize(user0);
+			reviver.revive(user0.serialize(), true);
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
 	});
 
-	test('Deserialize error handling invalid rid', () => {
+	test('Reviver error handling invalid rid', () => {
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
-		user0[SerialSymbol.serializable] = () => {
+		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
 				rid: 'foo',
 				cln: SymClassMap.User,
@@ -264,15 +155,15 @@ describe('Deserializer', () => {
 			};
 		};
 		expect(() => {
-			deserializer.deserialize(user0);
+			reviver.revive(user0.serialize(), true);
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
 	});
 
-	test('Deserialize error handling no hsh', () => {
+	test('Reviver error handling no hsh', () => {
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
-		user0[SerialSymbol.serializable] = () => {
+		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
 				rid: SymRegIdMap.User,
 				cln: SymClassMap.User,
@@ -280,22 +171,22 @@ describe('Deserializer', () => {
 			};
 		};
 		expect(() => {
-			deserializer.deserialize(user0);
+			reviver.revive(user0.serialize(), true);
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
 	});
 
-	test('Deserialize warn handling no class', () => {
+	test('Reviver warn handling no class', () => {
 		const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-		user0[SerialSymbol.serializable] = () => {
+		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
 				rid: SymRegIdMap.User,
 				cln: '',
 				hsh: hash(user0),
 			};
 		};
-		deserializer.deserialize(user0);
+		reviver.revive(user0.serialize(), true);
 		expect(warn.mock.calls).toHaveLength(1);
 		warn.mockReset();
 	});

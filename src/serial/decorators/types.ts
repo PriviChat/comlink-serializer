@@ -1,3 +1,5 @@
+import { Serialized } from '../types';
+
 /**
  * The interface to fulfill to qualify as a Value Object.
  */

@@ -1,11 +1,11 @@
 import * as Comlink from 'comlink';
-import { Deserializer } from '..';
+import { Reviver } from '..';
 import { Serializable, SerializableObject } from '../decorators';
 import { Serialized } from '../types';
 import SerialSymbol from '../SerialSymbol';
 
 export default class SerializableTransferHandler {
-	constructor(readonly deserializer: Deserializer) {}
+	constructor() {}
 	public get handler() {
 		const comlink: Comlink.TransferHandler<Serializable, Serialized> = {
 			canHandle: function (value: any): value is SerializableObject<Serialized, Serializable> {
@@ -16,8 +16,9 @@ export default class SerializableTransferHandler {
 				return [serialized, []];
 			},
 			deserialize: (object: Serialized) => {
-				const deserialized = this.deserializer.deserialize(object);
-				return deserialized;
+				const reviver = new Reviver();
+				const revived = reviver.revive(object, true);
+				return revived;
 			},
 		};
 		return comlink;

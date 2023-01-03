@@ -1,22 +1,28 @@
+import { isAsyncSerialIterable, isSerialIterable } from '.';
 import { Serializable } from '../decorators';
+import SerialSymbol from '../SerialSymbol';
 import { Serialized } from '../types';
+import { AnySerialIterable } from './types';
 
-export default class SerializableIterable<S extends Serialized = Serialized> implements AsyncIterableIterator<S> {
+export default class SerialIterable<S extends Serialized = Serialized, T extends Serializable<S> = Serializable<S>>
+	implements AsyncIterableIterator<S>
+{
 	private done: boolean;
-	private iterator: Iterator<any, any>;
+	private iterator: Iterator<T> | AsyncIterator<T>;
 
-	constructor(iterable: Iterable<Serializable> | AsyncIterable<Serializable>) {
-		if (Symbol.iterator in iterable) {
+	constructor(iterable: AnySerialIterable<T>) {
+		if (isSerialIterable<T>(iterable)) {
 			this.iterator = (iterable as any)[Symbol.iterator]();
-		} else if (Symbol.asyncIterator in iterable) {
-			this.iterator = (iterable as any)[Symbol.asyncIterator]();
+		} else if (isAsyncSerialIterable<T>(iterable)) {
+			this.iterator = iterable[Symbol.asyncIterator]();
 		} else {
 			throw TypeError('Iterable or AsyncIterable object does not have an iterator.');
 		}
 		this.done = false;
 	}
 
-	[Symbol.asyncIterator](): AsyncIterableIterator<S> {
+	[SerialSymbol.serializableIterable] = true;
+	[Symbol.asyncIterator](): AsyncIterableIterator<any> {
 		return this;
 	}
 
@@ -45,7 +51,7 @@ export default class SerializableIterable<S extends Serialized = Serialized> imp
 		};
 	}
 
-	public async return(value?: any): Promise<IteratorResult<S, S | undefined>> {
+	public async return(value?: T): Promise<IteratorResult<S, S | undefined>> {
 		this.done = true;
 		return {
 			done: this.done,

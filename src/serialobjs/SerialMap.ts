@@ -1,17 +1,17 @@
-import { Serializable, Deserializable } from '../serial/decorators';
-import { Deserializer, Serialized } from '../serial';
+import { Serializable } from '../serial/decorators';
+import { Reviver, Serialized, SerialPrimitive } from '../serial';
 import { SerializedMap } from './types';
 import { hash } from '@comlink-serializer';
 
-function serialMapFactory<K extends boolean | number | bigint | string, V extends Serializable>(): SerialMap<K, V> {
-	return new SerialMap<K, V>();
+function serialMapFactory<K extends SerialPrimitive, V extends Serializable>(...args: any[]): SerialMap<K, V> {
+	return new SerialMap<K, V>(...args);
 }
 @Serializable({ class: 'SerialMap' })
-export default class SerialMap<K extends boolean | number | bigint | string, V extends Serializable = Serializable>
+export default class SerialMap<K extends SerialPrimitive, V extends Serializable = Serializable>
 	extends Map<K, V>
-	implements Serializable<SerializedMap>, Deserializable<SerializedMap, SerialMap<K, V>>
+	implements Serializable<SerializedMap>
 {
-	static from<K extends boolean | number | bigint | string, V extends Serializable>(map: Map<K, V>): SerialMap<K, V> {
+	static from<K extends SerialPrimitive, V extends Serializable>(map: Map<K, V>): SerialMap<K, V> {
 		const sm = serialMapFactory<K, V>();
 		map.forEach((obj, key) => {
 			sm.set(key, obj);
@@ -25,22 +25,18 @@ export default class SerialMap<K extends boolean | number | bigint | string, V e
 	}
 
 	public serialize(): SerializedMap {
-		const serialMap = new Map<K, Serialized>();
+		const serialObj: SerializedMap = { $map: {} };
 		this.forEach((obj, key) => {
-			serialMap.set(key, obj.serialize());
+			serialObj.$map[key as K] = obj.serialize();
 		});
-		const obj: SerializedMap = {
-			_map: serialMap,
-		};
-		return obj;
+		return serialObj;
 	}
 
-	public deserialize(obj: SerializedMap, deserializer: Deserializer): SerialMap<K, V> {
-		const sm = new Map();
-		obj._map.forEach((value, key) => {
-			sm.set(key, deserializer.deserialize(value));
-		});
-		return SerialMap.from(sm);
+	public revive?(serialObj: SerializedMap, reviver: Reviver) {
+		for (const key in serialObj.$map) {
+			const value = reviver.revive(serialObj.$map[key]);
+			this.set(key as K, value as V);
+		}
 	}
 
 	public equals(other: unknown): boolean {

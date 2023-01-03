@@ -1,22 +1,23 @@
 /* Start: Internal Use Only */
 import objectRegistry from '../registry';
 import { serializableTransferHandler, iterableTransferHandler } from '../serial/comlink';
-import { SerializableIterable } from '../serial/iterators';
-import { SerializedArray, SerializedMap } from '../serialobjs';
-import { SerialSymbol, symDes } from '../serial';
+import { SerialIterable } from '../serial/iterable';
+import { SerializedArray, SerializedMap, SerialArray, SerialMap } from '../serialobjs';
+import { SerialSymbol } from '../serial';
 import { SerialMeta, SerializableObject } from '../serial/decorators';
 
 export {
 	objectRegistry,
-	SerializableIterable,
+	SerialIterable,
 	SerializableObject,
 	SerialSymbol,
 	SerialMeta,
+	SerialArray,
+	SerialMap,
 	SerializedArray,
 	SerializedMap,
 	serializableTransferHandler,
 	iterableTransferHandler,
-	symDes,
 };
 
 /* End: Internal Use Only */

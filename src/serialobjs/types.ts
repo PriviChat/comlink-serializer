@@ -1,9 +1,9 @@
 import { Serialized } from '../serial';
 
-export interface SerializedArray extends Serialized {
-	_array: Serialized[];
+export interface SerializedArray<S extends Serialized = Serialized> extends Serialized {
+	$array: S[];
 }
 
-export interface SerializedMap extends Serialized {
-	_map: Map<boolean | number | bigint | string, Serialized>;
+export interface SerializedMap<S extends Serialized = Serialized> extends Serialized {
+	$map: { [key: number | string]: Serialized };
 }

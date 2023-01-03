@@ -1,18 +1,14 @@
-import { Serializable, Deserializable, hash } from '@comlink-serializer';
+import { Serializable, hash } from '@comlink-serializer';
 import { SerializedUser } from './types';
 
 @Serializable({ class: 'User' })
-export default class User implements Serializable<SerializedUser>, Deserializable<SerializedUser, User> {
+export default class User implements Serializable<SerializedUser> {
 	constructor(
 		readonly email: string,
 		readonly firstName: string,
 		readonly lastName: string,
 		readonly totalOrders: number = 0
 	) {}
-
-	public deserialize(data: SerializedUser): User {
-		return Object.assign(this, data);
-	}
 
 	public serialize(): SerializedUser {
 		return {

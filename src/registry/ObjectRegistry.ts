@@ -1,5 +1,7 @@
 /* Registry of all the classes that are serializable */
 
+import { Serialized } from 'src/serial';
+import { Serializable, SerializableObject } from '../serial/decorators';
 import { ObjectRegistryEntry } from './types';
 
 export default class ObjectRegistry {
