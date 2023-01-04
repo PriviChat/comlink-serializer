@@ -1,5 +1,5 @@
 import hash from 'object-hash';
-import objectRegistry, { getRegId } from '../../registry';
+import objectRegistry from '../../registry';
 import Reviver from '../Reviver';
 import SerialSymbol from '../SerialSymbol';
 import { AnyConstructor, Serialized } from '../types';
@@ -29,7 +29,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 ): (base: Ctor) => any {
 	return function (base: Ctor) {
 		const className = settings?.class ?? base.name;
-		const regId = getRegId(className);
+		const regId = objectRegistry.genRegId(className);
 		const serializedObject = class SerializedObject extends base implements SerializableObject<S, T> {
 			constructor(...args: any[]) {
 				super(...args);
@@ -44,7 +44,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 			}
 
 			/**
-			 * > This function is used to serialize a deserialized object of type `T` into an object of type `S`
+			 * > This function is used to serialize an object of type `T` into an object of type `S`
 			 * @returns The serialized object.
 			 */
 			public serialize(): S {
@@ -66,6 +66,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 									if (isSerializedObject(val[0])) {
 										delete serialObj[key as keyof S];
 										Object.assign(serialObj, { [key]: toSerializedArray(val) });
+										//TODO perhaps we should regenerate the hash
 									}
 								}
 							}
@@ -91,7 +92,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 		};
 		objectRegistry.register({
 			constructor: serializedObject,
-			id: getRegId(className),
+			id: objectRegistry.genRegId(className),
 			name: className,
 		});
 

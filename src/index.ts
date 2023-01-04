@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import stringHash from 'string-hash';
+import { hashCd } from './serial/utils';
 import {
 	iterableTransferHandler,
 	serializableTransferHandler,
@@ -40,6 +40,6 @@ export {
 	toSerialObject,
 	toSerialIterable,
 	TransferHandlerRegistration,
-	stringHash as hash,
+	hashCd,
 };
 export default ComlinkSerializer;

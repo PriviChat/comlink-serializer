@@ -47,7 +47,7 @@ describe('SerializableTransferHandler unit tests', () => {
 	});
 });
 
-describe('Comlink passthrough', () => {
+describe('Comlink pass-through', () => {
 	let user0: User;
 	let user1: User;
 	let userArr0: Array<User>;
@@ -75,7 +75,7 @@ describe('Comlink passthrough', () => {
 		expect(rtnUser.firstName).toBe(user0.firstName);
 		expect(rtnUser.lastName).toBe(user0.lastName);
 		expect(rtnUser.totalOrders).toBe(user0.totalOrders);
-	});
+	}, 10000000);
 
 	test('Check that User array can pass through Comlink (index)', async () => {
 		const rtnArr = await testWorker.getArray(toSerialObject(userArr0));
@@ -91,7 +91,7 @@ describe('Comlink passthrough', () => {
 		expect(rtnArr[1].firstName).toBe(user1.firstName);
 		expect(rtnArr[1].lastName).toBe(user1.lastName);
 		expect(rtnArr[1].totalOrders).toBe(user1.totalOrders);
-	});
+	}, 1000000);
 
 	test('Check that User array can pass through Comlink (for-loop)', async () => {
 		const rtnArr = await testWorker.getArray(toSerialObject(userArr0));

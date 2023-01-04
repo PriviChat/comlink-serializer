@@ -17,7 +17,7 @@ export default class SerializableTransferHandler {
 			},
 			deserialize: (object: Serialized) => {
 				const reviver = new Reviver();
-				const revived = reviver.revive(object, true);
+				const revived = reviver.revive(object);
 				return revived;
 			},
 		};

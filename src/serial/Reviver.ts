@@ -27,6 +27,12 @@ export default class Reviver {
 		}
 	}
 
+	/**
+	 * It takes a serialized object and converts the symbol property
+	 * back to a symbol
+	 * @param {any} obj - any - The object to have the symbol revived.
+	 * @returns The object that was passed in.
+	 */
 	private reviveSerializedSymbol(obj: any) {
 		if (isSerializedObject(obj)) return obj;
 		const serSymStr = "'" + SerialSymbol.serialized.toString() + "'";
@@ -35,23 +41,34 @@ export default class Reviver {
 			Object.assign(obj, { [SerialSymbol.serialized]: meta });
 			delete obj[serSymStr];
 		}
-
 		return obj;
 	}
-	public revive<T extends Serializable>(serialObj: Serialized, rootObj = false): T {
-		// make sure obj is parse-able
-		// TODO investigae why if SerialArray is put back through the transfer handler it's items are not valid Object even though it has the prototype Object.
-		if (rootObj) {
+
+	public revive<T extends Serializable>(serialObj: Serialized): T {
+		// make sure we are dealing with a valid object
+		// TODO investigate why putting an object through comlink and then back causes the instanceof check to fail
+		if (!(serialObj instanceof Object)) {
+			const warn = `WRN_INVALID_OBJECT: Serialized object is not instanceof Object. Object: ${JSON.stringify(
+				serialObj
+			)} - Attempting to fix....`;
+			console.warn(warn);
 			try {
 				serialObj = JSON.parse(JSON.stringify(serialObj));
-			} catch {
-				const err = `ERR_INVALID_OBJECT: Serialized object does not contain valid json. Object: ${JSON.stringify(
-					serialObj
-				)}`;
-				throw TypeError(err);
+			} catch (err) {
+				const error = `ERR_INVALID_OBJECT: Serialized object cannot be fixed. Object: ${JSON.stringify(serialObj)}`;
+				throw TypeError(error);
+			}
+			if (!(serialObj instanceof Object)) {
+				const error = `ERR_INVALID_OBJECT: Serialized object cannot be fixed. Object: ${JSON.stringify(serialObj)}`;
+				throw TypeError(error);
+			} else {
+				console.log('Successfully repaired invalid object');
 			}
 		}
+
+		// convert the symbol property back to a symbol
 		serialObj = this.reviveSerializedSymbol(serialObj);
+
 		if (isSerializedObject(serialObj)) {
 			const { rid, cln, hsh } = serialObj[SerialSymbol.serialized];
 			if (!rid) {
@@ -76,7 +93,7 @@ export default class Reviver {
 				console.warn(wrn);
 			}
 
-			const entry = objectRegistry.getEntry(rid);
+			const entry = objectRegistry.getEntryById(rid);
 			if (!entry) {
 				const err = `ERR_MISSING_REG: Object with rid: ${rid} and cln: ${cln} not found in registry.
 					 Make sure you are property configuring the transfer handler. Remember the object must be registered on each thread.`;

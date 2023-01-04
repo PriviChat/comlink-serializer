@@ -17,14 +17,14 @@ describe('ObjectRegistry', () => {
 	});
 
 	test('Check registered object', () => {
-		const entry = objectRegistry.getEntry(SymRegIdMap.User);
+		const entry = objectRegistry.getEntryById(SymRegIdMap.User);
 		expect(entry).toBeDefined();
 		expect(entry?.name).toBe(SymClassMap.User);
 		expect(entry?.constructor).toBeDefined();
 	});
 
 	test('Check invalid object', () => {
-		const entry = objectRegistry.getEntry('1234');
+		const entry = objectRegistry.getEntryById('1234');
 		expect(entry).toBeUndefined();
 	});
 
@@ -32,6 +32,16 @@ describe('ObjectRegistry', () => {
 		expect(() => {
 			objectRegistry.register({
 				id: SymRegIdMap.User,
+				constructor: {} as any,
+				name: 'Mock',
+			});
+		}).toThrow();
+	});
+
+	test('Throws when entry id is empty', () => {
+		expect(() => {
+			objectRegistry.register({
+				id: '',
 				constructor: {} as any,
 				name: 'Mock',
 			});

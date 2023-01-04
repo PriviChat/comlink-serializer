@@ -1,4 +1,4 @@
-import { Serializable, hash } from '@comlink-serializer';
+import { Serializable, hashCd } from '@comlink-serializer';
 import { SerializedProduct } from './types';
 
 @Serializable()
@@ -16,7 +16,7 @@ class Product implements Serializable<SerializedProduct> {
 	}
 
 	public hashCode(): number {
-		return hash(this.productId);
+		return hashCd(this.productId);
 	}
 }
 

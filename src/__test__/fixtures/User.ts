@@ -1,4 +1,4 @@
-import { Serializable, hash } from '@comlink-serializer';
+import { Serializable, hashCd } from '@comlink-serializer';
 import { SerializedUser } from './types';
 
 @Serializable({ class: 'User' })
@@ -24,6 +24,6 @@ export default class User implements Serializable<SerializedUser> {
 	}
 
 	public hashCode(): number {
-		return hash(this.email);
+		return hashCd(this.email);
 	}
 }
