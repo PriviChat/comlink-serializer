@@ -1,22 +1,24 @@
-import { Serializable, hashCd } from '@comlink-serializer';
-import { SerializedUser } from './types';
+import { Serializable, Serialize, hashCd } from '@comlink-serializer';
+import Address from './address';
+import { AddressClass, SerializedUser, UserClass } from './types';
 
-@Serializable({ class: 'User' })
+@Serializable(UserClass)
 export default class User implements Serializable<SerializedUser> {
+	@Serialize()
+	readonly priAddress: Address;
+	@Serialize(AddressClass)
+	readonly addresses: Address[];
+
 	constructor(
 		readonly email: string,
 		readonly firstName: string,
 		readonly lastName: string,
-		readonly totalOrders: number = 0
-	) {}
-
-	public serialize(): SerializedUser {
-		return {
-			email: this.email,
-			firstName: this.firstName,
-			lastName: this.lastName,
-			totalOrders: this.totalOrders,
-		};
+		priAddress: Address,
+		addresses: Address[],
+		public totalOrders: number = 0
+	) {
+		this.priAddress = priAddress;
+		this.addresses = addresses;
 	}
 
 	public equals(other: unknown): boolean {

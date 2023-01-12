@@ -9,3 +9,8 @@ export interface Serialized {
 }
 
 export type SerialPrimitive = boolean | number | bigint | string;
+export const serialPrimitives = new Set<string>(['boolean', 'number', 'bigint', 'string']);
+
+export type Dictionary<T> = {
+	[key: string]: T;
+};

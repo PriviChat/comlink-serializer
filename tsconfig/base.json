@@ -13,7 +13,7 @@
 		"esModuleInterop": true,
 		"resolveJsonModule": false,
 		"experimentalDecorators": true,
-		"emitDecoratorMetadata": false,
+		"emitDecoratorMetadata": true,
 		"forceConsistentCasingInFileNames": true,
 		"allowJs": true,
 		"paths": {

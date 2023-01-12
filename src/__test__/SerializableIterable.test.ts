@@ -1,9 +1,9 @@
 import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/User';
-import { SymClassMap, SymRegIdMap } from '@test-fixtures/SymMap';
-import { SerializedUser } from '@test-fixtures/types';
+import { SerializedUser, UserClass } from '@test-fixtures/types';
 
 import { SerialSymbol, toSerialIterable } from '../serial';
+import { makeObj } from './fixtures';
 
 describe('SerializableIterable Tests', () => {
 	test('Iterator accepts empty array', async () => {
@@ -21,8 +21,11 @@ describe('SerializableIterable Tests', () => {
 	});
 
 	test('Iterator properly serializes', async () => {
-		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 5);
-		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
+		const user0 = makeObj<User>('user', 0);
+		const user1 = makeObj<User>('user', 1);
+		user0.totalOrders = 5;
+		user1.totalOrders = 10;
+
 		const userItr = toSerialIterable([user0, user1]);
 
 		let idx = 0;
@@ -30,11 +33,10 @@ describe('SerializableIterable Tests', () => {
 		for await (const serUser of userItr as AsyncIterable<SerializedUser>) {
 			const meta = serUser[SerialSymbol.serialized];
 			expect(meta).toBeDefined();
-			expect(meta?.rid).toEqual(SymRegIdMap.User);
-			expect(meta?.cln).toEqual(SymClassMap.User);
-			expect(meta?.hsh).toBeDefined();
-			expect(serUser.email).toEqual('roy@example.org_' + idx);
-			expect(serUser.firstName).toEqual('Roy_' + idx);
+			expect(meta?.classToken).toEqual(UserClass.toString());
+			expect(meta?.hash).toBeDefined();
+			expect(serUser.email).toEqual('bob@email.org_' + idx);
+			expect(serUser.firstName).toEqual('Bob_' + idx);
 			expect(serUser.lastName).toEqual('Smith_' + idx);
 			total += serUser.totalOrders;
 			idx += 1;
@@ -44,8 +46,11 @@ describe('SerializableIterable Tests', () => {
 	});
 
 	test('Iterator properly returns', async () => {
-		const user0 = new User('roy@example.org_0', 'Roy_0', 'Smith_0', 3);
-		const user1 = new User('roy@example.org_1', 'Roy_1', 'Smith_1', 10);
+		const user0 = makeObj<User>('user', 0);
+		const user1 = makeObj<User>('user', 1);
+		user0.totalOrders = 3;
+		user1.totalOrders = 10;
+
 		const arr = new Array<User>(user0, user1);
 		const userItr = toSerialIterable(arr);
 		let idx = 0;

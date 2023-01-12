@@ -1,6 +1,7 @@
 import * as Comlink from 'comlink';
 import ComlinkSerializer from '@comlink-serializer';
 import User from '@test-fixtures/User';
+import { SerialPrimitive } from 'src/serial';
 
 export default class SerializableTestWorker {
 	getUser(user: User) {
@@ -33,7 +34,7 @@ export default class SerializableTestWorker {
 		return total;
 	}
 
-	async getMap(map: Map<string, User>) {
+	async getMap<K extends SerialPrimitive>(map: Map<K, User>) {
 		return map;
 	}
 }

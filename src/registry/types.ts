@@ -1,7 +1,7 @@
 import { AnyConstructor } from 'src/serial';
+import { SerialClassToken } from 'src/serial/decorators';
 
 export interface ObjectRegistryEntry {
-	name: string;
-	id: string;
+	classToken: SerialClassToken;
 	constructor: AnyConstructor;
 }

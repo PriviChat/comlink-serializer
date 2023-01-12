@@ -17,3 +17,8 @@ export interface SerializedProduct extends Serialized {
 	productId: string;
 	productName: string;
 }
+
+export const UserClass = Symbol('Class.User');
+export const AddressClass = Symbol('Class.Address');
+export const ProductClass = Symbol('Class.Product');
+export const OrderClass = Symbol('Class.Order');

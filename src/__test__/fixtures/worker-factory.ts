@@ -10,4 +10,8 @@ export default class WorkerFactory {
 	public static getIterableTestWorker(): Worker {
 		return new Worker('./build/cjs/__test__/fixtures/IterableTestWorker.js');
 	}
+
+	public static getLazyTestWorker(): Worker {
+		return new Worker('./build/cjs/__test__/fixtures/lazy-test-worker.js');
+	}
 }

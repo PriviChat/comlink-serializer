@@ -1,18 +1,22 @@
-import { Serializable, Reviver } from '@comlink-serializer';
+import { Serializable, Serialize } from '@comlink-serializer';
 import Product from './Product';
 import User from './User';
-import { SerializedOrder } from './types';
+import { OrderClass, ProductClass, SerializedOrder, UserClass } from './types';
 
-@Serializable()
+@Serializable(OrderClass)
 class Order implements Serializable<SerializedOrder> {
-	constructor(readonly orderId: string, readonly user: User, readonly products: Product[]) {}
+	readonly orderId: string;
 
-	public serialize(): SerializedOrder {
-		return {
-			orderId: this.orderId,
-			user: this.user.serialize(),
-			products: this.products.map((product) => product.serialize()),
-		};
+	@Serialize(UserClass, true)
+	readonly user: User;
+
+	@Serialize(ProductClass)
+	readonly products: Product[];
+
+	constructor(orderId: string, user: User, products: Product[]) {
+		this.orderId = orderId;
+		this.user = user;
+		this.products = products;
 	}
 
 	public equals(other: unknown): boolean {

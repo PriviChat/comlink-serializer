@@ -1,3 +1,6 @@
+# strange Mac file
+.DS_Store
+
 # Logs
 logs
 *.log

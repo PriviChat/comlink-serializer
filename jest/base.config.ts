@@ -2,6 +2,8 @@ import type { JestConfigWithTsJest } from 'ts-jest';
 
 const baseJestConfig: JestConfigWithTsJest = {
 	rootDir: '../',
+	setupFilesAfterEnv: ['<rootDir>/jest/jest.setup.ts'],
+	clearMocks: true,
 	preset: 'ts-jest/presets/default',
 	testEnvironment: 'node',
 	testMatch: ['**/*.(test|spec).ts'],

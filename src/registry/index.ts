@@ -1,5 +1,6 @@
 import ObjectRegistry from './ObjectRegistry';
 import { ObjectRegistryEntry } from './types';
+export * from './types';
 export const objectRegistry: ObjectRegistry = new ObjectRegistry();
 export default objectRegistry;
 

@@ -9,7 +9,7 @@ export default class SerializableTransferHandler {
 	public get handler() {
 		const comlink: Comlink.TransferHandler<Serializable, Serialized> = {
 			canHandle: function (value: any): value is SerializableObject<Serialized, Serializable> {
-				return (value && value[SerialSymbol.serializable]) ?? false;
+				return (value && !value[SerialSymbol.serializableLazy] && value[SerialSymbol.serializable]) ?? false;
 			},
 			serialize: (object: SerializableObject<Serialized, Serializable>) => {
 				const serialized = object.serialize();
