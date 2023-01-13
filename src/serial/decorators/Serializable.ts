@@ -4,7 +4,7 @@ import objectRegistry from '../../registry';
 import Reviver from '../Reviver';
 import Serializer from '../serializer';
 import SerialSymbol from '../SerialSymbol';
-import { AnyConstructor, Dictionary, Serialized } from '../types';
+import { AnyConstructor, Dictionary, SerializeCtx, Serialized } from '../types';
 import {
 	SerialClassToken,
 	SerializeDescriptorProperty,
@@ -15,16 +15,15 @@ import {
 
 interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	revive?(serialObj: S, reviver: Reviver): void;
-	serialize?(): S;
+	serialize?(ctx?: SerializeCtx): S;
 }
 
-export interface SerializableObject<S extends Serialized = Serialized, T extends Serializable<S> = Serializable<S>>
-	extends Serializable<S> {
+export interface SerializableObject<T extends Serializable = Serializable> extends Serializable {
 	[SerialSymbol.serializable](): SerialMeta;
 	[SerialSymbol.classToken](): SerialClassToken;
 	[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty>;
-	serialize(): S;
-	assign(key: string, value: any): SerializableObject<S, T>;
+	serialize(ctx?: SerializeCtx): Serialized;
+	assign(key: string, value: any): SerializableObject<T>;
 }
 
 interface SerializableSettings {}
@@ -38,7 +37,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 	return function (base: Ctor) {
 		let serializeDescriptor: Dictionary<SerializeDescriptorProperty>;
 
-		const serializable = class Serializable extends base implements SerializableObject<S, T> {
+		const serializable = class Serializable extends base implements SerializableObject<T> {
 			constructor(...args: any[]) {
 				super(...args);
 			}
@@ -75,33 +74,40 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				}
 				return rtnDescr;
 			}
-
 			/**
-			 * > It creates a new `Serializer` object, calls the `serializeDescriptor` method on the object, and
-			 * then calls the `serialize` method on the `Serializer` object, passing in the object and the
-			 * descriptor
+			 * > It serializes the object
+			 * @param {SerializeCtx} ctx - SerializeCtx = new Serializer()
 			 * @returns The serialized object.
 			 */
-			public serialize(): S {
+			public serialize(ctx: SerializeCtx = new Serializer()): S {
 				const serialMeta = this[SerialSymbol.serializable]();
-				let serialObj = {};
+				let serialObj;
 
 				if (super.serialize) {
-					serialObj = super.serialize();
+					serialObj = super.serialize(ctx);
 				} else {
-					const serializer = new Serializer();
+					const classToken = this[SerialSymbol.classToken]();
 					const descr = this[SerialSymbol.serializeDescriptor]();
-					serialObj = serializer.serialize(this, descr);
+					serialObj = ctx.serialize(this, classToken, descr) as S;
 				}
 
-				serialMeta.hash = hash(serialObj);
+				serialMeta.hash = hash(serialObj, {
+					//don't hash message port
+					excludeKeys: function (key) {
+						if (key === 'port') {
+							return true;
+						}
+						return false;
+					},
+				});
+
 				// need for Serialized interface
 				Object.assign(serialObj, { [SerialSymbol.serialized]: serialMeta });
 				// escaped for serialization
 				const escSym = "'" + SerialSymbol.serialized.toString() + "'";
 				Object.assign(serialObj, { [escSym]: serialMeta });
 
-				return serialObj as S;
+				return serialObj;
 			}
 
 			/**

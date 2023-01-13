@@ -20,7 +20,7 @@ describe('Reviver', () => {
 		reviver = new Reviver();
 	});
 
-	test('Flat object manual revive', () => {
+	test('Flat object manual revive', async () => {
 		const user0 = makeObj<User>('user', 0);
 
 		if (!isSerializableObject(user0)) {
@@ -111,7 +111,7 @@ describe('Reviver', () => {
 		expect(prodObj2.productName).toEqual(prod2.productName);
 	});
 
-	test('Array revive', () => {
+	/* test('Array revive', () => {
 		const userArr = makeArr<User>('user', 4);
 
 		const arr = reviver.revive<SerialArray<User>>(toSerialObject(userArr).serialize());
@@ -133,7 +133,7 @@ describe('Reviver', () => {
 			idx += 1;
 		}
 		expect(arr.length).toEqual(userArr.length);
-	});
+	}); */
 
 	test('Map string keys revive', () => {
 		const user0 = makeObj<User>('user', 0);

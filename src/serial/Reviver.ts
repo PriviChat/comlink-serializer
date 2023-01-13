@@ -1,15 +1,21 @@
+import * as Comlink from 'comlink';
 import { traverse, TraversalCallbackContext } from 'object-traversal';
 import Serializable, { SerializableObject } from './decorators/Serializable';
 import { Serialized } from './types';
 import objectRegistry from '../registry';
 import SerialSymbol from './SerialSymbol';
 import { SerialMeta } from './decorators';
-import { isSerializableObject, isSerializedObject } from './decorators/utils';
+import { isSerializableObject, isSerializedObject, isSerialProxy, toSerializableObject } from './decorators/utils';
 import { ObjectRegistryEntry } from '../registry';
-import { SerialArray, SerialMap } from '../serialobjs';
+import { SerialArray, SerialMap, SerialProxy } from '../serialobjs';
 
 export default class Reviver {
-	private revivedMap = new Map<string, SerializableObject<any, any>>();
+	private revivedCache = new Map<string, Serializable>();
+	private static noTraversal = new Set<string>([
+		SerialArray.classToken.toString(),
+		SerialMap.classToken.toString(),
+		SerialProxy.classToken.toString(),
+	]);
 
 	/**
 	 * If the entry is a SerialArray or SerialMap, create a new instance of that class. Otherwise, create
@@ -17,14 +23,16 @@ export default class Reviver {
 	 * @param {ObjectRegistryEntry} entry - ObjectRegistryEntry
 	 * @returns An object that is an instance of the constructor function.
 	 */
-	private create(entry: ObjectRegistryEntry): Serializable {
+	private create<T extends Serializable>(entry: ObjectRegistryEntry) {
+		let rtnObj: SerializableObject<T>;
 		if (entry.classToken === SerialArray.classToken) {
-			return new SerialArray();
+			rtnObj = toSerializableObject(new SerialArray());
 		} else if (entry.classToken === SerialMap.classToken) {
-			return new SerialMap();
+			rtnObj = toSerializableObject(new SerialMap());
 		} else {
-			return Object.create(entry.constructor.prototype);
+			rtnObj = toSerializableObject(Object.create(entry.constructor.prototype));
 		}
+		return rtnObj;
 	}
 
 	/**
@@ -33,7 +41,7 @@ export default class Reviver {
 	 * @param {any} obj - any - The object to have the symbol revived.
 	 * @returns The object that was passed in.
 	 */
-	private reviveSerializedSymbol(obj: any) {
+	private reviveSymbols(obj: any) {
 		if (isSerializedObject(obj)) return obj;
 		const serSymStr = "'" + SerialSymbol.serialized.toString() + "'";
 		const meta = obj[serSymStr] as SerialMeta;
@@ -43,46 +51,6 @@ export default class Reviver {
 		}
 		return obj;
 	}
-
-	/* public reviveProxy<T extends SerializableObject, P extends Comlink.RemoteObject<T>>(proxy: P): Promise<T> {
-		const { $class, hash } =  proxy[SerialSymbol.serializable]();
-		if (!hash) {
-			const err = `ERR_MISSING_HASH: Object not deserializable, missing meta property: hash.`;
-			console.error(err);
-			throw TypeError(err);
-		}
-		if (!$class) {
-			const err = `ERR_MISSING_CLASS: Object missing meta property: $class.`;
-			console.error(err);
-			throw TypeError(err);
-		}
-
-		const entry = objectRegistry.getEntry($class);
-		if (!entry) {
-			const err = `ERR_MISSING_REG: Object with $class: ${$class.toString()} not found in registry.
-					 Make sure you are property configuring the transfer handler. Remember the object must be registered on each thread.`;
-			console.error(err);
-			throw new Error(err);
-		}
-
-		const revived = this.create(entry) as T;
-		if (!isSerializableObject<T>(revived)) {
-			const err = `ERR_DESERIAL_FAIL: The deserialized object with $class: ${$class.toString()} is missing Symbol: [${SerialSymbol.serializable.toString()}]. There is a known issue with babel and using legacy decorators. See README for a workaround.`;
-			console.error(err);
-			throw new TypeError(err);
-		}
-
-		const desc: SerialDictionary<SerialDescriptorProperty> =
-			Reflect.getOwnMetadata(SERIAL_PROPERTY_METADATA_KEY, revived) || {};
-
-		for (const key of Object.keys(revived)) {
-			if(!desc[key]) {
-				const value = await proxy[key as keyof P];
-				revived.assign(key, value);
-			}	
-		}
-		return revived;
-	} */
 
 	public revive<T extends Serializable>(serialObj: Serialized): T {
 		// make sure we are dealing with a valid object
@@ -107,7 +75,7 @@ export default class Reviver {
 		}
 
 		// convert the symbol property back to a symbol
-		serialObj = this.reviveSerializedSymbol(serialObj);
+		serialObj = this.reviveSymbols(serialObj);
 
 		if (isSerializedObject(serialObj)) {
 			const { classToken, hash } = serialObj[SerialSymbol.serialized];
@@ -133,27 +101,28 @@ export default class Reviver {
 				throw new Error(err);
 			}
 
-			// check if object has already been revived
-			if (this.revivedMap.has(hash)) {
-				return this.revivedMap.get(hash)! as unknown as T;
+			// check revived cache for object
+			let revived = this.revivedCache.get(hash);
+			if (revived) {
+				if (isSerialProxy(revived)) {
+					return revived.getProxy() as T;
+				}
+				return revived as T;
+			} else {
+				revived = this.create(entry);
 			}
 
-			const revived = this.create(entry) as T;
-			if (!isSerializableObject<T>(revived)) {
-				const err = `ERR_DESERIAL_FAIL: The deserialized object with classToken: ${classToken} is missing Symbol: [${SerialSymbol.serializable.toString()}]. There is a known issue with babel and using legacy decorators. See README for a workaround.`;
-				console.error(err);
-				throw new TypeError(err);
-			}
-
-			// add revived item to map
-			this.revivedMap.set(hash, revived);
+			// add revived item to map for traverser
+			this.revivedCache.set(hash, revived);
 
 			if (revived.revive) {
 				revived.revive(serialObj, this);
 			} else {
 				traverse(serialObj, this.traverser);
 			}
-			return revived;
+
+			// return revived object or comlink proxy
+			return isSerialProxy(revived) ? (revived.getProxy() as T) : (revived as T);
 		} else {
 			const err = `ERR_MISSING_SYMBOL: Object not deserializable. Missing Symbol: [${SerialSymbol.serializable.toString()}] or undefined object returned. Object: ${JSON.stringify(
 				serialObj
@@ -169,13 +138,12 @@ export default class Reviver {
 			if (isSerializedObject(parent)) {
 				const serialMeta = parent[SerialSymbol.serialized];
 
-				// don't process any props on Map or Array
-				if (
-					serialMeta.classToken === SerialArray.classToken.toString() ||
-					serialMeta.classToken === SerialMap.classToken.toString()
-				)
+				// do not traverse
+				if (Reviver.noTraversal.has(serialMeta.classToken)) {
 					return;
+				}
 
+				// get and validate object hash
 				const hash = serialMeta.hash;
 				if (!hash) {
 					const err = `ERR_MISSING_HASH: Parent Object: ${JSON.stringify(
@@ -183,24 +151,31 @@ export default class Reviver {
 					)} not deserializable, missing meta property: hash.`;
 					throw TypeError(err);
 				}
-				const parentRev = this.revivedMap.get(hash);
-				if (!parentRev) {
-					const err = `ERR_MISSING_REVIVED: Parent Object: ${JSON.stringify(
+
+				// get and validate parent
+				const revParent = this.revivedCache.get(hash) as SerializableObject;
+				if (!revParent) {
+					const err = `ERR_NOT_FOUND: Parent Object: ${JSON.stringify(
 						parent
-					)} - not found in revivedMap using key: ${hash} while processing Child Object: ${JSON.stringify(value)}`;
+					)} - not found in cache using key: ${hash} while processing Child Object: ${JSON.stringify(value)}`;
 					throw TypeError(err);
 				}
+
+				let revVal;
+				// if value is object
 				if (typeof value === 'object') {
-					value = this.reviveSerializedSymbol(value);
+					value = this.reviveSymbols(value);
 					if (isSerializedObject(value)) {
-						const childRev = this.revive(value);
-						parentRev.assign(key, childRev);
+						// value need to be revived
+						revVal = this.revive(value);
 					} else {
-						parentRev.assign(key, value);
+						revVal = value;
 					}
 				} else {
-					parentRev.assign(key, value);
+					revVal = value;
 				}
+				// assign revived value to parent
+				revParent.assign(key, revVal);
 			}
 		}
 	};

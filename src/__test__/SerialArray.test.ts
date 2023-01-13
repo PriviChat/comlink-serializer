@@ -4,8 +4,9 @@ import { Serializable, toSerialObject } from '@comlink-serializer';
 import { SerializedUser, UserClass } from '@test-fixtures/types';
 
 import { SerialSymbol } from '../serial';
-import { SerialArray } from '../serialobjs';
+import { SerialArray, SerializedArray } from '../serialobjs';
 import { makeObj } from './fixtures';
+import { toSerializableObject } from '../serial/decorators/utils';
 
 describe('SerialArray Tests', () => {
 	test('Array implements isEmpty check', () => {
@@ -30,7 +31,7 @@ describe('SerialArray Tests', () => {
 		const user0 = makeObj<User>('user', 0);
 		const user1 = makeObj<User>('user', 1);
 		const userArr0 = toSerialObject([user0, user1]);
-		const serializedArr = userArr0.serialize();
+		const serializedArr = toSerializableObject(userArr0).serialize() as SerializedArray;
 
 		const arrMeta = serializedArr[SerialSymbol.serialized];
 		expect(arrMeta).toBeDefined();

@@ -6,6 +6,7 @@ export class SerialSymbol {
 	static readonly serializableLazy: unique symbol = Symbol('ComSer.serializableLazy');
 	static readonly classToken: unique symbol = Symbol('ComSer.classToken');
 	static readonly serializeDescriptor: unique symbol = Symbol('ComSer.serialDescriptor');
+	static readonly serializedProxy: unique symbol = Symbol('ComSer.serializedProxy');
 }
 
 export default SerialSymbol;

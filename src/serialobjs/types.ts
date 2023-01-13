@@ -1,4 +1,13 @@
-import { Serialized, SerialPrimitive } from '../serial';
+import { Serialized, SerialSymbol } from '../serial';
+
+export interface SerializedProxy extends Serialized {
+	[SerialSymbol.serializedProxy]: true;
+	id: string;
+	port: MessagePort;
+	proxyClass: string;
+	proxyProp: string;
+	outerClass: string;
+}
 
 export interface SerializedArray<S extends Serialized = Serialized> extends Serialized {
 	$array: S[];

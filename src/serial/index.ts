@@ -12,7 +12,7 @@ export * from './types';
 export function toSerialObject<T extends Serializable>(arr: Array<T>): SerialArray<T>;
 export function toSerialObject<T extends Serializable, K extends SerialPrimitive>(map: Map<K, T>): SerialMap<K, T>;
 export function toSerialObject<T extends Serializable, K extends SerialPrimitive>(obj: Array<T> | Map<K, T>) {
-	if (obj instanceof Array) return new SerialArray(...obj);
+	if (obj instanceof Array) return new SerialArray(obj);
 	else return new SerialMap(obj);
 }
 

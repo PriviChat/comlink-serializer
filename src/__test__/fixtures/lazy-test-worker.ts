@@ -2,6 +2,8 @@ import * as Comlink from 'comlink';
 import ComlinkSerializer from '@comlink-serializer';
 import User from '@test-fixtures/User';
 import Order from '@test-fixtures/Order';
+import Product from '@test-fixtures/Product';
+import Address from '@test-fixtures/address';
 
 export default class LazyTestWorker {
 	getUser(user: User) {
@@ -21,7 +23,8 @@ export default class LazyTestWorker {
 	}
 
 	async getOrderUser(order: Order): Promise<User> {
-		const user = await order.user;
+		const id = order.orderId;
+		const user = order.user;
 		const last = await user.lastName;
 		//const addresses = await user.addresses;
 		let ct = 0;
@@ -36,4 +39,4 @@ export default class LazyTestWorker {
 	}
 }
 Comlink.expose(LazyTestWorker);
-ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
+ComlinkSerializer.registerTransferHandler({ transferClasses: [User, Order, Product, Address] });

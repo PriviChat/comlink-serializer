@@ -1,17 +1,33 @@
 import stringHash from 'string-hash';
-import { Reviver } from '../serial';
+import { Reviver, SerializeCtx } from '../serial';
 import { Serializable } from '../serial/decorators';
 import { Serialized } from '../serial';
 import { SerializedArray } from './types';
-import { isSerializableObject } from '../serial/decorators/utils';
+import { isSerializableObject, toSerializableObject } from '../serial/decorators/utils';
 
-function serialArrayFactory<T extends Serializable>(...args: any[]): SerialArray<T> {
-	return new SerialArray<T>(...args);
+function serialArrayFactory<T extends Serializable>(arr?: T[]): SerialArray<T> {
+	return new SerialArray<T>(arr);
 }
 
 @Serializable(SerialArray.classToken)
 export default class SerialArray<T extends Serializable> extends Array<T> implements Serializable<SerializedArray> {
 	static readonly classToken: unique symbol = Symbol('ComSer.serialArray');
+
+	constructor(arr?: T[]) {
+		super();
+		if (arr) {
+			for (const value of arr) {
+				if (!isSerializableObject(value)) {
+					const err = `ERR_UNSUPPORTED_TYPE: Array contains an unsupported value: ${JSON.stringify(
+						value
+					)}. Only values decorated with @Serializable are supported`;
+					console.error(err);
+					throw new TypeError(err);
+				}
+				this.push(value);
+			}
+		}
+	}
 
 	// built-in methods will use this as the constructor
 	static get [Symbol.species](): ArrayConstructor {
@@ -22,10 +38,10 @@ export default class SerialArray<T extends Serializable> extends Array<T> implem
 		return this.length === 0;
 	}
 
-	public serialize(): SerializedArray {
+	public serialize(ctx: SerializeCtx): SerializedArray {
 		const arr = new Array<Serialized>();
 		for (const item of this) {
-			if (isSerializableObject(item)) arr.push(item.serialize());
+			arr.push(toSerializableObject(item).serialize(ctx));
 		}
 		const serialObj: SerializedArray = {
 			$array: arr,
@@ -34,23 +50,12 @@ export default class SerialArray<T extends Serializable> extends Array<T> implem
 	}
 
 	static from<T extends Serializable>(arr: Array<T>): SerialArray<T> {
-		const sa = serialArrayFactory<T>();
-		for (const value of arr) {
-			if (!isSerializableObject(value)) {
-				const err = `ERR_UNSUPPORTED_TYPE: Array contains an unsupported value: ${JSON.stringify(
-					value
-				)}. Only values decorated with @Serializable are supported`;
-				console.error(err);
-				throw new TypeError(err);
-			}
-			sa.push(value);
-		}
-		return sa;
+		return serialArrayFactory<T>(arr);
 	}
 
 	public revive?(obj: SerializedArray, reviver: Reviver) {
 		for (const item of obj.$array) {
-			const revived = reviver.revive(item) as T;
+			const revived = reviver.revive<T>(item);
 			this.push(revived);
 		}
 	}

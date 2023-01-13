@@ -1,4 +1,4 @@
-import { SerialMeta } from './decorators/types';
+import { SerialClassToken, SerializeDescriptorProperty, SerialMeta, Serializable } from './decorators';
 import SerialSymbol from './SerialSymbol';
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -14,3 +14,12 @@ export const serialPrimitives = new Set<string>(['boolean', 'number', 'bigint', 
 export type Dictionary<T> = {
 	[key: string]: T;
 };
+
+export interface SerializeCtx {
+	serialize<S extends Serialized>(
+		obj: Serializable,
+		classToken: SerialClassToken,
+		descr?: Dictionary<SerializeDescriptorProperty>
+	): S;
+	addTransferable(transfer: Transferable): void;
+}

@@ -49,7 +49,7 @@ describe('Comlink pass-through', () => {
 		const user0 = makeObj<User>('user', 0);
 		const order = makeObj<Order>('order', 0);
 
-		const rtnUser = await testWorker.getOrderUser(ComlinkSerializer.lazy(order));
+		const rtnUser = await testWorker.getOrderUser(order);
 		expect(rtnUser).toBeInstanceOf(User);
 		expect((rtnUser as any)[SerialSymbol.serializable]).toBeTruthy();
 		expect(rtnUser.email).toBe(user0.email);
