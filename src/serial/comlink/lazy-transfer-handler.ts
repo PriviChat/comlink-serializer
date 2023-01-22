@@ -1,17 +1,13 @@
 import * as Comlink from 'comlink';
-import { lazy, Reviver, toSerialIterable } from '..';
-import { Serializable, SerializableObject, SerialPropertyMetadataKey } from '../decorators';
-import { Dictionary } from '../types';
-import SerialSymbol from '../SerialSymbol';
-import { SerializeDescriptorProperty } from '../decorators/types';
+import { Serializable } from '../decorators';
+import SerialSymbol from '../serial-symbol';
 import { isSerializableObject } from '../decorators/utils';
-import { SerialArray } from '../../serialobjs';
 
 export default class LazyTransferHandler {
 	private objValueCache = new WeakMap<object, Map<string | symbol, any>>();
 	constructor() {}
 
-	private expose = (orgObj: SerializableObject, channel: MessageChannel) => {
+	private expose = (orgObj: Serializable, channel: MessageChannel) => {
 		const getCacheValue = (lookupObj: Object, prop: string) => {
 			const propVals = this.objValueCache.get(lookupObj);
 			if (!propVals) return undefined;
@@ -24,7 +20,7 @@ export default class LazyTransferHandler {
 			this.objValueCache.get(lookupObj)?.set(prop, val);
 			return val;
 		};
-		const createProxy = (target: SerializableObject): any => {
+		const createProxy = (target: Serializable): any => {
 			return new Proxy(target, {
 				getPrototypeOf(_target) {
 					return _target;
@@ -35,7 +31,7 @@ export default class LazyTransferHandler {
 						if (cv) return cv;
 
 						if (isSerializableObject(_target)) {
-							const desc = target[SerialSymbol.serializeDescriptor]();
+							const desc = _target[SerialSymbol.serializeDescriptor]();
 							const classToken = _target[SerialSymbol.classToken]();
 							const config = desc[prop];
 							if (config) {
@@ -116,39 +112,23 @@ export default class LazyTransferHandler {
 		Comlink.expose(createProxy(orgObj), channel.port1);
 	};
 
-	private wrap<T extends SerializableObject, P extends Comlink.RemoteObject<T>>(target: SerializableObject, proxy: P) {
-		return new Proxy(target, {
-			get: async (target, prop, receiver) => {
-				if (typeof prop === 'string') {
-					const desc: Dictionary<SerializeDescriptorProperty> =
-						Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || {};
-
-					if (desc[prop]) {
-						return await proxy[prop as keyof P];
-					}
-				}
-				return Reflect.get(target, prop, receiver);
-			},
-		});
-	}
-
 	public get handler() {
-		const comlink: Comlink.TransferHandler<SerializableObject | Comlink.RemoteObject<any>, Transferable> = {
-			canHandle: function (value: any): value is SerializableObject {
-				return (value && value[SerialSymbol.serializableLazy]) ?? false;
+		const comlink: Comlink.TransferHandler<Serializable | Comlink.Remote<Serializable>, Transferable> = {
+			canHandle: function (value: any): value is Serializable {
+				if (!value) return false;
+				if (value[SerialSymbol.serialLazy]) return true;
+				return false;
 			},
-			serialize: (object: SerializableObject) => {
+			serialize: (object: Serializable) => {
 				const channel = new MessageChannel();
 				const origObj = Object.getPrototypeOf(object);
 				this.expose(origObj, channel);
 				return [channel.port2, [channel.port2]];
 			},
 			deserialize: (port2: MessagePort) => {
-				const reviver = new Reviver();
 				port2.start();
-				const proxy = Comlink.wrap<any>(port2);
-				//const revived = await reviver.reviveProxy(proxy);
-				return proxy; //this.wrap(revived, proxy);
+				const proxy = Comlink.wrap<Serializable>(port2);
+				return proxy;
 			},
 		};
 		return comlink;

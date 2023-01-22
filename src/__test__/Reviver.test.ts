@@ -1,33 +1,30 @@
 import { expect, test, jest } from '@jest/globals';
 import hash from 'object-hash';
-import User from '@test-fixtures/User';
-import { Reviver, toSerialObject } from '@comlink-serializer';
-import Product from '@test-fixtures/Product';
-import Order from '@test-fixtures/Order';
+import User from '@test-fixtures/user';
+import Product from '@test-fixtures/product';
+import Order from '@test-fixtures/order';
 import { getSerializableSymbol } from '@test-fixtures/utils';
 
-import { SerialSymbol } from '../serial';
-import { SerialArray, SerialMap } from '../serialobjs';
+import SerialSymbol from '../serial/serial-symbol';
+import { Reviver, SerialArray, Serializer, SerialMap } from '../serial';
 import { ProductClass, UserClass } from '@test-fixtures/types';
 import { makeArr, makeObj } from './fixtures';
-import { isSerializableObject } from '../serial/decorators/utils';
+import { toSerializable } from '../serial/utils';
 
 describe('Reviver', () => {
+	let serializer: Serializer;
 	let reviver: Reviver;
 
 	beforeEach(() => {
 		//must create a new reviver before each
 		reviver = new Reviver();
+		serializer = new Serializer();
 	});
 
 	test('Flat object manual revive', async () => {
 		const user0 = makeObj<User>('user', 0);
 
-		if (!isSerializableObject(user0)) {
-			throw Error('Invalid test object');
-		}
-
-		const user = reviver.revive<User>(user0.serialize());
+		const user = reviver.revive<User>(serializer.serialize(user0));
 		expect(SerialSymbol.serializable in user).toBeTruthy();
 		const meta = getSerializableSymbol(user);
 		expect(meta).toBeDefined();
@@ -41,11 +38,7 @@ describe('Reviver', () => {
 	test('Flat object auto revive', () => {
 		const prod0 = makeObj<Product>('prod', 0);
 
-		if (!isSerializableObject(prod0)) {
-			throw Error('Invalid test object');
-		}
-
-		const prod = reviver.revive<Product>(prod0.serialize());
+		const prod = reviver.revive<Product>(serializer.serialize(prod0));
 		expect(SerialSymbol.serializable in prod).toBeTruthy();
 		const meta = getSerializableSymbol(prod);
 		expect(meta?.classToken).toEqual(ProductClass.toString());
@@ -63,11 +56,7 @@ describe('Reviver', () => {
 
 		const order0 = makeObj<Order>('order', 3);
 
-		if (!isSerializableObject(order0)) {
-			throw Error('Invalid test object');
-		}
-
-		const order = reviver.revive<Order>(order0.serialize());
+		const order = reviver.revive<Order>(serializer.serialize(order0));
 		expect(order.orderId).toEqual(order0.orderId);
 
 		const user = order.user;
@@ -111,16 +100,13 @@ describe('Reviver', () => {
 		expect(prodObj2.productName).toEqual(prod2.productName);
 	});
 
-	/* test('Array revive', () => {
+	test('Array revive', () => {
 		const userArr = makeArr<User>('user', 4);
 
-		const arr = reviver.revive<SerialArray<User>>(toSerialObject(userArr).serialize());
-		expect(SerialSymbol.serializable in arr).toBeTruthy();
-		const meta = getSerializableSymbol(arr);
-		expect(meta).toBeDefined();
+		const revArr = reviver.revive<User[]>(serializer.serialize(toSerializable(userArr)));
 
 		let idx = 0;
-		for (const user of arr) {
+		for (const user of revArr) {
 			expect(SerialSymbol.serializable in user).toBeTruthy();
 			const userMeta = getSerializableSymbol(user);
 			expect(userMeta).toBeDefined();
@@ -132,8 +118,8 @@ describe('Reviver', () => {
 			expect(user.totalOrders).toEqual(idx);
 			idx += 1;
 		}
-		expect(arr.length).toEqual(userArr.length);
-	}); */
+		expect(revArr.length).toEqual(userArr.length);
+	});
 
 	test('Map string keys revive', () => {
 		const user0 = makeObj<User>('user', 0);
@@ -145,13 +131,10 @@ describe('Reviver', () => {
 			['2', user2],
 		]);
 
-		const map = reviver.revive<SerialMap<string, User>>(toSerialObject(userMap).serialize());
-		expect(SerialSymbol.serializable in map).toBeTruthy();
-		const meta = getSerializableSymbol(map);
-		expect(meta).toBeDefined();
+		const revMap = reviver.revive<Map<string, User>>(serializer.serialize(toSerializable(userMap)));
 
 		let idx = 0;
-		for (const [key, user] of map) {
+		for (const [key, user] of revMap) {
 			expect(SerialSymbol.serializable in user).toBeTruthy();
 			const userMeta = getSerializableSymbol(user);
 			expect(userMeta).toBeDefined();
@@ -164,7 +147,7 @@ describe('Reviver', () => {
 			expect(user.totalOrders).toEqual(idx);
 			idx += 1;
 		}
-		expect(map.size).toEqual(userMap.size);
+		expect(revMap.size).toEqual(userMap.size);
 	});
 
 	test('Map number keys revive', () => {
@@ -177,13 +160,10 @@ describe('Reviver', () => {
 			[2, user2],
 		]);
 
-		const map = reviver.revive<SerialMap<number, User>>(toSerialObject(userMap).serialize());
-		expect(SerialSymbol.serializable in map).toBeTruthy();
-		const meta = getSerializableSymbol(map);
-		expect(meta).toBeDefined();
+		const revMap = reviver.revive<Map<number, User>>(serializer.serialize(toSerializable(userMap)));
 
 		let idx = 0;
-		for (const [key, user] of map) {
+		for (const [key, user] of revMap) {
 			expect(SerialSymbol.serializable in user).toBeTruthy();
 			const userMeta = getSerializableSymbol(user);
 			expect(userMeta).toBeDefined();
@@ -192,7 +172,7 @@ describe('Reviver', () => {
 			expect(user.totalOrders).toEqual(idx);
 			idx += 1;
 		}
-		expect(map.size).toEqual(userMap.size);
+		expect(revMap.size).toEqual(userMap.size);
 	});
 
 	test('Map boolean keys revive', () => {
@@ -205,13 +185,10 @@ describe('Reviver', () => {
 			[true, user1],
 		]);
 
-		const map = reviver.revive<SerialMap<boolean, User>>(toSerialObject(userMap).serialize());
-		expect(SerialSymbol.serializable in map).toBeTruthy();
-		const meta = getSerializableSymbol(map);
-		expect(meta).toBeDefined();
+		const revMap = reviver.revive<Map<boolean, User>>(serializer.serialize(toSerializable(userMap)));
 
 		let idx = 0;
-		for (const [key, user] of map) {
+		for (const [key, user] of revMap) {
 			expect(SerialSymbol.serializable in user).toBeTruthy();
 			const userMeta = getSerializableSymbol(user);
 			expect(userMeta).toBeDefined();
@@ -220,7 +197,7 @@ describe('Reviver', () => {
 			expect(user.totalOrders).toEqual(idx);
 			idx += 1;
 		}
-		expect(map.size).toEqual(2);
+		expect(revMap.size).toEqual(2);
 	});
 
 	test('Reviver error handling empty object', () => {
@@ -233,10 +210,6 @@ describe('Reviver', () => {
 	test('Reviver error handling no class', () => {
 		const user0 = makeObj<User>('user', 0);
 
-		if (!isSerializableObject(user0)) {
-			throw Error('Invalid test object');
-		}
-
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
 		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
@@ -245,7 +218,7 @@ describe('Reviver', () => {
 			};
 		};
 		expect(() => {
-			reviver.revive(user0.serialize());
+			reviver.revive(serializer.serialize(user0));
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
@@ -253,10 +226,6 @@ describe('Reviver', () => {
 
 	test('Reviver error handling invalid class', () => {
 		const user0 = makeObj<User>('user', 0);
-
-		if (!isSerializableObject(user0)) {
-			throw Error('Invalid test object');
-		}
 
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
 		(user0 as any)[SerialSymbol.serializable] = () => {
@@ -266,15 +235,15 @@ describe('Reviver', () => {
 			};
 		};
 		expect(() => {
-			reviver.revive(user0.serialize());
+			reviver.revive(serializer.serialize(user0));
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
 	});
 
-	//This needs to be a mock
+	test('Reviver error handling no hash', () => {
+		const user0 = makeObj<User>('user', 0);
 
-	/* 	test('Reviver error handling no hash', () => {
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
 		(user0 as any)[SerialSymbol.serializable] = () => {
 			return {
@@ -283,9 +252,9 @@ describe('Reviver', () => {
 			};
 		};
 		expect(() => {
-			reviver.revive(user0.serialize());
+			reviver.revive(serializer.serialize(user0));
 		}).toThrow();
 		expect(err.mock.calls).toHaveLength(1);
 		err.mockReset();
-	}); */
+	});
 });

@@ -1,11 +1,9 @@
 import 'reflect-metadata';
-import hash from 'object-hash';
 import objectRegistry from '../../registry';
-import Reviver from '../Reviver';
-import Serializer from '../serializer';
-import SerialSymbol from '../SerialSymbol';
+import SerialSymbol from '../serial-symbol';
 import { AnyConstructor, Dictionary, SerializeCtx, Serialized } from '../types';
 import {
+	Revivable,
 	SerialClassToken,
 	SerializeDescriptorProperty,
 	SerialMeta,
@@ -14,21 +12,21 @@ import {
 } from './types';
 
 interface Serializable<S extends Serialized = Serialized> extends ValueObject {
-	revive?(serialObj: S, reviver: Reviver): void;
-	serialize?(ctx?: SerializeCtx): S;
+	beforeSerialize?(): void;
+	serialize?(ctx: SerializeCtx): S;
+	beforePropertySerialize?(prop: string): any;
 }
 
-export interface SerializableObject<T extends Serializable = Serializable> extends Serializable {
+export interface SerializableObject<T extends Serializable> {
 	[SerialSymbol.serializable](): SerialMeta;
 	[SerialSymbol.classToken](): SerialClassToken;
 	[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty>;
-	serialize(ctx?: SerializeCtx): Serialized;
-	assign(key: string, value: any): SerializableObject<T>;
+	get self(): SerializableObject<T>;
 }
 
 interface SerializableSettings {}
 
-type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S>>;
+type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S> & Revivable<S>>;
 
 function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S>>(
 	classToken: SerialClassToken,
@@ -74,41 +72,6 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				}
 				return rtnDescr;
 			}
-			/**
-			 * > It serializes the object
-			 * @param {SerializeCtx} ctx - SerializeCtx = new Serializer()
-			 * @returns The serialized object.
-			 */
-			public serialize(ctx: SerializeCtx = new Serializer()): S {
-				const serialMeta = this[SerialSymbol.serializable]();
-				let serialObj;
-
-				if (super.serialize) {
-					serialObj = super.serialize(ctx);
-				} else {
-					const classToken = this[SerialSymbol.classToken]();
-					const descr = this[SerialSymbol.serializeDescriptor]();
-					serialObj = ctx.serialize(this, classToken, descr) as S;
-				}
-
-				serialMeta.hash = hash(serialObj, {
-					//don't hash message port
-					excludeKeys: function (key) {
-						if (key === 'port') {
-							return true;
-						}
-						return false;
-					},
-				});
-
-				// need for Serialized interface
-				Object.assign(serialObj, { [SerialSymbol.serialized]: serialMeta });
-				// escaped for serialization
-				const escSym = "'" + SerialSymbol.serialized.toString() + "'";
-				Object.assign(serialObj, { [escSym]: serialMeta });
-
-				return serialObj;
-			}
 
 			/**
 			 * Assigns a value to a key (property) in an object.
@@ -118,6 +81,10 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 			 */
 			public assign(key: string, value: any) {
 				Object.assign(this, { [key]: value });
+				return this;
+			}
+
+			public get self() {
 				return this;
 			}
 		};

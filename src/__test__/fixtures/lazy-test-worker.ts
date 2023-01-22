@@ -1,8 +1,8 @@
 import * as Comlink from 'comlink';
 import ComlinkSerializer from '@comlink-serializer';
-import User from '@test-fixtures/User';
-import Order from '@test-fixtures/Order';
-import Product from '@test-fixtures/Product';
+import User from '@test-fixtures/user';
+import Order from '@test-fixtures/order';
+import Product from '@test-fixtures/product';
 import Address from '@test-fixtures/address';
 
 export default class LazyTestWorker {
@@ -26,6 +26,7 @@ export default class LazyTestWorker {
 		const id = order.orderId;
 		const user = order.user;
 		const last = await user.lastName;
+		const addresses = await user.addresses;
 		//const addresses = await user.addresses;
 		let ct = 0;
 		for await (const address of user.addresses) {

@@ -1,7 +1,7 @@
 import hash from 'object-hash';
 import { Serializable } from '@comlink-serializer';
 
-import { SerialSymbol } from '../../serial';
+import SerialSymbol from '../../serial/serial-symbol';
 import { SerialMeta } from '../../serial/decorators';
 import { OrderClass, ProductClass, SerializedOrder, SerializedProduct, SerializedUser, UserClass } from './types';
 

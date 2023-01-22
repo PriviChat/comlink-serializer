@@ -1,5 +1,6 @@
-import SerializableTransferHandler from './SerializableTransferHandler';
-import IterableTransferHandler from './IterableTransferHandler';
+export { default as ProxyWrapper } from './proxy-wrapper';
+import SerializableTransferHandler from './serializable-transfer-handler';
+import IterableTransferHandler from './iterable-transfer-handler';
 import LazyTransferHandler from './lazy-transfer-handler';
 export { TransferHandlerRegistration, SerialTransferHandlerEnum as SerialTransferHandlers } from './types';
 

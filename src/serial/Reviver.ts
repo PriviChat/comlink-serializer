@@ -1,38 +1,37 @@
-import * as Comlink from 'comlink';
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import Serializable, { SerializableObject } from './decorators/Serializable';
-import { Serialized } from './types';
+import { Revivable, Serializable, SerialMeta } from './decorators';
+import { ParentRef, ReviveType, Serialized, SerialPrimitive } from './types';
 import objectRegistry from '../registry';
-import SerialSymbol from './SerialSymbol';
-import { SerialMeta } from './decorators';
-import { isSerializableObject, isSerializedObject, isSerialProxy, toSerializableObject } from './decorators/utils';
+import { isSerializedObject } from './decorators/utils';
 import { ObjectRegistryEntry } from '../registry';
-import { SerialArray, SerialMap, SerialProxy } from '../serialobjs';
+import SerialSymbol from './serial-symbol';
+import SerialArray from './serial-array';
+import SerialMap from './serial-map';
+import SerialProxy from './serial-proxy';
+import { ProxyWrapper } from './comlink';
 
 export default class Reviver {
-	private revivedCache = new Map<string, Serializable>();
-	private static noTraversal = new Set<string>([
+	private revivedCache = new Map<string, Revivable>();
+	private noTraversal = new Set<string>([
 		SerialArray.classToken.toString(),
 		SerialMap.classToken.toString(),
 		SerialProxy.classToken.toString(),
 	]);
 
 	/**
-	 * If the entry is a SerialArray or SerialMap, create a new instance of that class. Otherwise, create
-	 * a new instance of the entry's constructor
-	 * @param {ObjectRegistryEntry} entry - ObjectRegistryEntry
-	 * @returns An object that is an instance of the constructor function.
+	 * It creates an instance of the class that is registered with the given token
+	 * @param {ObjectRegistryEntry} entry - ObjectRegistryEntry - This is the entry that was found in the
+	 * registry.
+	 * @returns An instance of the class that was registered.
 	 */
-	private create<T extends Serializable>(entry: ObjectRegistryEntry) {
-		let rtnObj: SerializableObject<T>;
+	private create<T extends Serializable>(entry: ObjectRegistryEntry): Revivable {
 		if (entry.classToken === SerialArray.classToken) {
-			rtnObj = toSerializableObject(new SerialArray());
+			return new SerialArray<T>();
 		} else if (entry.classToken === SerialMap.classToken) {
-			rtnObj = toSerializableObject(new SerialMap());
+			return new SerialMap<SerialPrimitive, T>();
 		} else {
-			rtnObj = toSerializableObject(Object.create(entry.constructor.prototype));
+			return Object.create(entry.constructor.prototype);
 		}
-		return rtnObj;
 	}
 
 	/**
@@ -52,7 +51,7 @@ export default class Reviver {
 		return obj;
 	}
 
-	public revive<T extends Serializable>(serialObj: Serialized): T {
+	public revive<R extends ReviveType>(serialObj: Serialized, parentRef?: ParentRef): R {
 		// make sure we are dealing with a valid object
 		// TODO investigate why putting an object through comlink and then back causes the instanceof check to fail
 		if (!(serialObj instanceof Object)) {
@@ -101,28 +100,38 @@ export default class Reviver {
 				throw new Error(err);
 			}
 
-			// check revived cache for object
-			let revived = this.revivedCache.get(hash);
-			if (revived) {
-				if (isSerialProxy(revived)) {
-					return revived.getProxy() as T;
+			let inCache = this.revivedCache.has(hash);
+			const revived = inCache ? this.revivedCache.get(hash)! : this.create(entry);
+
+			if (!inCache) {
+				// add revived item to map for traverser
+				this.revivedCache.set(hash, revived);
+
+				if (revived.revive) {
+					// hook to override the default reviver
+					revived.revive(serialObj, { revive: this.revive, parentRef });
+				} else {
+					traverse(serialObj, this.traverser);
 				}
-				return revived as T;
-			} else {
-				revived = this.create(entry);
 			}
 
-			// add revived item to map for traverser
-			this.revivedCache.set(hash, revived);
-
-			if (revived.revive) {
-				revived.revive(serialObj, this);
-			} else {
-				traverse(serialObj, this.traverser);
+			// return proxy
+			if (revived instanceof SerialProxy) {
+				return ProxyWrapper.wrap(revived, parentRef) as R;
 			}
 
-			// return revived object or comlink proxy
-			return isSerialProxy(revived) ? (revived.getProxy() as T) : (revived as T);
+			if (revived.afterRevived) {
+				// hook after the object has been revived
+				revived.afterRevived();
+			}
+
+			if (revived instanceof SerialArray) {
+				return SerialArray.toArray(revived) as R;
+			} else if (revived instanceof SerialMap) {
+				return SerialMap.toMap(revived) as R;
+			} else {
+				return revived as R;
+			}
 		} else {
 			const err = `ERR_MISSING_SYMBOL: Object not deserializable. Missing Symbol: [${SerialSymbol.serializable.toString()}] or undefined object returned. Object: ${JSON.stringify(
 				serialObj
@@ -139,7 +148,7 @@ export default class Reviver {
 				const serialMeta = parent[SerialSymbol.serialized];
 
 				// do not traverse
-				if (Reviver.noTraversal.has(serialMeta.classToken)) {
+				if (this.noTraversal.has(serialMeta.classToken)) {
 					return;
 				}
 
@@ -153,7 +162,7 @@ export default class Reviver {
 				}
 
 				// get and validate parent
-				const revParent = this.revivedCache.get(hash) as SerializableObject;
+				const revParent = this.revivedCache.get(hash);
 				if (!revParent) {
 					const err = `ERR_NOT_FOUND: Parent Object: ${JSON.stringify(
 						parent
@@ -167,15 +176,26 @@ export default class Reviver {
 					value = this.reviveSymbols(value);
 					if (isSerializedObject(value)) {
 						// value need to be revived
-						revVal = this.revive(value);
+						revVal = this.revive(value, {
+							parent: revParent as Serializable,
+							classToken: serialMeta.classToken,
+							prop: key,
+						});
 					} else {
 						revVal = value;
 					}
 				} else {
 					revVal = value;
 				}
+
+				// SerialProxy cannot be modified
+				if (revParent.afterPropertyRevived && !(value instanceof SerialProxy)) {
+					// hook to allow upadates to revived objects before assigning
+					value = revParent.afterPropertyRevived(key, value);
+				}
+
 				// assign revived value to parent
-				revParent.assign(key, revVal);
+				Object.assign(revParent, { [key]: value });
 			}
 		}
 	};

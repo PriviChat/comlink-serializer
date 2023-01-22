@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import { hashCd } from './serial/utils';
+import { hashCd, serialize, serializeLazy } from './serial/utils';
 import {
 	iterableTransferHandler,
 	serializableTransferHandler,
@@ -7,11 +7,11 @@ import {
 	SerialTransferHandlers,
 	TransferHandlerRegistration,
 } from './serial/comlink';
-import { Serialized, Reviver, toSerialObject, toSerialIterable, lazy } from './serial';
+import { Serialized, ReviverCtx, SerializeCtx } from './serial';
+
 import { Serializable, Serialize } from './serial/decorators';
-import { AsyncSerialIterable } from './serial/iterable';
+import { serializeIterator } from './serial/iterable/utils';
 import objectRegistry, { defaultRegistryObjects } from './registry';
-import { SerialArray, SerialMap } from './serialobjs';
 
 defaultRegistryObjects.forEach((entry) => {
 	objectRegistry.register({
@@ -21,8 +21,6 @@ defaultRegistryObjects.forEach((entry) => {
 });
 
 export function registerTransferHandler(reg: TransferHandlerRegistration) {
-	new SerialArray();
-	new SerialMap();
 	Comlink.transferHandlers.set(SerialTransferHandlers.SerializableTransferHandler, serializableTransferHandler.handler);
 	Comlink.transferHandlers.set(SerialTransferHandlers.IterableTransferHandler, iterableTransferHandler.handler);
 	Comlink.transferHandlers.set(SerialTransferHandlers.LazyTransferHandler, lazyTransferHandler.handler);
@@ -30,19 +28,19 @@ export function registerTransferHandler(reg: TransferHandlerRegistration) {
 
 const ComlinkSerializer = {
 	registerTransferHandler,
-	toSerialObject,
-	lazy,
+	serialize,
+	serializeLazy,
 };
 
 export {
 	Serialized,
 	Serializable,
 	Serialize,
-	Reviver,
-	AsyncSerialIterable,
-	toSerialObject,
-	toSerialIterable,
-	lazy,
+	ReviverCtx,
+	SerializeCtx,
+	serialize,
+	serializeLazy,
+	serializeIterator,
 	TransferHandlerRegistration,
 	hashCd,
 };

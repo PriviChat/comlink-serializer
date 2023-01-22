@@ -1,65 +1,62 @@
-import { Serialized } from '../types';
-import { IteratorMessageType } from './types';
+import { Serialized, SerialPrimitive } from '../types';
+import { AnySerialIterator, AsyncReviveIterator, IteratorMessageType } from './types';
 
-export default abstract class MessageChannelIterable<T> {
-	constructor(port: MessagePort, type: 'wrap' | 'expose') {
-		if (type === 'expose') {
-			this.expose(port);
+export default abstract class MessageChannelIterable<I extends AnySerialIterator | AsyncReviveIterator> {
+	protected iterator: I;
+	readonly port: MessagePort;
+
+	constructor(param: MessagePort | AnySerialIterator) {
+		if (param instanceof MessagePort) {
+			this.port = param;
+			this.iterator = this.wrap(this.port) as I;
 		} else {
-			this.wrap(port);
+			const channel = new MessageChannel();
+			this.iterator = this.expose(param, channel.port1) as I;
+			this.port = channel.port2;
 		}
 	}
 
-	protected getIterator?(): AsyncIterableIterator<T>;
-	protected setIterator?(itr: AsyncIterableIterator<Serialized>): void;
-
 	private wrap = (port: MessagePort) => {
-		const iterator: AsyncIterableIterator<Serialized> = {
-			[Symbol.asyncIterator](): AsyncIterableIterator<Serialized> {
-				return this;
-			},
-
-			next: function (...args: [] | [undefined]): Promise<IteratorResult<Serialized, Serialized>> {
+		const iterator: AsyncReviveIterator = {
+			next: function (...args: []) {
 				port.postMessage({ type: IteratorMessageType.Next, ...args });
-				return new Promise<IteratorResult<Serialized, Serialized>>((resolve) => {
+				return new Promise((resolve) => {
 					port.onmessage = ({ data }) => {
 						resolve(data);
 					};
 				});
 			},
 
-			return: function (serialObj?: Serialized): Promise<IteratorResult<Serialized, Serialized>> {
-				port.postMessage({ type: IteratorMessageType.Return, serialObj });
-				return new Promise<IteratorResult<Serialized, Serialized>>((resolve) => {
+			return: function (value?: Serialized | [SerialPrimitive, Serialized]) {
+				port.postMessage({ type: IteratorMessageType.Return, value });
+				return new Promise((resolve) => {
 					port.onmessage = ({ data }) => {
 						resolve(data);
 					};
 				});
 			},
 		};
-		if (this.setIterator) this.setIterator(iterator);
+		return iterator;
 	};
 
-	private expose = (port: MessagePort) => {
+	private expose = (iterator: AnySerialIterator, port: MessagePort) => {
 		port.onmessage = async ({ data: { type, value } }) => {
-			if (this.getIterator) {
-				const itr = this.getIterator();
-				switch (type) {
-					case IteratorMessageType.Next:
-						port.postMessage(await itr.next(value));
-						break;
-					case IteratorMessageType.Return:
-						if (itr.return) {
-							port.postMessage(await itr.return(value));
-						}
-						break;
-					case IteratorMessageType.Throw:
-						//port.postMessage(await iterator.throw(value));
-						break;
-					default:
-						return;
-				}
+			switch (type) {
+				case IteratorMessageType.Next:
+					port.postMessage(await iterator.next(value));
+					break;
+				case IteratorMessageType.Return:
+					if (iterator.return) {
+						port.postMessage(await iterator.return(value));
+					}
+					break;
+				case IteratorMessageType.Throw:
+					//port.postMessage(await iterator.throw(value));
+					break;
+				default:
+					return;
 			}
 		};
+		return iterator;
 	};
 }

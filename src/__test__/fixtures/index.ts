@@ -1,8 +1,8 @@
 import { Serializable } from '@comlink-serializer';
 import Address from './address';
-import Order from './Order';
-import Product from './Product';
-import User from './User';
+import Order from './order';
+import Product from './product';
+import User from './user';
 
 function mA(idx: number) {
 	return new Address('addr_' + idx, 'street_' + idx, 'city_' + idx, 'state_' + idx, idx);

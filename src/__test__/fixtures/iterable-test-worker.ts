@@ -1,10 +1,10 @@
 import * as Comlink from 'comlink';
 import { fluentAsync } from 'fluent-iterable';
-import ComlinkSerializer, { AsyncSerialIterable } from '@comlink-serializer';
-import User from '@test-fixtures/User';
+import ComlinkSerializer from '@comlink-serializer';
+import User from '@test-fixtures/user';
 
 export default class IterableTestWorker {
-	async getUserCount(users: AsyncSerialIterable<User>): Promise<number> {
+	async getUserCount(users: AsyncIterableIterator<User>): Promise<number> {
 		let count = 0;
 		for await (const user of users) {
 			count += 1;
@@ -12,7 +12,7 @@ export default class IterableTestWorker {
 		return count;
 	}
 
-	async getTotalOrders(users: AsyncSerialIterable<User>, method: 'for-await' | 'reduce'): Promise<number> {
+	async getTotalOrders(users: AsyncIterableIterator<User>, method: 'for-await' | 'reduce'): Promise<number> {
 		let total = 0;
 		if (method === 'for-await') {
 			for await (const user of users) {

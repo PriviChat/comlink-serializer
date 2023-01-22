@@ -1,5 +1,5 @@
-import Serializable from '../decorators/Serializable';
-import { AnySerialIterable, AsyncReviverIterable } from '../iterable';
+import { Serializable } from '../decorators';
+import { ReviverIterable, SerialIterable, SerialIterableWrap } from '../iterable';
 import { AnyConstructor, Serialized } from '../types';
 
 export interface TransferHandlerRegistration {
@@ -13,5 +13,5 @@ export enum SerialTransferHandlerEnum {
 }
 
 export type TransferableIterable<S extends Serialized = Serialized, T extends Serializable<S> = Serializable<S>> =
-	| AnySerialIterable<T>
-	| AsyncReviverIterable<S>;
+	| ReviverIterable<S, T>
+	| SerialIterableWrap<S, T>;

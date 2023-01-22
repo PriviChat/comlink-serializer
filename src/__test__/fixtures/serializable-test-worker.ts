@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink';
 import ComlinkSerializer from '@comlink-serializer';
-import User from '@test-fixtures/User';
-import { SerialPrimitive } from 'src/serial';
+import User from '@test-fixtures/user';
+import { SerialPrimitive } from '../../serial';
 
 export default class SerializableTestWorker {
 	getUser(user: User) {

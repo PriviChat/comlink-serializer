@@ -1,4 +1,4 @@
-import ObjectRegistry from './ObjectRegistry';
+import ObjectRegistry from './object-registry';
 import { ObjectRegistryEntry } from './types';
 export * from './types';
 export const objectRegistry: ObjectRegistry = new ObjectRegistry();

@@ -1,13 +1,13 @@
 import { Serializable, Serialize } from '@comlink-serializer';
-import Product from './Product';
-import User from './User';
+import Product from './product';
+import User from './user';
 import { OrderClass, ProductClass, SerializedOrder, UserClass } from './types';
 
 @Serializable(OrderClass)
 class Order implements Serializable<SerializedOrder> {
 	readonly orderId: string;
 
-	@Serialize(UserClass, true)
+	@Serialize(true)
 	readonly user: User;
 
 	@Serialize(ProductClass)

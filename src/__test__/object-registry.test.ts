@@ -1,11 +1,11 @@
 import { expect, test, jest } from '@jest/globals';
-import User from '@test-fixtures/User';
+import User from '@test-fixtures/user';
 
 import objectRegistry from '../registry';
-import Order from '@test-fixtures/Order';
-import { SerialArray } from '../serialobjs';
+import Order from '@test-fixtures/order';
+import { SerialArray } from '../serial';
 import { UserClass } from '@test-fixtures/types';
-import Product from '@test-fixtures/Product';
+import Product from '@test-fixtures/product';
 
 //type SerializeFn<T> = () => T;
 //type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;

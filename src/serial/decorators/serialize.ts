@@ -1,42 +1,29 @@
-import 'reflect-metadata';
-import SerialSymbol from '../SerialSymbol';
-import { Dictionary } from '../types';
-import { SerialClassToken, SerializeDescriptorProperty, SerialMeta, SerialPropertyMetadataKey } from './types';
+import { SerialClassToken, SerializeSettings } from './types';
+import { defineSerializePropertyMetadata } from './utils';
 
-export default function Serialize(classToken?: SerialClassToken, lazy = false) {
-	return defineSerializePropertyMetadata(classToken, lazy);
-}
-
-function defineSerializePropertyMetadata(classToken?: SerialClassToken, lazy = false) {
-	return function (target: any, prop: string | symbol) {
-		const meta = Reflect.getMetadata('design:type', target, prop);
-		const type = meta.name;
-		let token: SerialClassToken;
-		if (type === 'Serializable') {
-			const serialMeta = meta.prototype[SerialSymbol.serializable]() as SerialMeta;
-			token = serialMeta.classToken;
-		} else if (type === 'Array' || type === 'Map') {
-			if (!classToken) {
-				const err = `ERR_MISSING_SERIAL_CLASS: You must pass in the classType when decorating an Array or Map with @Serialize. The object within those classes must be @Serializable.`;
-				console.error(err);
-				throw new TypeError(err);
-			}
-			token = classToken;
-		} else {
-			const err = `ERR_NOT_SERIALIZABLE: You may only decorate Serializable, Array or Map with @Serialize. The object within Array and Map must be @Serializable.`;
-			console.error(err);
-			throw new TypeError(err);
-		}
-
-		const propConfig: SerializeDescriptorProperty = {
-			prop: prop.toString(),
-			type,
-			token,
-			lazy,
-		};
-		const descriptors: Dictionary<SerializeDescriptorProperty> =
-			Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || {};
-		descriptors[prop.toString()] = propConfig;
-		Reflect.defineMetadata(SerialPropertyMetadataKey, descriptors, target);
-	};
+/**
+ * The @Serialize decorator tells the serializer to serialize the property.
+ *
+ * The property decorated must be a class that is either decorated with @Serializable or an Array or Map containing  Serializable objects.
+ *
+ * Map keys must be of primitive types (boolean | number | bigint | string).
+ *
+ * When decorating an Array or Map with @Serialize you must also specify the SerialClassToken.
+ *
+ * If you pass boolean (true) into @Serialize you will get a lazy serialization which is a proxy to your object.
+ *
+ * @param {SerialClassToken | SerializeSettings | boolean} [settings] - SerialClassToken |
+ * SerializeSettings | boolean
+ * @returns void
+ */
+export default function Serialize(settings?: SerialClassToken | SerializeSettings | boolean) {
+	if (!settings) {
+		return defineSerializePropertyMetadata({ lazy: false });
+	} else if (typeof settings === 'boolean') {
+		return defineSerializePropertyMetadata({ lazy: settings });
+	} else if (typeof settings === 'string' || typeof settings === 'symbol') {
+		return defineSerializePropertyMetadata({ classToken: settings, lazy: false });
+	} else {
+		return defineSerializePropertyMetadata(settings);
+	}
 }

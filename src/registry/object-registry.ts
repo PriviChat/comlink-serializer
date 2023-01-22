@@ -1,6 +1,5 @@
 /* Registry of all the classes that are serializable */
-import { SerialClassToken } from 'src/serial/decorators';
-import { v5 as uuidv5 } from 'uuid';
+import { SerialClassToken } from '../serial/decorators';
 import { ObjectRegistryEntry } from './types';
 
 export default class ObjectRegistry {

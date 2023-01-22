@@ -1,16 +1,16 @@
 import * as Comlink from 'comlink';
 import { jest, expect, test } from '@jest/globals';
-import User from '@test-fixtures/User';
+import User from '@test-fixtures/user';
 import WorkerFactory from '@test-fixtures/worker-factory';
-import SerializableTestWorker from '@test-fixtures/SerializableTestWorker';
-import { SerializedUser } from '@test-fixtures/types';
-import ComlinkSerializer, { Serialized, Serializable, toSerialObject } from '@comlink-serializer';
+import SerializableTestWorker from '@test-fixtures/serializable-test-worker';
+import ComlinkSerializer, { Serialized, Serializable } from '@comlink-serializer';
 
 import { serializableTransferHandler } from '../serial/comlink';
-import { SerialSymbol } from '../serial';
-import { SerialArray, SerialMap } from '../serialobjs';
+import SerialSymbol from '../serial/serial-symbol';
 import { makeArr, makeObj } from './fixtures';
 import { isSerializableObject } from '../serial/decorators/utils';
+import { serialize } from '../serial/utils';
+import { SerialArray, SerialMap } from '../serial';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -30,20 +30,8 @@ describe('SerializableTransferHandler unit tests', () => {
 		expect(handler.canHandle(null)).toBe(false);
 		expect(handler.canHandle({})).toBe(false);
 		expect(handler.canHandle({ [SerialSymbol.serializable]: false })).toBe(false);
+		expect(handler.canHandle({ [SerialSymbol.serializable]: true, [SerialSymbol.serialLazy]: true })).toBe(false);
 		expect(handler.canHandle({ [SerialSymbol.serializable]: true })).toBe(true);
-	});
-
-	test('serialize calls serialize()', () => {
-		const user0 = makeObj<User>('user', 0);
-
-		if (!isSerializableObject(user0)) {
-			throw Error('Invalid test object');
-		}
-
-		const handler = serializableTransferHandler.handler;
-		user0.serialize = jest.fn<SerializeFn<SerializedUser>>();
-		handler.serialize(user0);
-		expect(user0.serialize).toHaveBeenCalled();
 	});
 
 	test('deserialize throws exception when object is not Serialized', () => {
@@ -82,7 +70,7 @@ describe('Comlink pass-through', () => {
 		const user1 = makeObj<User>('user', 1);
 		const userArr = new Array<User>(user0, user1);
 
-		const rtnArr = await testWorker.getArray(toSerialObject(userArr));
+		const rtnArr = await testWorker.getArray(serialize(userArr));
 		expect(rtnArr).toBeInstanceOf(SerialArray);
 		expect((rtnArr as any)[SerialSymbol.serializable]).toBeTruthy();
 		expect(rtnArr[0]).toBeInstanceOf(User);
@@ -99,7 +87,7 @@ describe('Comlink pass-through', () => {
 
 	test('Check that User array can pass through Comlink (for-loop)', async () => {
 		const userArr = makeArr<User>('user', 5);
-		const rtnArr = await testWorker.getArray(toSerialObject(userArr));
+		const rtnArr = await testWorker.getArray(serialize(userArr));
 		expect(rtnArr).toBeInstanceOf(SerialArray);
 		expect((rtnArr as any)[SerialSymbol.serializable]).toBeTruthy();
 
@@ -122,7 +110,7 @@ describe('Comlink pass-through', () => {
 			['1', user1],
 		]);
 
-		const rtnMap = await testWorker.getMap(toSerialObject(userMap));
+		const rtnMap = await testWorker.getMap(serialize(userMap));
 		expect(rtnMap).toBeInstanceOf(SerialMap);
 		expect((rtnMap as any)[SerialSymbol.serializable]).toBeTruthy();
 		expect(rtnMap.get('0')).toBeInstanceOf(User);
@@ -139,7 +127,7 @@ describe('Comlink pass-through', () => {
 			[1, user1],
 		]);
 
-		const rtnMap = await testWorker.getMap(toSerialObject(userMap));
+		const rtnMap = await testWorker.getMap(serialize(userMap));
 		expect(rtnMap).toBeInstanceOf(SerialMap);
 		expect((rtnMap as any)[SerialSymbol.serializable]).toBeTruthy();
 		expect(rtnMap.get(0)).toBeInstanceOf(User);

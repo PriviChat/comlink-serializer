@@ -1,44 +1,68 @@
-import hash from 'object-hash';
 import stringHash from 'string-hash';
-import { SerialSymbol } from '../serial';
-import { Serialized } from './types';
-import objectRegistry from '../registry';
-import { SerialArray, SerializedArray } from '../serialobjs';
-import { Serializable, SerialMeta } from './decorators';
+import { Dictionary, SerialPrimitive, serialPrimitives, SerialType } from './types';
+import { Serializable } from './decorators';
+import SerialSymbol from './serial-symbol';
+import SerialArray from './serial-array';
+import SerialMap from './serial-map';
+import { isSerializable } from './decorators/utils';
 
-export function toSerializedArray<S extends Serialized>(array: S[]): SerializedArray<S> {
-	const serializedArray: SerializedArray<S> = {
-		$array: array,
-	};
-	return applySymArray(serializedArray);
+export function isSerialPrimitive(val: any): val is SerialPrimitive {
+	const valType = typeof val;
+	return serialPrimitives.has(valType.valueOf());
 }
 
-function applySymArray<S extends Serialized>(serialObj: SerializedArray<S>): SerializedArray<S> {
-	const entry = objectRegistry.getEntry(SerialArray.classToken);
-	if (!entry) {
-		const err = 'ERR_NO_REG_ENTRY: No registry entry found for SerialArray.';
-		throw new Error(err);
-	}
-	const meta: SerialMeta = {
-		classToken: SerialArray.classToken.toString(),
-		hash: hash(serialObj),
-	};
-	serialObj = Object.assign(serialObj, { ["'" + SerialSymbol.serialized.toString() + "'"]: meta });
-	return Object.assign(serialObj, { [SerialSymbol.serialized]: meta });
-}
-
-export function hashCd(str: string): number {
-	return stringHash(str);
-}
-
-export function lazy<T extends Serializable>(target: T) {
+export function serialize<T extends Serializable>(arr: Array<T>): Array<T>;
+export function serialize<T extends Serializable, K extends SerialPrimitive>(map: Map<K, T>): Map<K, T>;
+export function serialize<T extends Serializable, K extends SerialPrimitive>(target: Array<T> | Map<K, T>) {
 	return new Proxy(target, {
-		get(target, prop, receiver) {
-			if (typeof prop === 'symbol' && prop === SerialSymbol.serializableLazy) return true;
+		get(_target, prop, receiver) {
+			if (typeof prop === 'symbol' && prop === SerialSymbol.serial) return true;
 			else return Reflect.get(target, prop, receiver);
 		},
 		getPrototypeOf(target) {
 			return target;
 		},
 	});
+}
+
+export function serializeLazy<T extends Serializable>(arr: Array<T>): Array<T>;
+export function serializeLazy<T extends Serializable, K extends SerialPrimitive>(map: Map<K, T>): Map<K, T>;
+export function serializeLazy<T extends Serializable, K extends SerialPrimitive>(target: Array<T> | Map<K, T> | T) {
+	return new Proxy(target, {
+		get(target, prop, receiver) {
+			if (typeof prop === 'symbol' && prop === SerialSymbol.serialLazy) return true;
+			else return Reflect.get(target, prop, receiver);
+		},
+		getPrototypeOf(target) {
+			return target;
+		},
+	});
+}
+
+export function toSerializable<ST extends SerialType>(obj: any): ST {
+	//remove the proxy
+	if (obj[SerialSymbol.serial]) {
+		obj = Object.getPrototypeOf(obj);
+	}
+	if (obj instanceof Array) {
+		return SerialArray.from(obj) as ST;
+	} else if (obj instanceof Map) {
+		return SerialMap.from(obj) as ST;
+	} else if (isSerializable(obj)) {
+		return obj as ST;
+	} else {
+		const err = `ERR_NOT_SERIALIZABLE: Object: ${JSON.stringify(
+			obj
+		)} is not serializable. All serializable objects must be decoratorated with @Serializable.`;
+		console.error(err);
+		throw new TypeError(err);
+	}
+}
+
+export function hashCd(str: string): number {
+	return stringHash(str);
+}
+
+export function isDictionaryEmpty(dict: Dictionary<any>) {
+	return Object.keys(dict).length === 0;
 }

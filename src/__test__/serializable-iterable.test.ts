@@ -1,13 +1,15 @@
 import { expect, test } from '@jest/globals';
-import User from '@test-fixtures/User';
+import User from '@test-fixtures/user';
 import { SerializedUser, UserClass } from '@test-fixtures/types';
-
-import { SerialSymbol, toSerialIterable } from '../serial';
+import SerialSymbol from '../serial/serial-symbol';
 import { makeObj } from './fixtures';
+
+import { serializeIterator } from '@comlink-serializer';
+import { SerialIterable } from 'src/serial/iterable';
 
 describe('SerializableIterable Tests', () => {
 	test('Iterator accepts empty array', async () => {
-		const userItr = toSerialIterable(new Array<User>());
+		const userItr = serializeIterator(new Array<User>());
 		let idx = 0;
 		let total = 0;
 
@@ -26,11 +28,11 @@ describe('SerializableIterable Tests', () => {
 		user0.totalOrders = 5;
 		user1.totalOrders = 10;
 
-		const userItr = toSerialIterable([user0, user1]);
+		const userItr = new SerialIterable<SerializedUser, User>([user0, user1].values());
 
 		let idx = 0;
 		let total = 0;
-		for await (const serUser of userItr as AsyncIterable<SerializedUser>) {
+		for await (const serUser of userItr) {
 			const meta = serUser[SerialSymbol.serialized];
 			expect(meta).toBeDefined();
 			expect(meta?.classToken).toEqual(UserClass.toString());
@@ -52,11 +54,11 @@ describe('SerializableIterable Tests', () => {
 		user1.totalOrders = 10;
 
 		const arr = new Array<User>(user0, user1);
-		const userItr = toSerialIterable(arr);
+		const userItr = serializeIterator<SerializedUser, User>(arr);
 		let idx = 0;
 		let total = 0;
 
-		for await (const serUser of userItr as AsyncIterable<SerializedUser>) {
+		for await (const serUser of userItr) {
 			total += serUser.totalOrders;
 			idx += 1;
 			return;

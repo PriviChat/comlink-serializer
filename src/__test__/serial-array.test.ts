@@ -1,37 +1,25 @@
 import { expect, test } from '@jest/globals';
-import User from '@test-fixtures/User';
-import { Serializable, toSerialObject } from '@comlink-serializer';
+import User from '@test-fixtures/user';
 import { SerializedUser, UserClass } from '@test-fixtures/types';
 
-import { SerialSymbol } from '../serial';
-import { SerialArray, SerializedArray } from '../serialobjs';
+import { SerialArray, SerializedArray, Serializer } from '../serial';
 import { makeObj } from './fixtures';
-import { toSerializableObject } from '../serial/decorators/utils';
+import SerialSymbol from '../serial/serial-symbol';
+import { toSerializable } from '../serial/utils';
 
 describe('SerialArray Tests', () => {
-	test('Array implements isEmpty check', () => {
-		const arr = toSerialObject(new Array());
-		const arr2 = toSerialObject(new Array({} as Serializable));
-		expect(typeof arr.isEmpty).toBe('function');
-		expect(arr.isEmpty()).toBeTruthy();
-		expect(arr2.isEmpty()).toBeFalsy();
-	});
+	let serializer: Serializer;
 
-	test('Array isArray check', () => {
-		const arr = toSerialObject(new Array());
-		expect(Array.isArray(arr)).toBeTruthy();
-	});
-
-	test('Array instanceOf check', () => {
-		const arr = toSerialObject(new Array());
-		expect(arr).toBeInstanceOf(Array);
+	beforeEach(() => {
+		//must create a new serializer before each
+		serializer = new Serializer();
 	});
 
 	test('Array serializes contents', () => {
 		const user0 = makeObj<User>('user', 0);
 		const user1 = makeObj<User>('user', 1);
-		const userArr0 = toSerialObject([user0, user1]);
-		const serializedArr = toSerializableObject(userArr0).serialize() as SerializedArray;
+		const userArr0 = [user0, user1];
+		const serializedArr = serializer.serialize<SerializedArray<SerializedUser>>(toSerializable(userArr0));
 
 		const arrMeta = serializedArr[SerialSymbol.serialized];
 		expect(arrMeta).toBeDefined();
