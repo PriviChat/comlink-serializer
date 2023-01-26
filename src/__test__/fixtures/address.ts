@@ -11,11 +11,11 @@ export default class Address {
 		readonly zip: number
 	) {}
 
-	public equals(other: unknown): boolean {
-		return other instanceof Address && other.id === this.id;
-	}
-
 	public hashCode(): number {
 		return hashCd(this.id);
+	}
+
+	public equals(other: unknown) {
+		return false;
 	}
 }

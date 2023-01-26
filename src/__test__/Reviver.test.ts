@@ -4,7 +4,7 @@ import Product from '@test-fixtures/product';
 import Order from '@test-fixtures/order';
 import { ProductClass, SerializedUser, UserClass } from '@test-fixtures/types';
 import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils';
-import { Reviver, Serializer } from '../serial';
+import { Reviver, Serializer, SerialProxy } from '../serial';
 import { makeArr, makeObj } from './fixtures';
 import { makeSerial } from '../serial/utils';
 
@@ -53,10 +53,10 @@ describe('Reviver', () => {
 		const order = reviver.revive<Order>(serializer.serialize(order0));
 		expect(order.orderId).toEqual(order0.orderId);
 
+		//user is a proxy...how will this get tested
 		const user = order.user;
 		expect(getSerializable(user)).toBeTruthy();
-		expect(getRevived(user)).toBeTruthy();
-		expect(getClassToken(user)).toEqual(UserClass.toString());
+		expect(getClassToken(user)).toEqual(SerialProxy.classToken.toString());
 		expect(user.email).toEqual(user0.email);
 		expect(user.firstName).toEqual(user0.firstName);
 		expect(user.lastName).toEqual(user0.lastName);

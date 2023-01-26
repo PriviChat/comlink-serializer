@@ -1,4 +1,4 @@
-import { Serializable, Serialize } from '@comlink-serializer';
+import { hashCd, Serializable, Serialize } from '@comlink-serializer';
 import Product from './product';
 import User from './user';
 import { OrderClass, ProductClass, SerializedOrder } from './types';
@@ -19,12 +19,12 @@ class Order implements Serializable<SerializedOrder> {
 		this.products = products;
 	}
 
-	public equals(other: unknown): boolean {
-		return other instanceof Order && other.orderId === this.orderId;
+	public hashCode(): number {
+		return hashCd(this.orderId);
 	}
 
-	public hashCode(): number {
-		throw new Error('Method not implemented.');
+	public equals(other: unknown) {
+		return false;
 	}
 }
 

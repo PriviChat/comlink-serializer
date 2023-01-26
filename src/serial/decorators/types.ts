@@ -7,18 +7,27 @@ export const SerialPropertyMetadataKey = 'serialPropertyMetadata';
  */
 export interface ValueObject {
 	/**
+	 * Determins the equality of objects when serializing and deserializing objects.
+	 *
+	 * True if 'this' and the 'other' object which is being serialized or revived are equal.
+	 * It is critical for the optimization of these processes. If you cannot determine equality
+	 * return false, but depending on your dataset this can hurt performance.
+	 */
+	equals(other: unknown): boolean;
+
+	/**
 	 * Computes and returns the hashed identity for this Serializable.
 	 *
 	 * The `hashCode` of a Serializable is used to determine potential equality,
 	 * and is used when serializing and deserializaing.
 	 *
 	 *
-	 * Note: hashCode() MUST return a number between 0 and 4294967295 (inclusive) or if you return -1
-	 * that signals that the hashCode cannot be derived, and the system should generate a unique id for the
-	 * object. We realize that it's not always possible to uniquely identify an object based on it's properties,
-	 * but if you can, that will allow for additional optimizations.
+	 * Note: hashCode() MUST return a number between 0 and 4294967295 (inclusive), or if you return -1
+	 * that signals that the hashCode cannot be derived, and the system should generate a unique hashCode for the
+	 * object. It's not always possible to uniquely identify an object based on it's properties,
+	 * but doing so allows for additional optimizations.
 	 *
-	 * You can leverage the {hashCd} included in this lib to generate the code.
+	 * You can leverage the `hashCd` included in this lib to generate the hashCode.
 	 *
 	 * If two values have the same `hashCode`, they are [not guaranteed
 	 * to be equal][Hash Collision]. If two values have different `hashCode`s,

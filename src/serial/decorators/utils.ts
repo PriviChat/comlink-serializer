@@ -1,6 +1,5 @@
-import SerialProxy from '../serial-proxy';
 import SerialSymbol from '../serial-symbol';
-import { Serialized, SerializedProxy } from '../types';
+import { Serialized } from '../types';
 import Serializable, { SerializableObject } from './serializable';
 
 export function isSerializableObject<T extends Serializable>(obj: any): obj is SerializableObject<T> {

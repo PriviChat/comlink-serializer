@@ -4,30 +4,67 @@ import Order from './order';
 import Product from './product';
 import User from './user';
 
+let users: Map<number, User>;
+let addresses: Map<number, Address>;
+let products: Map<number, Product>;
+let orders: Map<number, Order>;
+
+function initCache() {
+	users = new Map();
+	addresses = new Map();
+	products = new Map();
+	orders = new Map();
+}
+
 function mA(idx: number) {
-	return new Address('addr_' + idx, 'street_' + idx, 'city_' + idx, 'state_' + idx, idx);
+	const cv = addresses.get(idx);
+	if (cv) return cv;
+	else {
+		const a = new Address('addr_' + idx, 'street_' + idx, 'city_' + idx, 'state_' + idx, idx);
+		addresses.set(idx, a);
+		return a;
+	}
 }
 
 function mP(idx: number) {
-	return new Product('SKU_' + idx, 'iPad_' + idx);
+	const cv = products.get(idx);
+	if (cv) return cv;
+	else {
+		const p = new Product('SKU_' + idx, 'iPad_' + idx);
+		products.set(idx, p);
+		return p;
+	}
 }
 
 function mU(idx: number) {
-	const loopArr = new Array<number>(idx + 1).fill(idx + 1);
-	const addrArr = loopArr.map((_, i) => mA(i));
-	return new User('bob@email.org_' + idx, 'Bob_' + idx, 'Smith_' + idx, mA(idx), addrArr, idx);
+	const cv = users.get(idx);
+	if (cv) return cv;
+	else {
+		const loopArr = new Array<number>(idx + 1).fill(idx + 1);
+		const addrArr = loopArr.map((_, i) => mA(i));
+		const u = new User('bob@email.org_' + idx, 'Bob_' + idx, 'Smith_' + idx, mA(idx), addrArr, idx);
+		users.set(idx, u);
+		return u;
+	}
 }
 
 function mO(idx: number) {
-	const loopArr = new Array<number>(idx + 1).fill(idx + 1);
-	const prodArr = loopArr.map((_, i) => mP(i));
-	return new Order('ORD_' + idx, mU(idx), prodArr);
+	const cv = orders.get(idx);
+	if (cv) return cv;
+	else {
+		const loopArr = new Array<number>(idx + 1).fill(idx + 1);
+		const prodArr = loopArr.map((_, i) => mP(i));
+		const o = new Order('ORD_' + idx, mU(idx), prodArr);
+		orders.set(idx, o);
+		return o;
+	}
 }
 
 export function makeArr<T extends Serializable, A extends Array<T> = Array<T>>(
 	name: 'user' | 'prod' | 'addr' | 'order',
 	ct: number
 ): A {
+	initCache();
 	const loopArr = new Array<number>(ct).fill(ct);
 	switch (name) {
 		case 'user':
@@ -42,6 +79,7 @@ export function makeArr<T extends Serializable, A extends Array<T> = Array<T>>(
 }
 
 export function makeObj<T extends Serializable>(name: 'user' | 'prod' | 'addr' | 'order', idx: number): T {
+	initCache();
 	switch (name) {
 		case 'user':
 			return mU(idx) as unknown as T;

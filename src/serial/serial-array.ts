@@ -1,6 +1,7 @@
-import stringHash from 'string-hash';
+import { v4 as uuid } from 'uuid';
 import { ReviverCtx, SerializeCtx, SerializedArray } from './types';
 import Serializable from './decorators/serializable';
+import { hashCd } from './utils';
 
 function serialArrayFactory<T extends Serializable>(array?: T[]): SerialArray<T> {
 	return new SerialArray<T>(array);
@@ -9,6 +10,7 @@ function serialArrayFactory<T extends Serializable>(array?: T[]): SerialArray<T>
 @Serializable(SerialArray.classToken)
 export default class SerialArray<T extends Serializable> implements Serializable<SerializedArray> {
 	static readonly classToken: unique symbol = Symbol('ComSer.serialArray');
+	private id = uuid();
 	private array: Array<T>;
 
 	constructor(array?: T[]) {
@@ -37,13 +39,11 @@ export default class SerialArray<T extends Serializable> implements Serializable
 		}
 	}
 
-	public equals(other: unknown): boolean {
-		//TODO update to figure out how to check for array equality
-		return other instanceof SerialArray;
+	public hashCode(): number {
+		return hashCd(this.id);
 	}
 
-	public hashCode(): number {
-		//TODO update to figure out how to hash equality. It probably needs to be recalculated as items are added.
-		return stringHash('ABCDEFT');
+	public equals(other: unknown) {
+		return false;
 	}
 }

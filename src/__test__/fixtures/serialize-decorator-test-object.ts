@@ -1,4 +1,4 @@
-import { Serializable, Serialize, hashCd } from '@comlink-serializer';
+import { Serializable, Serialize } from '@comlink-serializer';
 import Address from '@test-fixtures/address';
 import { AddressClass, SerializeDecoratorTestObjectClass } from './types';
 
@@ -39,11 +39,7 @@ export default class SerializeDecoratorTestObject {
 
 	constructor() {}
 
-	public equals(other: unknown): boolean {
-		return other instanceof SerializeDecoratorTestObject;
-	}
-
 	public hashCode(): number {
-		return hashCd('234878473874873847383');
+		return -1;
 	}
 }

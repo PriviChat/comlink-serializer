@@ -11,7 +11,14 @@ import {
 	ToSerial,
 	ToSerialProxy,
 } from './types';
-import { SerialClassToken, Serializable, SerializedMeta, SerializedObjHash, SerializedObjKey } from './decorators';
+import {
+	Revivable,
+	SerialClassToken,
+	Serializable,
+	SerializedMeta,
+	SerializedObjHash,
+	SerializedObjKey,
+} from './decorators';
 import SerialSymbol from './serial-symbol';
 import SerialArray from './serial-array';
 import SerialMap from './serial-map';
@@ -216,5 +223,20 @@ function strToIntArr(str: string) {
  * @returns {SerializedObjKey}
  */
 export function serializedObjKey(serialMeta: SerializedMeta): SerializedObjKey {
-	return '[' + serialMeta.classToken + ']-' + '[' + serialMeta.hash + ']';
+	return '[' + serialMeta.classToken + ']-[' + serialMeta.hash + ']';
+}
+/**
+ * It updates the revived function on the prototype of the object passed in to return true
+ * @param {Revivable} obj - The object to mark as revived.
+ */
+export function markObjRevived(obj: Revivable) {
+	const so = obj.constructor.prototype;
+	if (typeof so[SerialSymbol.revived] !== 'function') {
+		const err = `ERR_NO_REVIVED_PROP: Obj: ${JSON.stringify(
+			obj
+		)} passed to markObjRevived is missing prop ${SerialSymbol.revived.toString()}.`;
+	}
+	so[SerialSymbol.revived] = () => {
+		return true;
+	};
 }

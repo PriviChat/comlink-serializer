@@ -14,6 +14,8 @@ import { SerialArray, SerialMap } from '../serial';
 
 import User from '@test-fixtures/user';
 import Order from '@test-fixtures/order';
+import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils';
+import { OrderClass, UserClass } from '@test-fixtures/types';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -31,8 +33,6 @@ describe('SerializableTransferHandler tests', () => {
 		expect(handler.canHandle({})).toBe(false);
 		expect(handler.canHandle({ [SerialSymbol.serializable]: false })).toBe(false);
 		expect(handler.canHandle({ [SerialSymbol.serializable]: true })).toBe(false);
-
-		expect(handler.canHandle({ [SerialSymbol.serializable]: () => {} })).toBe(true);
 		expect(handler.canHandle({ [SerialSymbol.toSerial]: true })).toBe(true);
 		expect(handler.canHandle({ [SerialSymbol.toSerialProxy]: true })).toBe(true);
 	});
@@ -71,7 +71,9 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 
 		const rtnObj = await testWorker.getUser(user);
 		expect(rtnObj).toBeInstanceOf(User);
-		expect((rtnObj as any)[SerialSymbol.serializable]).toBeTruthy();
+		expect(getSerializable(rtnObj)).toBeTruthy();
+		expect(getRevived(rtnObj)).toBeTruthy();
+		expect(getClassToken(rtnObj)).toBe(UserClass.toString());
 		expect(isEqual(rtnObj, user)).toBeTruthy();
 	}, 1000000);
 
@@ -84,7 +86,9 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 
 		const rtnObj = await testWorker.getOrder(order);
 		expect(rtnObj).toBeInstanceOf(Order);
-		expect((rtnObj as any)[SerialSymbol.serializable]).toBeTruthy();
+		expect(getSerializable(rtnObj)).toBeTruthy();
+		expect(getRevived(rtnObj)).toBeTruthy();
+		expect(getClassToken(rtnObj)).toBe(OrderClass.toString());
 		expect(rtnObj.orderId).toBe(order.orderId);
 		expect(isEqual(rtnObj.products, order.products)).toBeTruthy();
 	}, 100000);

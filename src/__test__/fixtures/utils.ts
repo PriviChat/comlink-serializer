@@ -1,5 +1,6 @@
-import { Serializable } from '@comlink-serializer';
-import { SerialClassToken } from 'src/serial/decorators';
+import { Serializable, Serialized } from '@comlink-serializer';
+import { SerialClassToken, SerializedMeta } from '../../serial/decorators';
+import { isSerialized } from '../../serial/decorators/utils';
 import SerialSymbol from '../../serial/serial-symbol';
 
 export function getSerializable(obj: Serializable): boolean {
@@ -13,4 +14,9 @@ export function getRevived(obj: Serializable): boolean {
 export function getClassToken(obj: Serializable): string {
 	const classToken = (obj as any)[SerialSymbol.classToken]() as SerialClassToken;
 	return classToken.toString();
+}
+
+export function getSerialized(obj: Serialized): SerializedMeta {
+	if (!isSerialized(obj)) return { classToken: '', hash: '' };
+	return obj[SerialSymbol.serialized];
 }

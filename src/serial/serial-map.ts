@@ -1,4 +1,4 @@
-import stringHash from 'string-hash';
+import { v4 as uuid } from 'uuid';
 import {
 	SerialPrimitive,
 	SerializedMap,
@@ -9,7 +9,7 @@ import {
 	supportedMapKeys,
 } from './types';
 import Serializable from './decorators/serializable';
-import { isSerialPrimitive } from './utils';
+import { hashCd, isSerialPrimitive } from './utils';
 import { isSerializable } from './decorators/utils';
 
 function serialMapFactory<K extends SerialPrimitive, V extends Serializable>(map: Map<K, V>): SerialMap<K, V> {
@@ -20,6 +20,7 @@ function serialMapFactory<K extends SerialPrimitive, V extends Serializable>(map
 export default class SerialMap<K extends SerialPrimitive, V extends Serializable = Serializable>
 	implements Serializable<SerializedMap>
 {
+	private id = uuid();
 	private map: Map<K, V>;
 	static readonly classToken: unique symbol = Symbol('ComSer.serialMap');
 
@@ -105,13 +106,11 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 		}
 	}
 
-	public equals(other: unknown): boolean {
-		//TODO update to figure out how to check for array equality
-		return other instanceof SerialMap;
+	public hashCode(): number {
+		return hashCd(this.id);
 	}
 
-	public hashCode(): number {
-		//TODO update to figure out how to hash equality. It probably needs to be recalculated as items are added.
-		return stringHash('ABCDEFT');
+	public equals(other: unknown) {
+		return false;
 	}
 }

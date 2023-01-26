@@ -1,16 +1,16 @@
 import * as Comlink from 'comlink';
 import { v4 as uuid } from 'uuid';
-import stringHash from 'string-hash';
 import { Revivable, SerializableObject, SerializeDescriptorProperty } from './decorators';
 import Serializable from './decorators/serializable';
 import { Dictionary, ParentRef, SerializeCtx, SerializedProxy } from '.';
 import { isSerializableObject } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
+import { hashCd } from './utils';
 
 @Serializable(SerialProxy.classToken)
 class SerialProxy<T extends Serializable> implements Serializable<SerializedProxy>, Revivable<SerializedProxy> {
 	static readonly classToken: unique symbol = Symbol('ComSer.serialProxy');
-	private _id: string;
+	private _id = uuid();
 	private _port1?: MessagePort;
 	private _port2: MessagePort;
 	private _proxyClass: string;
@@ -36,7 +36,6 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 			console.error(err);
 			throw new TypeError(err);
 		}
-		this._id = uuid();
 		const { port1, port2 } = new MessageChannel();
 		this._port1 = port1;
 		this._port2 = port2;
@@ -131,12 +130,12 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		this.wrap();
 	}
 
-	public equals(other: unknown): boolean {
-		return other instanceof SerialProxy && other._id === this._id;
+	public hashCode(): number {
+		return hashCd(this._id);
 	}
 
-	public hashCode(): number {
-		return stringHash(this._id);
+	public equals(other: unknown) {
+		return false;
 	}
 }
 
