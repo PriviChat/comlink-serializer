@@ -40,9 +40,9 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 	}
 
 	public serialize?(ctx: SerializeCtx): SerializedMap {
-		let $keyType: SerializedMapKeyType | undefined;
-		let $size = this.map.size;
-		if ($size) {
+		let keyType: SerializedMapKeyType | undefined;
+		const size = this.map.size;
+		if (size) {
 			const key = this.map.keys().next().value;
 			const entry = this.map.entries().next().value;
 			if (!isSerialPrimitive(key)) {
@@ -52,16 +52,16 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 				console.error(err);
 				throw new TypeError(err);
 			}
-			$keyType = (typeof key).valueOf() as SerializedMapKeyType;
+			keyType = (typeof key).valueOf() as SerializedMapKeyType;
 		}
 
-		const serialObj: SerializedMap = { $size, $keyType, $map: [] };
+		const serialObj: SerializedMap = { ['ComSer.size']: size, ['ComSer.keyType']: keyType, ['ComSer.map']: [] };
 		this.map.forEach((entry, key) => {
-			if (typeof key.valueOf() !== $keyType) {
+			if (typeof key.valueOf() !== keyType) {
 				const supported = Array.from(serialPrimitives).join(', ');
-				const err = `ERR_UNSUPPORTED_TYPE: Map contains a key: ${key} of type: ${typeof key} but expected type: ${$keyType}. Key is mapped to entry: ${JSON.stringify(
+				const err = `ERR_UNSUPPORTED_TYPE: Map contains a key: ${key} of type: ${typeof key} but expected type: ${keyType}. Key is mapped to entry: ${JSON.stringify(
 					entry
-				)}. Supported key types: ${supported}. All keys must be of the same supported type ${$keyType}.`;
+				)}. Supported key types: ${supported}. All keys must be of the same supported type ${keyType}.`;
 				console.error(err);
 				throw new TypeError(err);
 			}
@@ -72,16 +72,16 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 				console.error(err);
 				throw TypeError(err);
 			}
-			serialObj.$map.push([key.toString(), ctx.serialize(entry, ctx.parentRef)]);
+			serialObj['ComSer.map'].push([key.toString(), ctx.serialize(entry, ctx.parentRef)]);
 		});
 
 		return serialObj;
 	}
 
 	public revive?(serialObj: SerializedMap, ctx: ReviverCtx) {
-		if (serialObj.$size) {
-			const keyType = serialObj.$keyType;
-			for (const [serKey, serVal] of serialObj.$map) {
+		if (serialObj['ComSer.size']) {
+			const keyType = serialObj['ComSer.keyType'];
+			for (const [serKey, serVal] of serialObj['ComSer.map']) {
 				let key: SerialPrimitive;
 				switch (keyType) {
 					case 'boolean':

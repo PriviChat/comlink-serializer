@@ -1,35 +1,16 @@
-import hash from 'object-hash';
 import { Serializable } from '@comlink-serializer';
-
+import { SerialClassToken } from 'src/serial/decorators';
 import SerialSymbol from '../../serial/serial-symbol';
-import { SerialMeta } from '../../serial/decorators';
-import { OrderClass, ProductClass, SerializedOrder, SerializedProduct, SerializedUser, UserClass } from './types';
 
-export function getSerializableSymbol(obj: Serializable): SerialMeta | undefined {
+export function getSerializable(obj: Serializable): boolean {
 	return (obj as any)[SerialSymbol.serializable]();
 }
 
-export function applySymUser(serialObj: SerializedUser) {
-	const meta = {
-		cln: UserClass,
-		hsh: hash(serialObj),
-	};
-	return Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
+export function getRevived(obj: Serializable): boolean {
+	return (obj as any)[SerialSymbol.revived]();
 }
 
-export function applySymProduct(serialObj: SerializedProduct) {
-	const meta = {
-		cln: ProductClass,
-		hsh: hash(serialObj),
-	};
-
-	return Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
-}
-
-export function applySymOrder(serialObj: SerializedOrder) {
-	const meta = {
-		cln: OrderClass,
-		hsh: hash(serialObj),
-	};
-	return Object.assign(serialObj, { ["'" + SerialSymbol.serializable.toString() + "'"]: meta });
+export function getClassToken(obj: Serializable): string {
+	const classToken = (obj as any)[SerialSymbol.classToken]() as SerialClassToken;
+	return classToken.toString();
 }

@@ -1,11 +1,17 @@
 import * as Comlink from 'comlink';
 import ComlinkSerializer from '@comlink-serializer';
 import User from '@test-fixtures/user';
-import { SerialPrimitive } from '../../serial';
+import Order from '@test-fixtures/order';
+import Product from '@test-fixtures/product';
+import Address from '@test-fixtures/address';
 
 export default class SerializableTestWorker {
 	getUser(user: User) {
 		return user;
+	}
+
+	getOrder(order: Order) {
+		return order;
 	}
 
 	async getArray(arr: Array<User>) {
@@ -34,9 +40,9 @@ export default class SerializableTestWorker {
 		return total;
 	}
 
-	async getMap<K extends SerialPrimitive>(map: Map<K, User>) {
+	async getMap(map: Map<any, User>) {
 		return map;
 	}
 }
 Comlink.expose(SerializableTestWorker);
-ComlinkSerializer.registerTransferHandler({ transferClasses: [User] });
+ComlinkSerializer.registerTransferHandler({ transferClasses: [User, Address, Product, Order] });

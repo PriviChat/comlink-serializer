@@ -1,22 +1,22 @@
-import { Serializable } from '../decorators';
 import { isSerializable } from '../decorators/utils';
 import Serializer from '../serializer';
-import { Serialized, SerialPrimitive, supportedMapKeys } from '../types';
+import { supportedMapKeys } from '../types';
 import { isSerialPrimitive } from '../utils';
 import MessageChannelIterable from './message-channel-iterable';
-import { AnySerialIterator, ReviveIterType, SerialIterType } from './types';
+import { AsyncSerialIterator, ReviveIterType, SerialIterType } from './types';
+import { isAsyncSerialIterator } from './utils';
 
-export default class SerialIterable<
-		S extends Serialized = Serialized,
-		T extends Serializable<S> = Serializable<S>,
-		RI extends ReviveIterType<S> = any
-	>
-	extends MessageChannelIterable<AnySerialIterator<T>>
+export default class SerialIterable<RI extends ReviveIterType>
+	extends MessageChannelIterable<AsyncSerialIterator>
 	implements AsyncIterableIterator<RI>
 {
 	private done: boolean;
 
-	constructor(iterator: AnySerialIterator<T>, private serializer: Serializer = new Serializer()) {
+	constructor(iterator: AsyncIterableIterator<SerialIterType>, private serializer: Serializer = new Serializer()) {
+		if (!isAsyncSerialIterator(iterator))
+			throw TypeError(
+				'ERR_INVALID_ITERATOR: The iterator passed to SerialIterable must be of type AsyncSerialIterator.'
+			);
 		super(iterator);
 		this.done = false;
 	}
@@ -46,23 +46,23 @@ export default class SerialIterable<
 
 		if (Array.isArray(value)) {
 			const key = value[0];
-			const entry = value[1] as T;
+			const val = value[1];
 
-			const serialEntry = this.serializer.serialize(entry);
+			const sVal = this.serializer.serialize(val);
 			return {
 				done: false,
-				value: [key, serialEntry] as RI,
+				value: [key, sVal] as RI,
 			};
 		} else {
-			const serialObj = this.serializer.serialize(value);
+			const sVal = this.serializer.serialize(value);
 			return {
 				done: false,
-				value: serialObj as RI,
+				value: sVal as RI,
 			};
 		}
 	}
 
-	public async return(val?: SerialIterType<T>): Promise<IteratorResult<RI>> {
+	public async return(val?: SerialIterType): Promise<IteratorResult<RI>> {
 		this.done = true;
 
 		if (this.iterator.return) {
@@ -70,18 +70,18 @@ export default class SerialIterable<
 			const value = this.isValidOrThrow(next.value);
 			if (Array.isArray(value)) {
 				const key = value[0];
-				const entry = value[1];
+				const val = value[1];
 
-				const serialEntry = this.serializer.serialize(entry);
+				const sVal = this.serializer.serialize(val);
 				return {
 					done: false,
-					value: [key, serialEntry] as RI,
+					value: [key, sVal] as RI,
 				};
 			} else {
-				const serialObj = this.serializer.serialize(value);
+				const sVal = this.serializer.serialize(value);
 				return {
 					done: false,
-					value: serialObj as RI,
+					value: sVal as RI,
 				};
 			}
 		} else {
@@ -92,25 +92,25 @@ export default class SerialIterable<
 		}
 	}
 
-	private isValidOrThrow(value: any) {
+	private isValidOrThrow(value: SerialIterType) {
 		if (Array.isArray(value)) {
 			const key = value[0];
-			const entry = value[1];
+			const val = value[1];
 			if (!isSerialPrimitive(key)) {
 				const err = `ERR_UNSUPPORTED_TYPE: Map iteraotr contains an unsupported key: ${key} of type: ${typeof key} with entry: ${JSON.stringify(
-					entry
+					val
 				)}. Supported key types: ${supportedMapKeys}.`;
 				console.error(err);
 				throw new TypeError(err);
 			}
-			if (!isSerializable(entry)) {
+			if (!isSerializable(val)) {
 				const err = `ERR_NOT_SERIALIZABLE: Map iterator found a key: ${key} with a value: ${JSON.stringify(
-					entry
+					val
 				)} that is not Serializable.`;
 				console.error(err);
 				throw TypeError(err);
 			}
-			return value as [SerialPrimitive, T];
+			return value;
 		} else {
 			if (!isSerializable(value)) {
 				const err = `ERR_NOT_SERIALIZABLE: Iterator found a value that was not Serializable. Value: ${JSON.stringify(
@@ -119,7 +119,7 @@ export default class SerialIterable<
 				console.error(err);
 				throw TypeError(err);
 			}
-			return value as T;
+			return value;
 		}
 	}
 }

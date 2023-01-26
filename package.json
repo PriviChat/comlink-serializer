@@ -180,7 +180,6 @@
   },
   "dependencies": {
     "@types/string-hash": "^1.1.1",
-    "object-hash": "^3.0.0",
     "object-traversal": "^1.0.1",
     "reflect-metadata": "^0.1.13",
     "string-hash": "^1.1.3",

@@ -11,7 +11,7 @@ export default class WorkerFactory {
 		return new Worker('./build/cjs/__test__/fixtures/iterable-test-worker.js');
 	}
 
-	public static getLazyTestWorker(): Worker {
-		return new Worker('./build/cjs/__test__/fixtures/lazy-test-worker.js');
+	public static getProxyTestWorker(): Worker {
+		return new Worker('./build/cjs/__test__/fixtures/proxy-test-worker.js');
 	}
 }

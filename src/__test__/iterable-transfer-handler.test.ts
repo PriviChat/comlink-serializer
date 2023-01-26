@@ -7,7 +7,7 @@ import ComlinkSerializer from '@comlink-serializer';
 
 import { iterableTransferHandler } from '../serial/comlink';
 import { makeArr, makeObj } from './fixtures';
-import { serializeIterator } from '../serial/iterable/utils';
+import { toSerialIterator } from '../serial/iterable/utils';
 import { Serializer } from '../serial';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
@@ -25,7 +25,7 @@ describe('IterableTransferHandler unit tests', () => {
 		expect(handler.canHandle(null)).toBe(false);
 		expect(handler.canHandle({})).toBe(false);
 		expect(handler.canHandle([])).toBe(false);
-		expect(handler.canHandle(serializeIterator(new Array()))).toBe(true);
+		expect(handler.canHandle(toSerialIterator(new Array()))).toBe(true);
 	});
 });
 
@@ -45,7 +45,7 @@ describe('SerialArray', () => {
 		const totalOrders = userArr.reduce((accum, user) => {
 			return accum + user.totalOrders;
 		}, 0);
-		const total = await testWorker.getTotalOrders(serializeIterator(userArr), 'for-await');
+		const total = await testWorker.getTotalOrders(toSerialIterator(userArr), 'for-await');
 		expect(total).toEqual(totalOrders);
 	});
 
@@ -57,7 +57,7 @@ describe('SerialArray', () => {
 
 	test('Array length check', async () => {
 		const userArr = makeArr<User>('user', 5);
-		const length = await testWorker.getUserCount(serializeIterator(userArr));
+		const length = await testWorker.getUserCount(toSerialIterator(userArr));
 		expect(length).toEqual(userArr.length);
 	});
 });

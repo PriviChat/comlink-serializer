@@ -1,13 +1,13 @@
 export default class SerialSymbol {
-	static readonly classToken: unique symbol = Symbol('ComSer.classToken');
-	static readonly serializeDescriptor: unique symbol = Symbol('ComSer.serialDescriptor');
-
 	static readonly serializable: unique symbol = Symbol('ComSer.serializable');
+	static readonly serialized = 'ComSer.serialized';
 
-	static readonly serial: unique symbol = Symbol('ComSer.serial');
-	static readonly serialLazy: unique symbol = Symbol('ComSer.serialLazy');
-	static readonly serialIterableWrap: unique symbol = Symbol('ComSer.serialIterableWrap');
+	static readonly revived: unique symbol = Symbol('ComSer.revived');
 
-	static readonly serialized: unique symbol = Symbol('ComSer.serialized');
-	static readonly serializedProxy: unique symbol = Symbol('ComSer.serializedProxy');
+	static readonly classToken: unique symbol = Symbol('ComSer.classToken');
+	static readonly serializeDescriptor: unique symbol = Symbol('ComSer.serializeDescriptor');
+
+	static readonly toSerial: unique symbol = Symbol('ComSer.toSerial');
+	static readonly toSerialProxy: unique symbol = Symbol('ComSer.toSerialProxy');
+	static readonly toSerialIterator: unique symbol = Symbol('ComSer.toSerialIterator');
 }

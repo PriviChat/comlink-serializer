@@ -1,6 +1,6 @@
 import { Serializable } from '../decorators';
-import { ReviverIterable, SerialIterable, SerialIterableWrap } from '../iterable';
-import { AnyConstructor, Serialized } from '../types';
+import { ReviverIterable, SerialIterable, AsyncSerialIterator } from '../iterable';
+import { AnyConstructor, Serialized, SerialPrimitive, ToSerialProxy } from '../types';
 
 export interface TransferHandlerRegistration {
 	transferClasses: AnyConstructor<Serializable>[];
@@ -12,6 +12,8 @@ export enum SerialTransferHandlerEnum {
 	LazyTransferHandler = 'ComlinkSerializer.LazyTransferHandler',
 }
 
-export type TransferableIterable<S extends Serialized = Serialized, T extends Serializable<S> = Serializable<S>> =
-	| ReviverIterable<S, T>
-	| SerialIterableWrap<S, T>;
+export type TransferableIterable = ReviverIterable | AsyncSerialIterator;
+
+export type TransferableSerializable<T extends Serializable = Serializable> = T | T[] | Map<SerialPrimitive, T>;
+
+export type TransferableSerialProxy = ToSerialProxy;

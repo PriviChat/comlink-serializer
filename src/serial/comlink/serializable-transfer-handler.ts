@@ -1,26 +1,34 @@
 import * as Comlink from 'comlink';
-import { ReviveType, Reviver, Serializer } from '..';
+import { Reviver, Serializer } from '..';
 import { Serialized } from '../types';
-import SerialSymbol from '../serial-symbol';
-import { toSerializable } from '../utils';
 import { Serializable } from '../decorators';
+import { isToSerial, isToSerialProxy } from '../utils';
+import { isSerializable } from '../decorators/utils';
+import { TransferableSerializable } from './types';
 
 export default class SerializableTransferHandler {
 	constructor() {}
 
 	public get handler() {
-		const comlink: Comlink.TransferHandler<ReviveType, Serialized> = {
-			canHandle: function (value: any): value is Serializable {
-				if (!value) return false;
-				if (value[SerialSymbol.serialLazy]) return false;
-				if (value[SerialSymbol.serializable]) return true;
-				if (value[SerialSymbol.serial]) return true;
+		const handler: Comlink.TransferHandler<TransferableSerializable, Serialized> = {
+			canHandle: function (val: any): val is TransferableSerializable {
+				if (!val) return false;
+				if (isToSerialProxy(val)) return true;
+				if (isToSerial(val)) return true;
+				if (isSerializable(val)) return true;
 				return false;
 			},
-			serialize: (object: any) => {
+			serialize: (obj: TransferableSerializable) => {
+				let serial: Serializable;
+				if (isToSerial(obj)) {
+					serial = obj.makeSerial();
+				} else if (isToSerialProxy(obj)) {
+					serial = obj.makeSerialProxy();
+				} else {
+					serial = obj as Serializable;
+				}
 				const serializer = new Serializer();
-				const converted = toSerializable(object);
-				const serialized = serializer.serialize(converted);
+				const serialized = serializer.serialize(serial);
 				return [serialized, serializer.transferable];
 			},
 			deserialize: (object: Serialized) => {
@@ -29,6 +37,6 @@ export default class SerializableTransferHandler {
 				return revived;
 			},
 		};
-		return comlink;
+		return handler;
 	}
 }

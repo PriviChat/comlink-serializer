@@ -1,18 +1,19 @@
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import { Revivable, Serializable, SerialMeta } from './decorators';
-import { ParentRef, ReviveType, Serialized, SerialPrimitive } from './types';
+import { Revivable, Serializable, SerializedObjKey } from './decorators';
+import { ExtractRevive, ParentRef, ReviveType, Serialized, SerialPrimitive } from './types';
 import objectRegistry from '../registry';
-import { isSerializedObject } from './decorators/utils';
+import { isSerialized } from './decorators/utils';
 import { ObjectRegistryEntry } from '../registry';
 import SerialSymbol from './serial-symbol';
 import SerialArray from './serial-array';
 import SerialMap from './serial-map';
 import SerialProxy from './serial-proxy';
 import { ProxyWrapper } from './comlink';
+import { serializedObjKey } from './utils';
 
 export default class Reviver {
-	private revivedCache = new Map<string, Revivable>();
-	private noTraversal = new Set<string>([
+	private revivedCache = new Map<SerializedObjKey, Revivable>();
+	private static NoTraversal = new Set<string>([
 		SerialArray.classToken.toString(),
 		SerialMap.classToken.toString(),
 		SerialProxy.classToken.toString(),
@@ -30,28 +31,18 @@ export default class Reviver {
 		} else if (entry.classToken === SerialMap.classToken) {
 			return new SerialMap<SerialPrimitive, T>();
 		} else {
-			return Object.create(entry.constructor.prototype);
+			const obj = Object.create(entry.constructor.prototype);
+			obj.constructor.prototype[SerialSymbol.revived] = () => {
+				return true;
+			};
+			return obj as Revivable;
 		}
 	}
 
-	/**
-	 * It takes a serialized object and converts the symbol property
-	 * back to a symbol
-	 * @param {any} obj - any - The object to have the symbol revived.
-	 * @returns The object that was passed in.
-	 */
-	private reviveSymbols(obj: any) {
-		if (isSerializedObject(obj)) return obj;
-		const serSymStr = "'" + SerialSymbol.serialized.toString() + "'";
-		const meta = obj[serSymStr] as SerialMeta;
-		if (meta) {
-			Object.assign(obj, { [SerialSymbol.serialized]: meta });
-			delete obj[serSymStr];
-		}
-		return obj;
-	}
-
-	public revive<R extends ReviveType>(serialObj: Serialized, parentRef?: ParentRef): R {
+	public revive = <R extends ReviveType, T extends ExtractRevive<R> = ExtractRevive<R>>(
+		serialObj: Serialized,
+		parentRef?: ParentRef
+	): R => {
 		// make sure we are dealing with a valid object
 		// TODO investigate why putting an object through comlink and then back causes the instanceof check to fail
 		if (!(serialObj instanceof Object)) {
@@ -73,10 +64,7 @@ export default class Reviver {
 			}
 		}
 
-		// convert the symbol property back to a symbol
-		serialObj = this.reviveSymbols(serialObj);
-
-		if (isSerializedObject(serialObj)) {
+		if (isSerialized(serialObj)) {
 			const { classToken, hash } = serialObj[SerialSymbol.serialized];
 
 			if (!hash) {
@@ -94,18 +82,18 @@ export default class Reviver {
 
 			const entry = objectRegistry.getEntry(classToken);
 			if (!entry) {
-				const err = `ERR_MISSING_REG: Object with classToken: ${classToken} not found in registry.
+				const err = `ERR_MISSING_REG: Object with classToken: ${classToken.toString()} not found in registry.
 					 Make sure you are property configuring the transfer handler. Remember the object must be registered on each thread.`;
 				console.error(err);
 				throw new Error(err);
 			}
 
-			let inCache = this.revivedCache.has(hash);
+			let inCache = this.revivedCache.has(serializedObjKey({ classToken, hash }));
 			const revived = inCache ? this.revivedCache.get(hash)! : this.create(entry);
 
 			if (!inCache) {
 				// add revived item to map for traverser
-				this.revivedCache.set(hash, revived);
+				this.revivedCache.set(serializedObjKey({ classToken, hash }), revived);
 
 				if (revived.revive) {
 					// hook to override the default reviver
@@ -115,17 +103,14 @@ export default class Reviver {
 				}
 			}
 
-			// return proxy
-			if (revived instanceof SerialProxy) {
-				return ProxyWrapper.wrap(revived, parentRef) as R;
-			}
-
-			if (revived.afterRevived) {
+			if (revived.afterRevive) {
 				// hook after the object has been revived
-				revived.afterRevived();
+				revived.afterRevive();
 			}
 
-			if (revived instanceof SerialArray) {
+			if (revived instanceof SerialProxy) {
+				return ProxyWrapper.wrap(revived) as R;
+			} else if (revived instanceof SerialArray) {
 				return SerialArray.toArray(revived) as R;
 			} else if (revived instanceof SerialMap) {
 				return SerialMap.toMap(revived) as R;
@@ -139,16 +124,16 @@ export default class Reviver {
 			console.error(err);
 			throw TypeError(err);
 		}
-	}
+	};
 
 	private traverser = ({ parent, key, value }: TraversalCallbackContext) => {
 		// null when called from root
-		if (parent && key) {
-			if (isSerializedObject(parent)) {
+		if (parent && key && !key.startsWith('ComSer.')) {
+			if (isSerialized(parent)) {
 				const serialMeta = parent[SerialSymbol.serialized];
 
 				// do not traverse
-				if (this.noTraversal.has(serialMeta.classToken)) {
+				if (Reviver.NoTraversal.has(serialMeta.classToken.toString())) {
 					return;
 				}
 
@@ -162,7 +147,7 @@ export default class Reviver {
 				}
 
 				// get and validate parent
-				const revParent = this.revivedCache.get(hash);
+				const revParent = this.revivedCache.get(serializedObjKey(serialMeta));
 				if (!revParent) {
 					const err = `ERR_NOT_FOUND: Parent Object: ${JSON.stringify(
 						parent
@@ -170,32 +155,31 @@ export default class Reviver {
 					throw TypeError(err);
 				}
 
-				let revVal;
+				let revived;
 				// if value is object
 				if (typeof value === 'object') {
-					value = this.reviveSymbols(value);
-					if (isSerializedObject(value)) {
+					if (isSerialized(value)) {
 						// value need to be revived
-						revVal = this.revive(value, {
+						revived = this.revive(value, {
 							parent: revParent as Serializable,
 							classToken: serialMeta.classToken,
 							prop: key,
 						});
 					} else {
-						revVal = value;
+						revived = value;
 					}
 				} else {
-					revVal = value;
+					revived = value;
 				}
 
 				// SerialProxy cannot be modified
-				if (revParent.afterPropertyRevived && !(value instanceof SerialProxy)) {
+				if (revParent.afterPropertyRevive && !(revived instanceof SerialProxy)) {
 					// hook to allow upadates to revived objects before assigning
-					value = revParent.afterPropertyRevived(key, value);
+					revived = revParent.afterPropertyRevive(key, revived);
 				}
 
 				// assign revived value to parent
-				Object.assign(revParent, { [key]: value });
+				Object.assign(revParent, { [key]: revived });
 			}
 		}
 	};

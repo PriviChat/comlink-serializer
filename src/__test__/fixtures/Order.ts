@@ -1,7 +1,7 @@
 import { Serializable, Serialize } from '@comlink-serializer';
 import Product from './product';
 import User from './user';
-import { OrderClass, ProductClass, SerializedOrder, UserClass } from './types';
+import { OrderClass, ProductClass, SerializedOrder } from './types';
 
 @Serializable(OrderClass)
 class Order implements Serializable<SerializedOrder> {

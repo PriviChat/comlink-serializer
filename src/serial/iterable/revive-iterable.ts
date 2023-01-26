@@ -1,15 +1,9 @@
-import { Serializable } from '../decorators';
 import Reviver from '../reviver';
-import { Serialized, SerialPrimitive } from '../types';
 import MessageChannelIterable from './message-channel-iterable';
 import { AsyncReviveIterator, ReviveIterType, SerialIterType } from './types';
 
-export default class ReviveIterable<
-		S extends Serialized = Serialized,
-		T extends Serializable<S> = Serializable<S>,
-		SI extends SerialIterType<T> = any
-	>
-	extends MessageChannelIterable<AsyncReviveIterator<S>>
+export default class ReviveIterable<SI extends SerialIterType = SerialIterType>
+	extends MessageChannelIterable<AsyncReviveIterator>
 	implements AsyncIterableIterator<SI>
 {
 	private done: boolean;
@@ -46,7 +40,8 @@ export default class ReviveIterable<
 		const value = next.value;
 		if (Array.isArray(value)) {
 			const key = value[0];
-			const entry = this.reviver.revive(value[1]);
+			const val = value[1];
+			const entry = this.reviver.revive(val);
 			return {
 				done: false,
 				value: [key, entry] as SI,
@@ -59,23 +54,27 @@ export default class ReviveIterable<
 		}
 	}
 
-	async return?(val?: ReviveIterType<S>): Promise<IteratorResult<SI>> {
+	async return?(val?: ReviveIterType): Promise<IteratorResult<SI>> {
 		this.done = true;
 		if (this.iterator.return) {
-			const next = await this.iterator.return(val);
-			const value = next.value;
-			if (Array.isArray(value)) {
+			if (Array.isArray(val)) {
+				const next = await this.iterator.return(val);
+				const value = next.value;
 				const key = value[0];
 				const entry = this.reviver.revive(value[1]);
 				return {
 					done: false,
 					value: [key, entry] as SI,
 				};
-			} else if (value) {
-				return {
-					done: this.done,
-					value: this.reviver.revive(value) as SI,
-				};
+			} else {
+				const next = await this.iterator.return(val);
+				const value = next.value;
+				if (value) {
+					return {
+						done: this.done,
+						value: this.reviver.revive(value) as SI,
+					};
+				}
 			}
 		}
 		return {

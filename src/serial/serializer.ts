@@ -1,12 +1,16 @@
-import hash from 'object-hash';
+import objHash from 'object-hash';
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import { ParentRef, SerialArray, SerialMap, SerialProxy } from '../serial';
-import { Serializable, SerialMeta } from './decorators';
+import { ParentRef, SerialArray, SerializeCtx, SerialMap, SerialProxy } from '../serial';
+import { Serializable, SerializedObjKey } from './decorators';
 import { isSerializableObject } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { Serialized } from './types';
+import { serializedObjHash, serializedObjKey } from './utils';
 
 export default class Serializer {
+	private serialObjCache = new WeakMap<Serializable, Serialized>();
+	private serialObjKeys = new Set<SerializedObjKey>();
+
 	private transfers = new Array<Transferable>();
 	constructor() {}
 
@@ -14,34 +18,15 @@ export default class Serializer {
 		return this.transfers;
 	}
 
-	addTransferable(transfer: Transferable): void {
+	private addTransferable = (transfer: Transferable): void => {
 		this.transfers.push(transfer);
-	}
+	};
 
-	private assignSerialMeta<S extends Serialized>(serialObj: S, serialMeta: SerialMeta): S {
-		// add the meta hash
-		serialMeta.hash = hash(serialObj, {
-			//don't hash message port
-			excludeKeys: function (key) {
-				if (key === 'port') {
-					return true;
-				}
-				return false;
-			},
-		});
+	private checkSerialObjCache = <S extends Serialized>(obj: Serializable): S | undefined => {
+		return this.serialObjCache.get(obj) as S | undefined;
+	};
 
-		// need for Serialized interface
-		Object.assign(serialObj, { [SerialSymbol.serialized]: serialMeta });
-
-		// add as escaped for serialization
-		const escSym = "'" + SerialSymbol.serialized.toString() + "'";
-		Object.assign(serialObj, { [escSym]: serialMeta });
-
-		// return obj
-		return serialObj;
-	}
-
-	public serialize<S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S {
+	public serialize = <S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S => {
 		if (!isSerializableObject(obj)) {
 			let err;
 			if (parentRef) {
@@ -57,28 +42,39 @@ export default class Serializer {
 			throw new TypeError(err);
 		}
 
-		const classToken = obj[SerialSymbol.classToken]();
-		const serialMeta = obj[SerialSymbol.serializable]();
-		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
-		let serialObj: S;
+		// if object has already been serialized, return.
+		const fromSerialCache = this.checkSerialObjCache<S>(obj);
+		if (fromSerialCache) return fromSerialCache;
 
+		const classToken = obj[SerialSymbol.classToken]();
+		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
+		const serializeCtx: SerializeCtx = { serialize: this.serialize, addTransferable: this.addTransferable, parentRef };
+
+		// initialize to empty object
+		let serialObj = {} as S;
+
+		// hook before serialize
 		if (obj.beforeSerialize) {
 			obj.beforeSerialize();
 		}
 
 		if (obj.serialize) {
-			serialObj = obj.serialize({ serialize: this.serialize, parentRef }) as S;
+			// hook to override default serializer
+			serialObj = obj.serialize(serializeCtx) as S;
 		} else {
-			serialObj = {} as S;
 			traverse(
 				obj,
 				({ parent, key, value }: TraversalCallbackContext) => {
 					if (parent && key) {
 						let sv;
+
+						// hook before property serialize
 						if (obj.beforePropertySerialize) {
 							value = obj.beforePropertySerialize(key);
 						}
+
 						const sdp = serialDescr ? serialDescr[key] : undefined;
+						// if object has a serial descriptor
 						if (sdp) {
 							let so: Serializable | undefined;
 							if (sdp.type === 'Serializable') so = value;
@@ -99,9 +95,8 @@ export default class Serializer {
 									throw new TypeError(err);
 								}
 							}
-							if (sdp.lazy && so) {
-								const sp = new SerialProxy(so, key, classToken);
-								this.addTransferable(sp.port);
+							if (sdp.proxy && so) {
+								const sp = new SerialProxy(so, { parent: obj, classToken, prop: key });
 								so = sp;
 							}
 							if (so) {
@@ -139,7 +134,38 @@ export default class Serializer {
 				{ maxDepth: 1 }
 			);
 		}
-		this.assignSerialMeta(serialObj, serialMeta);
+
+		// hook after serialize
+		if (obj.afterSerialize) {
+			serialObj = obj.afterSerialize(serializeCtx, serialObj) as S;
+		}
+
+		// generate serial meta object
+		let serialMeta = {
+			classToken: classToken.toString(),
+			hash: serializedObjHash(obj.hashCode(), classToken),
+		};
+
+		// check for the very slim chance of collisions
+		// it is very likely if someone does not implement
+		// hashCode properly.
+		while (this.serialObjKeys.has(serializedObjKey(serialMeta))) {
+			serialMeta = {
+				classToken: classToken.toString(),
+				hash: serializedObjHash(-1, classToken),
+			};
+		}
+
+		// add the serial meta to the serialized object
+		serialObj[SerialSymbol.serialized] = serialMeta;
+
+		// add the objet key to the set
+		this.serialObjKeys.add(serializedObjKey(serialMeta));
+
+		// cache the serialized obj
+		this.serialObjCache.set(obj, serialObj);
+
+		// return
 		return serialObj;
-	}
+	};
 }

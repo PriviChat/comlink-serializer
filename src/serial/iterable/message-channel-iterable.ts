@@ -1,11 +1,10 @@
-import { Serialized, SerialPrimitive } from '../types';
-import { AnySerialIterator, AsyncReviveIterator, IteratorMessageType } from './types';
+import { AsyncReviveIterator, AsyncSerialIterator, IteratorMessageType, ReviveIterType } from './types';
 
-export default abstract class MessageChannelIterable<I extends AnySerialIterator | AsyncReviveIterator> {
+export default abstract class MessageChannelIterable<I extends AsyncSerialIterator | AsyncReviveIterator> {
 	protected iterator: I;
 	readonly port: MessagePort;
 
-	constructor(param: MessagePort | AnySerialIterator) {
+	constructor(param: MessagePort | AsyncSerialIterator) {
 		if (param instanceof MessagePort) {
 			this.port = param;
 			this.iterator = this.wrap(this.port) as I;
@@ -27,7 +26,7 @@ export default abstract class MessageChannelIterable<I extends AnySerialIterator
 				});
 			},
 
-			return: function (value?: Serialized | [SerialPrimitive, Serialized]) {
+			return: function (value?: ReviveIterType) {
 				port.postMessage({ type: IteratorMessageType.Return, value });
 				return new Promise((resolve) => {
 					port.onmessage = ({ data }) => {
@@ -39,7 +38,7 @@ export default abstract class MessageChannelIterable<I extends AnySerialIterator
 		return iterator;
 	};
 
-	private expose = (iterator: AnySerialIterator, port: MessagePort) => {
+	private expose = (iterator: AsyncSerialIterator, port: MessagePort) => {
 		port.onmessage = async ({ data: { type, value } }) => {
 			switch (type) {
 				case IteratorMessageType.Next:

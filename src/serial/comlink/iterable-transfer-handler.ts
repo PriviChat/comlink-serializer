@@ -1,21 +1,20 @@
 import * as Comlink from 'comlink';
-import { ReviverIterable, SerialIterableWrap } from '../iterable';
+import { ReviverIterable, AsyncSerialIterator, SerialIterable } from '../iterable';
 import { TransferableIterable } from './types';
 import Reviver from '../reviver';
-import { isSerialIterableWrap } from '../iterable/utils';
+import { isAsyncSerialIterator } from '../iterable/utils';
+import Serializer from '../serializer';
 
 export default class IteratorTransferHandler {
 	constructor() {}
 
 	public get handler() {
 		const comlink: Comlink.TransferHandler<TransferableIterable, Transferable> = {
-			canHandle: function (value: any): value is SerialIterableWrap {
-				if (!value) return false;
-				if (isSerialIterableWrap(value)) return true;
-				return false;
+			canHandle: function (value: any): value is AsyncSerialIterator {
+				return isAsyncSerialIterator(value);
 			},
-			serialize: (wrap: SerialIterableWrap) => {
-				const iterable = wrap.serialIterable;
+			serialize: (asi: AsyncSerialIterator) => {
+				const iterable = new SerialIterable(asi, new Serializer());
 				const port2 = iterable.port;
 				return [port2, [port2]];
 			},

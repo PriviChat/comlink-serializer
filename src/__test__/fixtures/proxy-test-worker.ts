@@ -5,7 +5,7 @@ import Order from '@test-fixtures/order';
 import Product from '@test-fixtures/product';
 import Address from '@test-fixtures/address';
 
-export default class LazyTestWorker {
+export default class ProxyTestWorker {
 	getUser(user: User) {
 		return user;
 	}
@@ -39,5 +39,5 @@ export default class LazyTestWorker {
 		return map;
 	}
 }
-Comlink.expose(LazyTestWorker);
+Comlink.expose(ProxyTestWorker);
 ComlinkSerializer.registerTransferHandler({ transferClasses: [User, Order, Product, Address] });

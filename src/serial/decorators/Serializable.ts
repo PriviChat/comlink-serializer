@@ -6,7 +6,7 @@ import {
 	Revivable,
 	SerialClassToken,
 	SerializeDescriptorProperty,
-	SerialMeta,
+	SerializedMeta,
 	SerialPropertyMetadataKey,
 	ValueObject,
 } from './types';
@@ -15,11 +15,13 @@ interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	beforeSerialize?(): void;
 	serialize?(ctx: SerializeCtx): S;
 	beforePropertySerialize?(prop: string): any;
+	afterSerialize?(ctx: SerializeCtx, serialObj: S): S;
 }
 
 export interface SerializableObject<T extends Serializable> {
-	[SerialSymbol.serializable](): SerialMeta;
-	[SerialSymbol.classToken](): SerialClassToken;
+	[SerialSymbol.serializable]: () => boolean;
+	[SerialSymbol.revived]: () => boolean;
+	[SerialSymbol.classToken]: () => SerialClassToken;
 	[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty>;
 	get self(): SerializableObject<T>;
 }
@@ -40,17 +42,15 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				super(...args);
 			}
 
-			[SerialSymbol.serializable](): SerialMeta {
-				return {
-					classToken: classToken.toString(),
-					hash: undefined,
-				};
+			[SerialSymbol.serializable](): boolean {
+				return true;
 			}
-
+			[SerialSymbol.revived](): boolean {
+				return false;
+			}
 			[SerialSymbol.classToken](): SerialClassToken {
 				return classToken;
 			}
-
 			[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty> {
 				if (!serializeDescriptor) {
 					serializeDescriptor = this.getSerializeDescriptor();
@@ -71,17 +71,6 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 					target = Object.getPrototypeOf(target);
 				}
 				return rtnDescr;
-			}
-
-			/**
-			 * Assigns a value to a key (property) in an object.
-			 * @param {string} key - The name of the property to assign.
-			 * @param {any} value - The value to be assigned to the key.
-			 * @returns The object itself.
-			 */
-			public assign(key: string, value: any) {
-				Object.assign(this, { [key]: value });
-				return this;
 			}
 
 			public get self() {

@@ -1,5 +1,5 @@
 import { jest, expect, test } from '@jest/globals';
-import SerializeDecoratorSettings from '@test-fixtures/serialize-decorator-settings';
+import SerializeDecoratorTestObject from '@test-fixtures/serialize-decorator-test-object';
 import Order from '@test-fixtures/order';
 import User from '@test-fixtures/user';
 import { AddressClass, ProductClass, UserClass } from '@test-fixtures/types';
@@ -8,87 +8,87 @@ import { makeObj } from './fixtures';
 import SerialSymbol from '../serial/serial-symbol';
 
 describe('Serialize descriptor tests', () => {
-	test('Check that SerializeDecoratorSettings has proper descriptors', () => {
-		const sds = new SerializeDecoratorSettings();
+	test('Check that SerializeDecoratorTestObject has proper descriptors', () => {
+		const sds = new SerializeDecoratorTestObject();
 
 		if (isSerializableObject(sds)) {
 			const desc = sds[SerialSymbol.serializeDescriptor]();
 			// @Serialize()
-			expect(desc['lazyFalseObject']).toBeDefined();
-			expect(desc['lazyFalseObject'].prop).toEqual('lazyFalseObject');
-			expect(desc['lazyFalseObject'].type).toEqual('Serializable');
-			expect(desc['lazyFalseObject'].token).toEqual(AddressClass.toString());
-			expect(desc['lazyFalseObject'].lazy).toBeFalsy();
+			expect(desc['proxyFalseObject']).toBeDefined();
+			expect(desc['proxyFalseObject'].prop).toBe('proxyFalseObject');
+			expect(desc['proxyFalseObject'].type).toBe('Serializable');
+			expect(desc['proxyFalseObject'].classToken).toBe(AddressClass);
+			expect(desc['proxyFalseObject'].proxy).toBeFalsy();
 
 			// @Serialize(false)
-			expect(desc['lazyBoolFalseObject']).toBeDefined();
-			expect(desc['lazyBoolFalseObject'].prop).toEqual('lazyBoolFalseObject');
-			expect(desc['lazyBoolFalseObject'].type).toEqual('Serializable');
-			expect(desc['lazyBoolFalseObject'].token).toEqual(AddressClass.toString());
-			expect(desc['lazyBoolFalseObject'].lazy).toBeFalsy();
+			expect(desc['proxyBoolFalseObject']).toBeDefined();
+			expect(desc['proxyBoolFalseObject'].prop).toBe('proxyBoolFalseObject');
+			expect(desc['proxyBoolFalseObject'].type).toBe('Serializable');
+			expect(desc['proxyBoolFalseObject'].classToken).toEqual(AddressClass);
+			expect(desc['proxyBoolFalseObject'].proxy).toBeFalsy();
 
 			// @Serialize(true)
-			expect(desc['lazyBoolTrueObject']).toBeDefined();
-			expect(desc['lazyBoolTrueObject'].prop).toEqual('lazyBoolTrueObject');
-			expect(desc['lazyBoolTrueObject'].type).toEqual('Serializable');
-			expect(desc['lazyBoolTrueObject'].token).toEqual(AddressClass.toString());
-			expect(desc['lazyBoolTrueObject'].lazy).toBeTruthy();
+			expect(desc['proxyBoolTrueObject']).toBeDefined();
+			expect(desc['proxyBoolTrueObject'].prop).toBe('proxyBoolTrueObject');
+			expect(desc['proxyBoolTrueObject'].type).toBe('Serializable');
+			expect(desc['proxyBoolTrueObject'].classToken).toBe(AddressClass);
+			expect(desc['proxyBoolTrueObject'].proxy).toBeTruthy();
 
-			// @Serialize({ lazy: true })
-			expect(desc['lazySettTrueObject']).toBeDefined();
-			expect(desc['lazySettTrueObject'].prop).toEqual('lazySettTrueObject');
-			expect(desc['lazySettTrueObject'].type).toEqual('Serializable');
-			expect(desc['lazySettTrueObject'].token).toEqual(AddressClass.toString());
-			expect(desc['lazySettTrueObject'].lazy).toBeTruthy();
+			// @Serialize({ proxy: true })
+			expect(desc['proxySetTrueObject']).toBeDefined();
+			expect(desc['proxySetTrueObject'].prop).toBe('proxySetTrueObject');
+			expect(desc['proxySetTrueObject'].type).toBe('Serializable');
+			expect(desc['proxySetTrueObject'].classToken).toBe(AddressClass);
+			expect(desc['proxySetTrueObject'].proxy).toBeTruthy();
 
-			// @Serialize({ lazy: false })
-			expect(desc['lazySettFalseObject']).toBeDefined();
-			expect(desc['lazySettFalseObject'].prop).toEqual('lazySettFalseObject');
-			expect(desc['lazySettFalseObject'].type).toEqual('Serializable');
-			expect(desc['lazySettFalseObject'].token).toEqual(AddressClass.toString());
-			expect(desc['lazySettFalseObject'].lazy).toBeFalsy();
-
-			// @Serialize(AddressClass)
-			expect(desc['lazyFalseArray']).toBeDefined();
-			expect(desc['lazyFalseArray'].prop).toEqual('lazyFalseArray');
-			expect(desc['lazyFalseArray'].type).toEqual('Array');
-			expect(desc['lazyFalseArray'].token).toEqual(AddressClass.toString());
-			expect(desc['lazyFalseArray'].lazy).toBeFalsy();
-
-			// @Serialize({ classToken: AddressClass, lazy: false })
-			expect(desc['lazySettFalseArray']).toBeDefined();
-			expect(desc['lazySettFalseArray'].prop).toEqual('lazySettFalseArray');
-			expect(desc['lazySettFalseArray'].type).toEqual('Array');
-			expect(desc['lazySettFalseArray'].token).toEqual(AddressClass.toString());
-			expect(desc['lazySettFalseArray'].lazy).toBeFalsy();
-
-			// @Serialize({ classToken: AddressClass, lazy: true })
-			expect(desc['lazySettTrueArray']).toBeDefined();
-			expect(desc['lazySettTrueArray'].prop).toEqual('lazySettTrueArray');
-			expect(desc['lazySettTrueArray'].type).toEqual('Array');
-			expect(desc['lazySettTrueArray'].token).toEqual(AddressClass.toString());
-			expect(desc['lazySettTrueArray'].lazy).toBeTruthy();
+			// @Serialize({ proxy: false })
+			expect(desc['proxySetFalseObject']).toBeDefined();
+			expect(desc['proxySetFalseObject'].prop).toBe('proxySetFalseObject');
+			expect(desc['proxySetFalseObject'].type).toBe('Serializable');
+			expect(desc['proxySetFalseObject'].classToken).toBe(AddressClass);
+			expect(desc['proxySetFalseObject'].proxy).toBeFalsy();
 
 			// @Serialize(AddressClass)
-			expect(desc['lazyFalseMap']).toBeDefined();
-			expect(desc['lazyFalseMap'].prop).toEqual('lazyFalseMap');
-			expect(desc['lazyFalseMap'].type).toEqual('Map');
-			expect(desc['lazyFalseMap'].token).toEqual(AddressClass.toString());
-			expect(desc['lazyFalseMap'].lazy).toBeFalsy();
+			expect(desc['proxyFalseArray']).toBeDefined();
+			expect(desc['proxyFalseArray'].prop).toBe('proxyFalseArray');
+			expect(desc['proxyFalseArray'].type).toBe('Array');
+			expect(desc['proxyFalseArray'].classToken).toBe(AddressClass);
+			expect(desc['proxyFalseArray'].proxy).toBeFalsy();
 
-			// @Serialize({ classToken: AddressClass, lazy: false })
-			expect(desc['lazySettFalseMap']).toBeDefined();
-			expect(desc['lazySettFalseMap'].prop).toEqual('lazySettFalseMap');
-			expect(desc['lazySettFalseMap'].type).toEqual('Map');
-			expect(desc['lazySettFalseMap'].token).toEqual(AddressClass.toString());
-			expect(desc['lazySettFalseMap'].lazy).toBeFalsy();
+			// @Serialize({ classToken: AddressClass, proxy: false })
+			expect(desc['proxySetFalseArray']).toBeDefined();
+			expect(desc['proxySetFalseArray'].prop).toBe('proxySetFalseArray');
+			expect(desc['proxySetFalseArray'].type).toBe('Array');
+			expect(desc['proxySetFalseArray'].classToken).toBe(AddressClass);
+			expect(desc['proxySetFalseArray'].proxy).toBeFalsy();
 
-			// @Serialize({ classToken: AddressClass, lazy: true })
-			expect(desc['lazySettTrueMap']).toBeDefined();
-			expect(desc['lazySettTrueMap'].prop).toEqual('lazySettTrueMap');
-			expect(desc['lazySettTrueMap'].type).toEqual('Map');
-			expect(desc['lazySettTrueMap'].token).toEqual(AddressClass.toString());
-			expect(desc['lazySettTrueMap'].lazy).toBeTruthy();
+			// @Serialize({ classToken: AddressClass, proxy: true })
+			expect(desc['proxySetTrueArray']).toBeDefined();
+			expect(desc['proxySetTrueArray'].prop).toBe('proxySetTrueArray');
+			expect(desc['proxySetTrueArray'].type).toBe('Array');
+			expect(desc['proxySetTrueArray'].classToken).toBe(AddressClass);
+			expect(desc['proxySetTrueArray'].proxy).toBeTruthy();
+
+			// @Serialize(AddressClass)
+			expect(desc['proxyFalseMap']).toBeDefined();
+			expect(desc['proxyFalseMap'].prop).toBe('proxyFalseMap');
+			expect(desc['proxyFalseMap'].type).toBe('Map');
+			expect(desc['proxyFalseMap'].classToken).toBe(AddressClass);
+			expect(desc['proxyFalseMap'].proxy).toBeFalsy();
+
+			// @Serialize({ classToken: AddressClass, proxy: false })
+			expect(desc['proxySetFalseMap']).toBeDefined();
+			expect(desc['proxySetFalseMap'].prop).toBe('proxySetFalseMap');
+			expect(desc['proxySetFalseMap'].type).toBe('Map');
+			expect(desc['proxySetFalseMap'].classToken).toBe(AddressClass);
+			expect(desc['proxySetFalseMap'].proxy).toBeFalsy();
+
+			// @Serialize({ classToken: AddressClass, proxy: true })
+			expect(desc['proxySetTrueMap']).toBeDefined();
+			expect(desc['proxySetTrueMap'].prop).toBe('proxySetTrueMap');
+			expect(desc['proxySetTrueMap'].type).toBe('Map');
+			expect(desc['proxySetTrueMap'].classToken).toBe(AddressClass);
+			expect(desc['proxySetTrueMap'].proxy).toBeTruthy();
 		}
 	});
 
@@ -98,14 +98,14 @@ describe('Serialize descriptor tests', () => {
 		if (isSerializableObject(user0)) {
 			const desc = user0[SerialSymbol.serializeDescriptor]();
 			expect(desc['priAddress']).toBeDefined();
-			expect(desc['priAddress'].prop).toEqual('priAddress');
-			expect(desc['priAddress'].type).toEqual('Serializable');
-			expect(desc['priAddress'].token).toEqual(AddressClass.toString());
+			expect(desc['priAddress'].prop).toBe('priAddress');
+			expect(desc['priAddress'].type).toBe('Serializable');
+			expect(desc['priAddress'].classToken).toBe(AddressClass);
 
 			expect(desc['addresses']).toBeDefined();
-			expect(desc['addresses'].prop).toEqual('addresses');
-			expect(desc['addresses'].type).toEqual('Array');
-			expect(desc['addresses'].token).toEqual(AddressClass);
+			expect(desc['addresses'].prop).toBe('addresses');
+			expect(desc['addresses'].type).toBe('Array');
+			expect(desc['addresses'].classToken).toBe(AddressClass);
 		}
 	});
 
@@ -115,15 +115,15 @@ describe('Serialize descriptor tests', () => {
 		if (isSerializableObject(order0)) {
 			const desc = order0[SerialSymbol.serializeDescriptor]();
 			expect(desc['user']).toBeDefined();
-			expect(desc['user'].prop).toEqual('user');
-			expect(desc['user'].type).toEqual('Serializable');
-			expect(desc['user'].token).toEqual(UserClass.toString());
-			expect(desc['user'].token).toBeTruthy();
+			expect(desc['user'].prop).toBe('user');
+			expect(desc['user'].type).toBe('Serializable');
+			expect(desc['user'].classToken).toBe(UserClass);
+			expect(desc['user'].classToken).toBeTruthy();
 
 			expect(desc['products']).toBeDefined();
-			expect(desc['products'].prop).toEqual('products');
-			expect(desc['products'].type).toEqual('Array');
-			expect(desc['products'].token).toEqual(ProductClass);
+			expect(desc['products'].prop).toBe('products');
+			expect(desc['products'].type).toBe('Array');
+			expect(desc['products'].classToken).toBe(ProductClass);
 		}
 	});
 });
