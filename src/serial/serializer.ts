@@ -1,15 +1,20 @@
-import objHash from 'object-hash';
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import { ParentRef, SerialArray, SerializeCtx, SerialMap, SerialProxy } from '../serial';
-import { Serializable, SerializedObjKey } from './decorators';
-import { isSerializableObject } from './decorators/utils';
+import { ParentRef, SerialArray, SerializeCtx, SerializedCacheEntry, SerialMap, SerialProxy } from '../serial';
+import { Serializable, SerializableObject, SerializedHash } from './decorators';
+import { isSerializableObject, serializedHash } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { Serialized } from './types';
-import { serializedObjHash, serializedObjKey } from './utils';
+import { isSerialProxy } from './utils';
 
 export default class Serializer {
-	private serialObjCache = new WeakMap<Serializable, Serialized>();
-	private serialObjKeys = new Set<SerializedObjKey>();
+	/*
+	 * A cache of Serialized objects based on instance equality.
+	 */
+	private serialInstanceCache = new WeakMap<Serializable, Serialized>();
+	/*
+	 * A cache of serializable / Serialized objects based on a uuid.
+	 */
+	private serialCache = new Map<SerializedHash, SerializedCacheEntry>();
 
 	private transfers = new Array<Transferable>();
 	constructor() {}
@@ -22,8 +27,70 @@ export default class Serializer {
 		this.transfers.push(transfer);
 	};
 
-	private checkSerialObjCache = <S extends Serialized>(obj: Serializable): S | undefined => {
-		return this.serialObjCache.get(obj) as S | undefined;
+	private checkSerialCache = <S extends Serialized>(obj: SerializableObject & Serializable): S | undefined => {
+		// first check for an instance hit
+		const hit = this.serialInstanceCache.get(obj);
+		if (hit) return hit as S;
+
+		// get user defined hashCode for obj
+		const hashCode = obj.hashCode();
+		// if hash is -1
+		// hash was not generated
+		if (hashCode < 0) return undefined;
+
+		const classToken = obj[SerialSymbol.classToken]();
+		// build serialized hash
+		const hash = serializedHash(hashCode, classToken);
+		// check for cache hit
+		const entryHit = this.serialCache.get(hash);
+		// if cache miss
+		if (!entryHit) return undefined;
+		// if chache hit, still check for equality
+		// due to possible hash collisions
+		if (!obj.equals(entryHit.obj)) return undefined;
+		// finally return cached value
+		return entryHit.serialObj as S;
+	};
+
+	private updateSerialCache = <S extends Serialized>(
+		obj: SerializableObject & Serializable,
+		serialObj: S
+	): SerializedHash | undefined => {
+		let hash: string | undefined;
+
+		//check for obj in instance cache
+		const hit = this.serialInstanceCache.get(obj);
+		if (hit) {
+			const meta = hit[SerialSymbol.serialized];
+			// grab hash if it's already been set
+			if (meta) hash = meta.hash;
+		} else {
+			// set in instance cache
+			this.serialInstanceCache.set(obj, serialObj);
+		}
+
+		if (!hash) {
+			// get user defined hashCode for obj
+			const hashCode = obj.hashCode();
+			// if hashCode is -1 the obj cannot be cached
+			if (hashCode < 0) return undefined;
+
+			const classToken = obj[SerialSymbol.classToken]();
+			// generate hash
+			hash = serializedHash(hashCode, classToken);
+			//check if hash exists
+			const hit = this.serialCache.get(hash);
+			if (hit) {
+				// must check equals due to collisions
+				// if objs are equal it has already been cached
+				// return the valid hash
+				if (obj.equals(hit.obj)) return hash;
+				else return undefined;
+			}
+		}
+		// at this point hash and must be unique
+		this.serialCache.set(hash, { obj, serialObj });
+		return hash;
 	};
 
 	public serialize = <S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S => {
@@ -42,9 +109,9 @@ export default class Serializer {
 			throw new TypeError(err);
 		}
 
-		// if object has already been serialized, return.
-		const fromSerialCache = this.checkSerialObjCache<S>(obj);
-		if (fromSerialCache) return fromSerialCache;
+		// check if an already serialized object exists in the cache
+		const hit = this.checkSerialCache<S>(obj);
+		if (hit) return hit;
 
 		const classToken = obj[SerialSymbol.classToken]();
 		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
@@ -67,6 +134,13 @@ export default class Serializer {
 				({ parent, key, value }: TraversalCallbackContext) => {
 					if (parent && key) {
 						let sv;
+
+						if (isSerialProxy(value)) {
+							// this would happen if someone tried to pass an object containing a proxy back through comlink.
+							const wrn = `WRN_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} is a proxy and cannot be re-serialized.`;
+							console.error(wrn);
+							return;
+						}
 
 						// hook before property serialize
 						if (obj.beforePropertySerialize) {
@@ -140,30 +214,21 @@ export default class Serializer {
 			serialObj = obj.afterSerialize(serializeCtx, serialObj) as S;
 		}
 
-		// generate serial meta object
-		let serialMeta = {
-			classToken: classToken.toString(),
-			hash: serializedObjHash(obj.hashCode(), classToken),
-		};
+		// Update cache with new serialObj.
+		// Cache collisions should be very rare if
+		// hashCode is generated properly, but in the
+		// event of a collision, serialObj will only be in
+		// the instance cache and the hash returned will be undefined.
+		const hash = this.updateSerialCache(obj, serialObj);
 
-		// check for the very slim chance of collisions
-		// it is very likely if someone does not implement
-		// hashCode properly.
-		while (this.serialObjKeys.has(serializedObjKey(serialMeta))) {
-			serialMeta = {
-				classToken: classToken.toString(),
-				hash: serializedObjHash(-1, classToken),
-			};
-		}
+		// generate serial meta object
+		const serialMeta = {
+			classToken: classToken.toString(),
+			hash,
+		};
 
 		// add the serial meta to the serialized object
 		serialObj[SerialSymbol.serialized] = serialMeta;
-
-		// add the objet key to the set
-		this.serialObjKeys.add(serializedObjKey(serialMeta));
-
-		// cache the serialized obj
-		this.serialObjCache.set(obj, serialObj);
 
 		// return
 		return serialObj;

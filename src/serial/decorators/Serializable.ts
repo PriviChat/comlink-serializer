@@ -6,7 +6,6 @@ import {
 	Revivable,
 	SerialClassToken,
 	SerializeDescriptorProperty,
-	SerializedMeta,
 	SerialPropertyMetadataKey,
 	ValueObject,
 } from './types';
@@ -18,7 +17,7 @@ interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	afterSerialize?(ctx: SerializeCtx, serialObj: S): S;
 }
 
-export interface SerializableObject<T extends Serializable> {
+export interface SerializableObject<T extends Serializable = Serializable> {
 	[SerialSymbol.serializable]: () => boolean;
 	[SerialSymbol.revived]: () => boolean;
 	[SerialSymbol.classToken]: () => SerialClassToken;

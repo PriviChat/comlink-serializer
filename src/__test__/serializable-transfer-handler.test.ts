@@ -1,5 +1,4 @@
 import * as Comlink from 'comlink';
-import { isEqual } from 'lodash';
 import { jest, expect, test } from '@jest/globals';
 import WorkerFactory from '@test-fixtures/worker-factory';
 import SerializableTestWorker from '@test-fixtures/serializable-test-worker';
@@ -14,8 +13,10 @@ import { SerialArray, SerialMap } from '../serial';
 
 import User from '@test-fixtures/user';
 import Order from '@test-fixtures/order';
+import Address from '@test-fixtures/address';
+
 import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils';
-import { OrderClass, UserClass } from '@test-fixtures/types';
+import { AddressClass, OrderClass, UserClass } from '@test-fixtures/types';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -74,15 +75,11 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(getSerializable(rtnObj)).toBeTruthy();
 		expect(getRevived(rtnObj)).toBeTruthy();
 		expect(getClassToken(rtnObj)).toBe(UserClass.toString());
-		expect(isEqual(rtnObj, user)).toBeTruthy();
-	}, 1000000);
+		expect(rtnObj).toEqual(user);
+	});
 
 	test('Check that Order can pass-through Comlink', async () => {
 		const order = makeObj<Order>('order', 3);
-
-		//order.user is a proxy upon return so we
-		// can't do an equals check. but i think that user
-		// should be resolved back to it's orig unproxied values.
 
 		const rtnObj = await testWorker.getOrder(order);
 		expect(rtnObj).toBeInstanceOf(Order);
@@ -90,8 +87,54 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(getRevived(rtnObj)).toBeTruthy();
 		expect(getClassToken(rtnObj)).toBe(OrderClass.toString());
 		expect(rtnObj.orderId).toBe(order.orderId);
-		expect(isEqual(rtnObj.products, order.products)).toBeTruthy();
-	}, 100000);
+		// you cannot currently pass a prox (user) back through comlink.
+		expect(rtnObj.user).toBeUndefined();
+		expect(rtnObj.products).toEqual(order.products);
+	});
+
+	test('Return User.priAddress property from proxied User on Order', async () => {
+		const order = makeObj<Order>('order', 3);
+
+		const rtnObj = await testWorker.getOrderUserPriAddress(order);
+		expect(rtnObj).toBeInstanceOf(Address);
+		expect(getSerializable(rtnObj)).toBeTruthy();
+		expect(getRevived(rtnObj)).toBeTruthy();
+		expect(getClassToken(rtnObj)).toBe(AddressClass.toString());
+		expect(rtnObj).toEqual(order.user.priAddress);
+	});
+
+	test('Return User.priAddress property by calling User.getPrimaryAddress() from proxied User on Order', async () => {
+		const order = makeObj<Order>('order', 3);
+
+		const rtnObj = await testWorker.callOrderUserGetPrimaryAddress(order);
+		expect(rtnObj).toBeInstanceOf(Address);
+		expect(getSerializable(rtnObj)).toBeTruthy();
+		expect(getRevived(rtnObj)).toBeTruthy();
+		expect(getClassToken(rtnObj)).toBe(AddressClass.toString());
+		expect(rtnObj).toEqual(order.user.getPrimaryAddress());
+	});
+
+	test('Callback to main User.totalOrders property from proxied User on Order', async () => {
+		const order = makeObj<Order>('order', 1);
+		order.user.totalOrders = 6;
+
+		expect(order.user.totalOrders).toBe(6);
+		await testWorker.setOrderUserTotalOrders(order, 50);
+		// since a property set cannot be async in the worker thread
+		// we need to await before validating the value has updated.
+		await new Promise((r) => setTimeout(r, 1000));
+		// the value should be updated by now?
+		expect(order.user.totalOrders).toBe(50);
+	});
+
+	test('Callback to main User.setTotalOrders() function from proxied User on Order', async () => {
+		const order = makeObj<Order>('order', 3);
+		order.user.totalOrders = 3;
+
+		expect(order.user.totalOrders).toBe(3);
+		await testWorker.callOrderUserSetOrderTotal(order, 1000);
+		expect(order.user.totalOrders).toBe(1000);
+	});
 });
 
 /* describe('SerializableTransferHandler toSerial Comlink pass-through', () => {

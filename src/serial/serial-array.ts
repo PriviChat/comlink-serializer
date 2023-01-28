@@ -44,6 +44,6 @@ export default class SerialArray<T extends Serializable> implements Serializable
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof SerialArray && other.id === this.id;
 	}
 }

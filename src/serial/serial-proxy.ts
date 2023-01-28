@@ -6,6 +6,7 @@ import { Dictionary, ParentRef, SerializeCtx, SerializedProxy } from '.';
 import { isSerializableObject } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { hashCd } from './utils';
+import { create } from 'lodash';
 
 @Serializable(SerialProxy.classToken)
 class SerialProxy<T extends Serializable> implements Serializable<SerializedProxy>, Revivable<SerializedProxy> {
@@ -135,7 +136,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof SerialProxy && other.id === this.id;
 	}
 }
 

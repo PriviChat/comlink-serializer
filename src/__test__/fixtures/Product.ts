@@ -10,7 +10,7 @@ class Product implements Serializable<SerializedProduct> {
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof Product && other.productId === this.productId;
 	}
 }
 

@@ -42,4 +42,8 @@ export default class SerializeDecoratorTestObject {
 	public hashCode(): number {
 		return -1;
 	}
+
+	public equals(other: unknown) {
+		return false;
+	}
 }

@@ -1,5 +1,5 @@
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import { Revivable, Serializable, SerializedObjKey } from './decorators';
+import { Revivable, Serializable, SerializedHash } from './decorators';
 import { ExtractRevive, ParentRef, ReviveType, Serialized, SerialPrimitive } from './types';
 import objectRegistry from '../registry';
 import { isSerialized } from './decorators/utils';
@@ -9,10 +9,10 @@ import SerialArray from './serial-array';
 import SerialMap from './serial-map';
 import SerialProxy from './serial-proxy';
 import { ProxyWrapper } from './comlink';
-import { markObjRevived, serializedObjKey } from './utils';
+import { markObjRevived } from './utils';
 
 export default class Reviver {
-	private revivedCache = new Map<SerializedObjKey, Revivable>();
+	private revivedCache = new Map<SerializedHash, Revivable>();
 	private static NoTraversal = new Set<string>([
 		SerialArray.classToken.toString(),
 		SerialMap.classToken.toString(),
@@ -65,13 +65,6 @@ export default class Reviver {
 		if (isSerialized(serialObj)) {
 			const { classToken, hash } = serialObj[SerialSymbol.serialized];
 
-			if (!hash) {
-				const err = `ERR_MISSING_HASH: Object not deserializable, missing meta property: hash. Object: ${JSON.stringify(
-					serialObj
-				)} - Make sure you have properly decorated your class with @Serializable.`;
-				console.error(err);
-				throw TypeError(err);
-			}
 			if (!classToken) {
 				const err = `ERR_MISSING_CLASS Object missing meta property: classToken. Object: ${JSON.stringify(serialObj)}`;
 				console.error(err);
@@ -86,9 +79,8 @@ export default class Reviver {
 				throw new Error(err);
 			}
 
-			const cacheKey = serializedObjKey({ classToken, hash });
-			let inCache = this.revivedCache.has(cacheKey);
-			const revived = inCache ? this.revivedCache.get(cacheKey)! : this.create(entry);
+			let inCache = hash ? this.revivedCache.has(hash) : false;
+			const revived = inCache && hash ? this.revivedCache.get(hash)! : this.create(entry);
 
 			if (!inCache) {
 				if (revived.revive) {
@@ -103,7 +95,9 @@ export default class Reviver {
 				markObjRevived(revived);
 
 				// add revived item to the cache
-				this.revivedCache.set(cacheKey, revived);
+				if (hash) {
+					this.revivedCache.set(hash, revived);
+				}
 
 				if (revived.afterRevive) {
 					// hook after the object has been revived

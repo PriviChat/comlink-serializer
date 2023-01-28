@@ -111,6 +111,6 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof SerialMap && other.id === this.id;
 	}
 }

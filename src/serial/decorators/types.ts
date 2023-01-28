@@ -7,11 +7,12 @@ export const SerialPropertyMetadataKey = 'serialPropertyMetadata';
  */
 export interface ValueObject {
 	/**
-	 * Determins the equality of objects when serializing and deserializing objects.
+	 * Determins the equality of objects when serializing and reviving objects.
 	 *
 	 * True if 'this' and the 'other' object which is being serialized or revived are equal.
 	 * It is critical for the optimization of these processes. If you cannot determine equality
-	 * return false, but depending on your dataset this can hurt performance.
+	 * return false, but depending on your dataset this can hurt performance. If hashCode returns -1,
+	 * equals will not be called.
 	 */
 	equals(other: unknown): boolean;
 
@@ -19,7 +20,7 @@ export interface ValueObject {
 	 * Computes and returns the hashed identity for this Serializable.
 	 *
 	 * The `hashCode` of a Serializable is used to determine potential equality,
-	 * and is used when serializing and deserializaing.
+	 * and is used when serializing and reviving.
 	 *
 	 *
 	 * Note: hashCode() MUST return a number between 0 and 4294967295 (inclusive), or if you return -1
@@ -47,12 +48,11 @@ export interface Revivable<S extends Serialized = Serialized> {
 	afterRevive?(): void;
 }
 
-export type SerializedObjKey = string;
-export type SerializedObjHash = string;
+export type SerializedHash = string;
 
 export type SerializedMeta = {
 	classToken: string; // class token identifier
-	hash: SerializedObjHash; // generated
+	hash?: SerializedHash; // generated
 };
 
 export interface SerializeDescriptorProperty {

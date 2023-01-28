@@ -21,11 +21,19 @@ export default class User implements Serializable<SerializedUser> {
 		this.addresses = addresses;
 	}
 
+	public setOrderTotal(total: number) {
+		this.totalOrders = total;
+	}
+
+	public getPrimaryAddress() {
+		return this.priAddress;
+	}
+
 	public hashCode(): number {
 		return hashCd(this.email);
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof User && other.email === this.email;
 	}
 }

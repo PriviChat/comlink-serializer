@@ -3,6 +3,7 @@ import { SerialProxy } from '../../serial';
 import { Serializable, SerializableObject } from '../decorators';
 import { isSerializableObject } from '../decorators/utils';
 import SerialSymbol from '../serial-symbol';
+import { isSerialProxy } from '../utils';
 
 export default class ProxyWrapper {
 	private objValueCache = new WeakMap<object, Map<string | symbol, any>>();
@@ -84,45 +85,52 @@ export default class ProxyWrapper {
 		});
 	}
 
-	private wrap<T extends Serializable>(target: SerialProxy<T>) {
+	private wrap<T extends Serializable>(sp: SerialProxy<T>) {
 		let transfered: SerializableObject<T>;
-		return new Proxy(target, {
-			getPrototypeOf(_target) {
-				return _target;
-			},
-			get(_target, prop, receiver): any {
-				if (typeof prop === 'string' && prop === 'transfer') {
-					if (transfered) return () => transfered;
-					else {
-						const transfer = async () => {
-							transfered = await _target.transfer();
-							return transfered;
-						};
-						return transfer;
+		const createProxy = (target: SerialProxy<T> | Comlink.Remote<SerializableObject<T>> | Function) => {
+			return new Proxy(target, {
+				getPrototypeOf(_target) {
+					return _target;
+				},
+				get(_target, prop, _receiver): any {
+					if (typeof prop === 'string') {
+						if (typeof _target === 'function') {
+							if (prop === 'then') {
+								return Reflect.get(_target, prop);
+							}
+						} else if (isSerialProxy(_target)) {
+							if (prop === 'transfer') {
+								if (transfered) return () => transfered;
+								else {
+									const transfer = async () => {
+										transfered = await _target.transfer();
+										return transfered;
+									};
+									return transfer;
+								}
+							} else {
+								return createProxy(Reflect.get(_target.getProxy(), prop));
+							}
+						} else {
+							return createProxy(Reflect.get(_target, prop));
+						}
 					}
-				} else {
-					const proxy = _target.getProxy();
-					return Reflect.get(proxy, prop, receiver);
-				}
-			},
-			set(_target, prop, val, receiver): any {
-				const proxy = _target.getProxy();
-				const p = new Promise<boolean>((resolve) => {
-					resolve(Reflect.set(proxy, prop, val, receiver));
-				});
-				return p;
-			},
-			apply(_target, thisArg, argArray) {
-				const proxy = _target.getProxy() as any;
-				const p = new Promise<boolean>((resolve) => {
-					resolve(Reflect.apply(proxy, thisArg, argArray));
-				});
-				return p;
-			},
-			has(_target, p) {
-				const proxy = _target.getProxy();
-				return p in proxy;
-			},
-		});
+				},
+				set(_target, prop, val, receiver) {
+					if (typeof _target === 'function') return false;
+					else if (isSerialProxy(_target)) return Reflect.set(_target.getProxy(), prop, val, receiver);
+					else return Reflect.set(_target, prop, val, receiver);
+				},
+				apply(_target, thisArg, argArray) {
+					if (typeof _target === 'function') return Reflect.apply(_target, thisArg, argArray);
+				},
+				has(_target, prop) {
+					if (typeof _target === 'function') return false;
+					else if (isSerialProxy(_target)) return prop in sp.getProxy();
+					else return prop in _target;
+				},
+			});
+		};
+		return createProxy(sp);
 	}
 }

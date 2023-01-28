@@ -30,6 +30,11 @@ export type Dictionary<T> = {
 	[key: string]: T;
 };
 
+export interface SerializedCacheEntry {
+	obj: Serializable;
+	serialObj: Serialized;
+}
+
 export interface SerializeCtx {
 	serialize<S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S;
 	addTransferable(transfer: Transferable): void;

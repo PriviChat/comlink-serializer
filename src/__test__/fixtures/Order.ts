@@ -24,7 +24,7 @@ class Order implements Serializable<SerializedOrder> {
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof Order && other.orderId === this.orderId;
 	}
 }
 

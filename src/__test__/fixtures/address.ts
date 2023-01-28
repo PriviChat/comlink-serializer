@@ -16,6 +16,6 @@ export default class Address {
 	}
 
 	public equals(other: unknown) {
-		return false;
+		return other instanceof Address && other.id === this.id;
 	}
 }
