@@ -1,16 +1,17 @@
-import { AnySerialIterator, AsyncSerialIterator, SerialIterType, ToSerialIterator } from '.';
+import { AnySerialIterator, SerialIterType } from '.';
 import { Serialized, SerialPrimitive } from '..';
 import { Serializable } from '../decorators';
-import SerialSymbol from '../serial-symbol';
+import SerialIterableProxy from './serial-iterable-proxy';
+import SerialIteratorResult from './serial-iterator-result';
 
-export function isAsyncSerialIterator(obj: any): obj is AsyncSerialIterator {
+export function isSerialIterableProxy(obj: any): obj is SerialIterableProxy {
 	if (!obj) return false;
-	return isToSerialIterator(obj);
+	return obj instanceof SerialIterableProxy;
 }
 
-export function isToSerialIterator(obj: any): obj is ToSerialIterator {
+export function isSerialIteratorResult(obj: any): obj is SerialIteratorResult {
 	if (!obj) return false;
-	return obj[SerialSymbol.toSerialIterator] ?? false;
+	return obj instanceof isSerialIteratorResult;
 }
 
 /**
@@ -42,33 +43,7 @@ export function toSerialIterator<S extends Serialized, T extends Serializable<S>
 export function toSerialIterator<S extends Serialized, T extends Serializable<S>, K extends SerialPrimitive>(
 	obj: Array<T> | Map<K, T> | AnySerialIterator<T>
 ) {
-	if (obj instanceof Array) return createAsyncSerialIterator(obj.values());
-	else if (obj instanceof Map) return createAsyncSerialIterator(obj.entries());
-	return createAsyncSerialIterator(obj);
-}
-
-/**
- * Takes an iterator and returns an async iterator
- * @param iterator - AnySerialIterator<I>
- * @returns An AsyncSerialIterator<I>
- */
-function createAsyncSerialIterator<I extends SerialIterType>(iterator: AnySerialIterator<I>): AsyncSerialIterator<I> {
-	const asi: AsyncSerialIterator<I> = {
-		[SerialSymbol.toSerialIterator]: true,
-		[Symbol.asyncIterator]: function () {
-			return this;
-		},
-		next: async function (...args: [] | [undefined]): Promise<IteratorResult<I, any>> {
-			return await iterator.next(...args);
-		},
-		return: async function (value?: any): Promise<IteratorResult<I, any>> {
-			if (iterator.return) return await iterator.return(value);
-			else
-				return {
-					done: true,
-					value,
-				};
-		},
-	};
-	return asi;
+	if (obj instanceof Array) return new SerialIterableProxy(obj.values());
+	else if (obj instanceof Map) return new SerialIterableProxy(obj.entries());
+	return new SerialIterableProxy(obj);
 }

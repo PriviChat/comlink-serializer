@@ -1,3 +1,4 @@
+import * as Comlink from 'comlink';
 import stringHash from 'string-hash';
 import {
 	Dictionary,
@@ -53,9 +54,12 @@ export function isToSerialProxy(obj: any): obj is ToSerialProxy {
  * @param {any} obj - any - the object to check
  * @returns A function that takes an object and returns a boolean.
  */
-
 export function isSerialProxy(obj: any): obj is SerialProxy<Serializable> {
 	return obj instanceof SerialProxy;
+}
+
+export function isProxy(obj: any): boolean {
+	return obj && obj[Comlink.proxyMarker] === true;
 }
 
 /**
@@ -67,7 +71,7 @@ export function isSerialProxy(obj: any): obj is SerialProxy<Serializable> {
 export function isSerializedProxy(obj: any): obj is SerializedProxy {
 	if (!isSerialized(obj)) return false;
 	const { classToken } = obj[SerialSymbol.serialized];
-	return classToken === SerialProxy.classToken.toString();
+	return classToken === SerialSymbol.serialProxy.toString();
 }
 
 /**
@@ -79,7 +83,7 @@ export function isSerializedProxy(obj: any): obj is SerializedProxy {
 export function isSerializedArray(obj: any): obj is SerializedArray {
 	if (!isSerialized(obj)) return false;
 	const { classToken } = obj[SerialSymbol.serialized];
-	return classToken === SerialArray.classToken.toString();
+	return classToken === SerialSymbol.serialArray.toString();
 }
 
 /**
@@ -91,7 +95,7 @@ export function isSerializedArray(obj: any): obj is SerializedArray {
 export function isSerializedMap(obj: any): obj is SerializedMap {
 	if (!isSerialized(obj)) return false;
 	const { classToken } = obj[SerialSymbol.serialized];
-	return classToken === SerialMap.classToken.toString();
+	return classToken === SerialSymbol.serialMap.toString();
 }
 
 /**

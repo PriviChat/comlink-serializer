@@ -1,4 +1,5 @@
-import { SerialClassToken, SerializedMeta, Serializable } from './decorators';
+import * as Comlink from 'comlink';
+import { SerialClassToken, SerializedMeta, Serializable, SerializableObject } from './decorators';
 import SerialArray from './serial-array';
 import SerialMap from './serial-map';
 import SerialProxy from './serial-proxy';
@@ -22,7 +23,7 @@ export interface ToSerialProxy {
 
 export type SerialPrimitive = boolean | number | bigint | string;
 const serialPrimitiveKeys = ['boolean', 'number', 'bigint', 'string'] as const;
-export type SerializedMapKeyType = typeof serialPrimitiveKeys[number];
+export type SerializedKeyType = typeof serialPrimitiveKeys[number];
 export const serialPrimitives: Readonly<Set<string>> = new Set<string>(serialPrimitiveKeys);
 export const supportedMapKeys = serialPrimitiveKeys.join(', ');
 
@@ -42,7 +43,12 @@ export interface SerializeCtx {
 }
 
 export type SerialType<T extends Serializable> = T | SerialArray<T> | SerialMap<SerialPrimitive, T>;
-export type ReviveType<T extends Serializable = Serializable> = T | SerialProxy<T> | Array<T> | Map<SerialPrimitive, T>;
+export type ReviveType<T extends Serializable = Serializable> =
+	| T
+	| Comlink.Remote<SerializableObject<T>>
+	| Array<T>
+	| Map<SerialPrimitive, T>
+	| IteratorResult<T | [SerialPrimitive, T]>;
 export type ExtractRevive<RT> = RT extends ReviveType<infer T> ? T : never;
 
 export interface ReviverCtx {
@@ -65,11 +71,13 @@ export interface SerializedProxy extends Serialized {
 }
 
 export interface SerializedArray<S extends Serialized = Serialized> extends Serialized {
+	id: string;
 	'ComSer.array': S[];
 }
 
 export interface SerializedMap<S extends Serialized = Serialized> extends Serialized {
+	id: string;
 	'ComSer.size': number;
-	'ComSer.keyType'?: SerializedMapKeyType;
+	'ComSer.keyType'?: SerializedKeyType;
 	'ComSer.map': Array<[key: string, value: S]>;
 }

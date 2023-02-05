@@ -1,29 +1,27 @@
-import * as Comlink from 'comlink';
-import { ReviverIterable, AsyncSerialIterator, SerialIterable } from '../iterable';
-import { TransferableIterable } from './types';
+/* import * as Comlink from 'comlink';
+import SerialIterableProxy from '../iterable/serial-iterable-proxy';
 import Reviver from '../reviver';
-import { isAsyncSerialIterator } from '../iterable/utils';
 import Serializer from '../serializer';
 
 export default class IteratorTransferHandler {
 	constructor() {}
 
 	public get handler() {
-		const comlink: Comlink.TransferHandler<TransferableIterable, Transferable> = {
-			canHandle: function (value: any): value is AsyncSerialIterator {
-				return isAsyncSerialIterator(value);
+		const handler: Comlink.TransferHandler<SerialIterableProxy, Transferable> = {
+			canHandle: function (value: any): value is SerialIterableProxy {
+				return value instanceof SerialIterableProxy;
 			},
-			serialize: (asi: AsyncSerialIterator) => {
-				const iterable = new SerialIterable(asi, new Serializer());
-				const port2 = iterable.port;
+			serialize: (proxy: SerialIterableProxy) => {
+				const { port1, port2 } = new MessageChannel();
+				proxy.expose(port1, new Serializer());
 				return [port2, [port2]];
 			},
 			deserialize: (port2: MessagePort) => {
-				const iterable = new ReviverIterable(port2, new Reviver());
+				const proxy = SerialIterableProxy.wrap(port2, new Reviver());
 				port2.start();
-				return iterable;
+				return proxy;
 			},
 		};
-		return comlink;
+		return handler;
 	}
-}
+} */

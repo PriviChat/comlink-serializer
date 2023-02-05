@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import ComlinkSerializer from '@comlink-serializer';
+import ComlinkSerializer, { toSerial } from '@comlink-serializer';
 import User from '@test-fixtures/user';
 import Order from '@test-fixtures/order';
 import Product from '@test-fixtures/product';
@@ -31,7 +31,7 @@ export default class SerializableTestWorker {
 	 * @param {Order} order - Order
 	 * @returns {Address} The primary address of the user who placed the order.
 	 */
-	async getOrderUserPriAddress(order: Order) {
+	async getOrderUserAddress(order: Order) {
 		const priAddress = await order.user.priAddress;
 		return priAddress;
 	}
@@ -46,6 +46,21 @@ export default class SerializableTestWorker {
 	async callOrderUserGetPrimaryAddress(order: Order) {
 		const priAddress = await order.user.getPrimaryAddress();
 		return priAddress;
+	}
+
+	/**
+	 * User is a proxy on Order. User.addresses {Address} is a proxy on User and is fetched from the main thread.
+	 * The resulting Address[] object has been revived so it includes it's prototype. The Address[] is then
+	 * wrapped in toSerial() and returned back to the main thread where it also has been revived.
+	 * @param {Order} order - Order
+	 * @returns {Promise<Address[]>} The addresses of the user who placed the order.
+	 */
+	async getOrderUserAddresses(order: Order): Promise<Address[]> {
+		const rtnArr = new Array<Address>();
+		for await (const address of order.user.addresses) {
+			rtnArr.push(address);
+		}
+		return toSerial(rtnArr);
 	}
 
 	/**

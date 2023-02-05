@@ -1,3 +1,3 @@
-export { default as SerialIterable } from './serial-iterable';
-export { default as ReviverIterable } from './revive-iterable';
+export { default as SerialIterableProxy } from './serial-iterable-proxy';
+export { default as SerialIteratorResult } from './serial-iterator-result';
 export * from './types';

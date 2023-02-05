@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink';
 import { hashCd, toSerial, toSerialProxy } from './serial/utils';
 import {
-	iterableTransferHandler,
+	//iterableTransferHandler,
 	serializableTransferHandler,
 	//lazyTransferHandler,
 	SerialTransferHandlers,
@@ -22,7 +22,7 @@ defaultRegistryObjects.forEach((entry) => {
 
 export function registerTransferHandler(reg: TransferHandlerRegistration) {
 	Comlink.transferHandlers.set(SerialTransferHandlers.SerializableTransferHandler, serializableTransferHandler.handler);
-	Comlink.transferHandlers.set(SerialTransferHandlers.IterableTransferHandler, iterableTransferHandler.handler);
+	//Comlink.transferHandlers.set(SerialTransferHandlers.IterableTransferHandler, iterableTransferHandler.handler);
 	//Comlink.transferHandlers.set(SerialTransferHandlers.LazyTransferHandler, lazyTransferHandler.handler);
 }
 

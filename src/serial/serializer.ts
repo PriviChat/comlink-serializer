@@ -4,7 +4,7 @@ import { Serializable, SerializableObject, SerializedHash } from './decorators';
 import { isSerializableObject, serializedHash } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { Serialized } from './types';
-import { isSerialProxy } from './utils';
+import { isProxy } from './utils';
 
 export default class Serializer {
 	/*
@@ -27,6 +27,7 @@ export default class Serializer {
 		this.transfers.push(transfer);
 	};
 
+	/* Checking the cache for a serialized object. */
 	private checkSerialCache = <S extends Serialized>(obj: SerializableObject & Serializable): S | undefined => {
 		// first check for an instance hit
 		const hit = this.serialInstanceCache.get(obj);
@@ -52,6 +53,7 @@ export default class Serializer {
 		return entryHit.serialObj as S;
 	};
 
+	/* A method that is used to cache serialized objects. */
 	private updateSerialCache = <S extends Serialized>(
 		obj: SerializableObject & Serializable,
 		serialObj: S
@@ -93,6 +95,7 @@ export default class Serializer {
 		return hash;
 	};
 
+	/* Serializing an object. */
 	public serialize = <S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S => {
 		if (!isSerializableObject(obj)) {
 			let err;
@@ -135,7 +138,7 @@ export default class Serializer {
 					if (parent && key) {
 						let sv;
 
-						if (isSerialProxy(value)) {
+						if (isProxy(value)) {
 							// this would happen if someone tried to pass an object containing a proxy back through comlink.
 							const wrn = `WRN_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} is a proxy and cannot be re-serialized.`;
 							console.error(wrn);

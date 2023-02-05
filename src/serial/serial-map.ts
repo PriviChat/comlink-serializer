@@ -4,25 +4,25 @@ import {
 	SerializedMap,
 	serialPrimitives,
 	SerializeCtx,
-	SerializedMapKeyType,
+	SerializedKeyType,
 	ReviverCtx,
 	supportedMapKeys,
 } from './types';
 import Serializable from './decorators/serializable';
 import { hashCd, isSerialPrimitive } from './utils';
 import { isSerializable } from './decorators/utils';
+import SerialSymbol from './serial-symbol';
 
 function serialMapFactory<K extends SerialPrimitive, V extends Serializable>(map: Map<K, V>): SerialMap<K, V> {
 	return new SerialMap<K, V>(map);
 }
 
-@Serializable(SerialMap.classToken)
+@Serializable(SerialSymbol.serialMap)
 export default class SerialMap<K extends SerialPrimitive, V extends Serializable = Serializable>
 	implements Serializable<SerializedMap>
 {
 	private id = uuid();
 	private map: Map<K, V>;
-	static readonly classToken: unique symbol = Symbol('ComSer.serialMap');
 
 	constructor(map?: Map<K, V>) {
 		this.map = map ? map : new Map<K, V>();
@@ -41,7 +41,7 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 	}
 
 	public serialize?(ctx: SerializeCtx): SerializedMap {
-		let keyType: SerializedMapKeyType | undefined;
+		let keyType: SerializedKeyType | undefined;
 		const size = this.map.size;
 		if (size) {
 			const key = this.map.keys().next().value;
@@ -53,10 +53,15 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 				console.error(err);
 				throw new TypeError(err);
 			}
-			keyType = (typeof key).valueOf() as SerializedMapKeyType;
+			keyType = (typeof key).valueOf() as SerializedKeyType;
 		}
 
-		const serialObj: SerializedMap = { ['ComSer.size']: size, ['ComSer.keyType']: keyType, ['ComSer.map']: [] };
+		const serialObj: SerializedMap = {
+			id: this.id,
+			['ComSer.size']: size,
+			['ComSer.keyType']: keyType,
+			['ComSer.map']: [],
+		};
 		this.map.forEach((entry, key) => {
 			if (typeof key.valueOf() !== keyType) {
 				const supported = Array.from(serialPrimitives).join(', ');
@@ -80,6 +85,7 @@ export default class SerialMap<K extends SerialPrimitive, V extends Serializable
 	}
 
 	public revive?(serialObj: SerializedMap, ctx: ReviverCtx) {
+		this.id = serialObj.id;
 		if (serialObj['ComSer.size']) {
 			const keyType = serialObj['ComSer.keyType'];
 			for (const [serKey, serVal] of serialObj['ComSer.map']) {

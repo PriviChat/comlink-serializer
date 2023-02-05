@@ -10,4 +10,11 @@ export default class SerialSymbol {
 	static readonly toSerial: unique symbol = Symbol('ComSer.toSerial');
 	static readonly toSerialProxy: unique symbol = Symbol('ComSer.toSerialProxy');
 	static readonly toSerialIterator: unique symbol = Symbol('ComSer.toSerialIterator');
+
+	/* serial classes */
+	static readonly serialMap: unique symbol = Symbol('ComSer.serialMap');
+	static readonly serialArray: unique symbol = Symbol('ComSer.serialArray');
+	static readonly serialProxy: unique symbol = Symbol('ComSer.serialProxy');
+	static readonly serialIterableProxy: unique symbol = Symbol('ComSer.serialIterableProxy');
+	static readonly serialIteratorResult: unique symbol = Symbol('ComSer.serialIteratorResult');
 }

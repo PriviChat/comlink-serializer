@@ -1,5 +1,5 @@
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import { Revivable, Serializable, SerializedHash } from './decorators';
+import { Revivable, SerialClassToken, Serializable, SerializedHash } from './decorators';
 import { ExtractRevive, ParentRef, ReviveType, Serialized, SerialPrimitive } from './types';
 import objectRegistry from '../registry';
 import { isSerialized } from './decorators/utils';
@@ -8,15 +8,16 @@ import SerialSymbol from './serial-symbol';
 import SerialArray from './serial-array';
 import SerialMap from './serial-map';
 import SerialProxy from './serial-proxy';
-import { ProxyWrapper } from './comlink';
 import { markObjRevived } from './utils';
+import { SerialIterableProxy } from './iterable';
+import SerialIteratorResult from './iterable/serial-iterator-result';
 
 export default class Reviver {
 	private revivedCache = new Map<SerializedHash, Revivable>();
-	private static NoTraversal = new Set<string>([
-		SerialArray.classToken.toString(),
-		SerialMap.classToken.toString(),
-		SerialProxy.classToken.toString(),
+	private static NoTraversal = new Set<SerialClassToken>([
+		SerialSymbol.serialArray.toString(),
+		SerialSymbol.serialMap.toString(),
+		SerialSymbol.serialProxy.toString(),
 	]);
 
 	/**
@@ -27,9 +28,9 @@ export default class Reviver {
 	 * @returns An instance of the class that was registered.
 	 */
 	private create<T extends Serializable>(entry: ObjectRegistryEntry): Revivable {
-		if (entry.classToken === SerialArray.classToken) {
+		if (entry.classToken === SerialSymbol.serialArray) {
 			return new SerialArray<T>();
-		} else if (entry.classToken === SerialMap.classToken) {
+		} else if (entry.classToken === SerialSymbol.serialMap) {
 			return new SerialMap<SerialPrimitive, T>();
 		} else {
 			const obj = Object.create(entry.constructor.prototype);
@@ -106,7 +107,11 @@ export default class Reviver {
 			}
 
 			if (revived instanceof SerialProxy) {
-				return ProxyWrapper.wrap(revived) as R;
+				return revived.toProxy() as R;
+			} else if (revived instanceof SerialIterableProxy) {
+				return revived.toProxy() as R;
+			} else if (revived instanceof SerialIteratorResult) {
+				return SerialIteratorResult.toIteratorResult(revived) as R;
 			} else if (revived instanceof SerialArray) {
 				return SerialArray.toArray(revived) as R;
 			} else if (revived instanceof SerialMap) {

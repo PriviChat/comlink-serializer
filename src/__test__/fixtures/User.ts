@@ -6,7 +6,7 @@ import { AddressClass, SerializedUser, UserClass } from './types';
 export default class User implements Serializable<SerializedUser> {
 	@Serialize()
 	readonly priAddress: Address;
-	@Serialize(AddressClass)
+	@Serialize({ classToken: AddressClass, proxy: true })
 	readonly addresses: Address[];
 
 	constructor(

@@ -6,6 +6,7 @@ import Order from '@test-fixtures/order';
 import { SerialArray } from '../serial';
 import { UserClass } from '@test-fixtures/types';
 import Product from '@test-fixtures/product';
+import SerialSymbol from 'src/serial/serial-symbol';
 
 //type SerializeFn<T> = () => T;
 //type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
@@ -30,9 +31,9 @@ describe('ObjectRegistry', () => {
 	});
 
 	test('Check registered SerialArray', () => {
-		const entry = objectRegistry.getEntry(SerialArray.classToken);
+		const entry = objectRegistry.getEntry(SerialSymbol.serialArray);
 		expect(entry).toBeDefined();
-		expect(entry?.classToken).toBe(SerialArray.classToken);
+		expect(entry?.classToken).toBe(SerialSymbol.serialArray);
 		expect(entry?.constructor).toBeDefined();
 	});
 

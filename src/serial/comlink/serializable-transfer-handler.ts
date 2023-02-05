@@ -5,6 +5,7 @@ import { Serializable } from '../decorators';
 import { isToSerial, isToSerialProxy } from '../utils';
 import { isSerializable } from '../decorators/utils';
 import { TransferableSerializable } from './types';
+import { isSerialIterableProxy, isSerialIteratorResult } from '../iterable/utils';
 
 export default class SerializableTransferHandler {
 	constructor() {}
@@ -15,6 +16,8 @@ export default class SerializableTransferHandler {
 				if (!val) return false;
 				if (isToSerialProxy(val)) return true;
 				if (isToSerial(val)) return true;
+				if (isSerialIterableProxy(val)) return true;
+				if (isSerialIteratorResult(val)) return true;
 				if (isSerializable(val)) return true;
 				return false;
 			},

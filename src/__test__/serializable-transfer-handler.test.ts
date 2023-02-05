@@ -95,7 +95,7 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 	test('Return User.priAddress property from proxied User on Order', async () => {
 		const order = makeObj<Order>('order', 3);
 
-		const rtnObj = await testWorker.getOrderUserPriAddress(order);
+		const rtnObj = await testWorker.getOrderUserAddress(order);
 		expect(rtnObj).toBeInstanceOf(Address);
 		expect(getSerializable(rtnObj)).toBeTruthy();
 		expect(getRevived(rtnObj)).toBeTruthy();
@@ -113,6 +113,14 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(getClassToken(rtnObj)).toBe(AddressClass.toString());
 		expect(rtnObj).toEqual(order.user.getPrimaryAddress());
 	});
+
+	test('Return User.addresses which is proxied from User which is proxied on Order', async () => {
+		const order = makeObj<Order>('order', 3);
+
+		const rtnArr = await testWorker.getOrderUserAddresses(order);
+		expect(rtnArr).toBeInstanceOf(Array);
+		expect(rtnArr).toEqual(order.user.addresses);
+	}, 1000000);
 
 	test('Callback to main User.totalOrders property from proxied User on Order', async () => {
 		const order = makeObj<Order>('order', 1);

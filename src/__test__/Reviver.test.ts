@@ -7,6 +7,7 @@ import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils
 import { Reviver, Serializer, SerialProxy } from '../serial';
 import { makeArr, makeObj } from './fixtures';
 import { makeSerial } from '../serial/utils';
+import SerialSymbol from 'src/serial/serial-symbol';
 
 describe('Reviver', () => {
 	let serializer: Serializer;
@@ -56,7 +57,7 @@ describe('Reviver', () => {
 		//user is a proxy...how will this get tested
 		const user = order.user;
 		expect(getSerializable(user)).toBeTruthy();
-		expect(getClassToken(user)).toEqual(SerialProxy.classToken.toString());
+		expect(getClassToken(user)).toEqual(SerialSymbol.serialProxy.toString());
 		expect(user.email).toEqual(user0.email);
 		expect(user.firstName).toEqual(user0.firstName);
 		expect(user.lastName).toEqual(user0.lastName);

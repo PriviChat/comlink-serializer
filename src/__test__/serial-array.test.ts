@@ -6,6 +6,7 @@ import { SerialArray, SerializedArray, Serializer } from '../serial';
 import { makeObj } from './fixtures';
 import { makeSerial } from '../serial/utils';
 import { getSerialized } from '@test-fixtures/utils';
+import SerialSymbol from 'src/serial/serial-symbol';
 
 describe('SerialArray Tests', () => {
 	let serializer: Serializer;
@@ -26,7 +27,7 @@ describe('SerialArray Tests', () => {
 		const serializedArr = serializer.serialize<SerializedArray<SerializedUser>>(makeSerial(userArr0));
 
 		const arrMeta = getSerialized(serializedArr);
-		expect(arrMeta.classToken).toEqual(SerialArray.classToken.toString());
+		expect(arrMeta.classToken).toEqual(SerialSymbol.serialArray.toString());
 		expect(arrMeta.hash).toBeDefined();
 
 		const serUser0 = serializedArr['ComSer.array'][0] as SerializedUser;
