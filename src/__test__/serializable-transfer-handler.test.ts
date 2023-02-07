@@ -4,7 +4,13 @@ import WorkerFactory from '@test-fixtures/worker-factory';
 import SerializableTestWorker from '@test-fixtures/serializable-test-worker';
 import ProxyTestWorker from '@test-fixtures/proxy-test-worker';
 
-import ComlinkSerializer, { Serialized, Serializable, toSerial, toSerialProxy } from '@comlink-serializer';
+import ComlinkSerializer, {
+	Serialized,
+	Serializable,
+	toSerial,
+	toSerialProxy,
+	toSerialIterator,
+} from '@comlink-serializer';
 
 import { serializableTransferHandler } from '../serial/comlink';
 import SerialSymbol from '../serial/serial-symbol';
@@ -17,6 +23,7 @@ import Address from '@test-fixtures/address';
 
 import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils';
 import { AddressClass, OrderClass, UserClass } from '@test-fixtures/types';
+import IterableTestWorker from '@test-fixtures/iterable-test-worker';
 
 type WorkerConstructor<T> = new (...input: any[]) => Promise<Comlink.Remote<T>>;
 type WorkerFacade<T> = Comlink.Remote<WorkerConstructor<T>>;
@@ -74,8 +81,14 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(rtnObj).toBeInstanceOf(User);
 		expect(getSerializable(rtnObj)).toBeTruthy();
 		expect(getRevived(rtnObj)).toBeTruthy();
-		expect(getClassToken(rtnObj)).toBe(UserClass.toString());
-		expect(rtnObj).toEqual(user);
+		expect(getClassToken(rtnObj)).toBe(UserClass);
+		// you cannot currently pass a proxy (addresses) back through comlink.
+		expect(rtnObj.addresses).toBeUndefined();
+		expect(rtnObj.email).toBe(user.email);
+		expect(rtnObj.firstName).toBe(user.firstName);
+		expect(rtnObj.lastName).toBe(user.lastName);
+		expect(rtnObj.totalOrders).toBe(user.totalOrders);
+		expect(rtnObj.priAddress).toEqual(user.priAddress);
 	});
 
 	test('Check that Order can pass-through Comlink', async () => {
@@ -85,7 +98,7 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(rtnObj).toBeInstanceOf(Order);
 		expect(getSerializable(rtnObj)).toBeTruthy();
 		expect(getRevived(rtnObj)).toBeTruthy();
-		expect(getClassToken(rtnObj)).toBe(OrderClass.toString());
+		expect(getClassToken(rtnObj)).toBe(OrderClass);
 		expect(rtnObj.orderId).toBe(order.orderId);
 		// you cannot currently pass a prox (user) back through comlink.
 		expect(rtnObj.user).toBeUndefined();
@@ -99,7 +112,7 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(rtnObj).toBeInstanceOf(Address);
 		expect(getSerializable(rtnObj)).toBeTruthy();
 		expect(getRevived(rtnObj)).toBeTruthy();
-		expect(getClassToken(rtnObj)).toBe(AddressClass.toString());
+		expect(getClassToken(rtnObj)).toBe(AddressClass);
 		expect(rtnObj).toEqual(order.user.priAddress);
 	});
 
@@ -110,7 +123,7 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(rtnObj).toBeInstanceOf(Address);
 		expect(getSerializable(rtnObj)).toBeTruthy();
 		expect(getRevived(rtnObj)).toBeTruthy();
-		expect(getClassToken(rtnObj)).toBe(AddressClass.toString());
+		expect(getClassToken(rtnObj)).toBe(AddressClass);
 		expect(rtnObj).toEqual(order.user.getPrimaryAddress());
 	});
 
@@ -142,6 +155,60 @@ describe('SerializableTransferHandler Serializable Comlink pass-through', () => 
 		expect(order.user.totalOrders).toBe(3);
 		await testWorker.callOrderUserSetOrderTotal(order, 1000);
 		expect(order.user.totalOrders).toBe(1000);
+	});
+});
+
+describe('SerializableTransferHandler Iterable Comlink pass-through', () => {
+	let worker: Worker;
+	let testWorker: Comlink.Remote<IterableTestWorker>;
+
+	beforeAll(async () => {
+		worker = WorkerFactory.getIterableTestWorker();
+		const comlinkWorker = Comlink.wrap(worker) as WorkerFacade<IterableTestWorker>;
+		testWorker = await new comlinkWorker();
+	});
+
+	afterAll(() => {
+		worker.terminate();
+	});
+
+	test('Array get total user orders', async () => {
+		const userArr = makeArr<User>('user', 5);
+		const totalOrders = userArr.reduce((accum, user) => {
+			return accum + user.totalOrders;
+		}, 0);
+		const total = await testWorker.getTotalOrdersArray(toSerialIterator(userArr));
+		expect(total).toBe(totalOrders);
+	});
+
+	test('Array get total user orders break after first', async () => {
+		const user0 = makeObj<User>('user', 0);
+		user0.totalOrders = 5;
+		const user1 = makeObj<User>('user', 1);
+		user1.totalOrders = 10;
+
+		const total = await testWorker.getTotalOrdersBreakAfterFirstArray(toSerialIterator([user0, user1]));
+		expect(total).toBe(5);
+	});
+
+	test('Map get total user orders', async () => {
+		const user0 = makeObj<User>('user', 0);
+		user0.totalOrders = 2;
+
+		const user1 = makeObj<User>('user', 1);
+		user1.totalOrders = 4;
+
+		const user2 = makeObj<User>('user', 2);
+		user2.totalOrders = 6;
+
+		const userMap = new Map([
+			[0, user0],
+			[1, user1],
+			[2, user2],
+		]);
+		const total = await testWorker.getTotalOrdersMap(toSerialIterator(userMap));
+		if (total === -1) throw Error('Issue with map index type!');
+		expect(total).toBe(12);
 	});
 });
 

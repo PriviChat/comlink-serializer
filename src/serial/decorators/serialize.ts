@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Dictionary } from '..';
 import SerialSymbol from '../serial-symbol';
-import { SerialClassToken, SerializeDescriptorProperty, SerializeSettings, SerialPropertyMetadataKey } from './types';
+import { SerialClassToken, SerializePropertyDescriptor, SerializeSettings, SerialPropertyMetadataKey } from './types';
 
 /**
  * The @Serialize decorator tells the serializer to serialize the property.
@@ -60,13 +60,13 @@ function defineSerializePropertyMetadata({ classToken, proxy }: SerializeSetting
 			throw new TypeError(err);
 		}
 
-		const propConfig: SerializeDescriptorProperty = {
+		const propConfig: SerializePropertyDescriptor = {
 			prop: prop.toString(),
 			type,
 			classToken,
 			proxy,
 		};
-		const descriptors: Dictionary<SerializeDescriptorProperty> =
+		const descriptors: Dictionary<SerializePropertyDescriptor> =
 			Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || {};
 		descriptors[prop.toString()] = propConfig;
 		Reflect.defineMetadata(SerialPropertyMetadataKey, descriptors, target);

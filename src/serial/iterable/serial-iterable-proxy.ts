@@ -34,6 +34,11 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 		return this;
 	}
 
+	// this one is for comlink
+	[Symbol.asyncIterator.toString()](): AsyncIterableIterator<I> {
+		return this;
+	}
+
 	/**
 	 * `next` is a function that returns a promise that resolves to an iterator result
 	 * @param {[] | [undefined]} args - [] | [undefined]
@@ -127,19 +132,11 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	}
 
 	/**
-	 * It wraps the `MessagePort` in a `Proxy` that intercepts all calls to the `MessagePort` and wraps
-	 * the return value in a `Proxy` that intercepts all calls to the return value and wraps the return
-	 * value in a `Proxy` that intercepts all calls to the return value and wraps the return value in a
-	 * `Proxy` that intercepts all calls to the return value and wraps the return value in a `Proxy` that
-	 * intercepts all calls to the return value and wraps the return value in a `Proxy` that intercepts
-	 * all calls to the return value and wraps the return value in a `Proxy` that intercepts all calls to
-	 * the return value and wraps the return value in a `Proxy` that intercepts all calls to the return
-	 * value and wraps the return value in a `Proxy` that intercepts all calls to the return value and
-	 * wraps the return value in a `Proxy` that intercepts all calls to the return value and wraps the
-	 * return value in
-	 * @param {MessagePort} port2 - MessagePort - The port that the worker will use to communicate with
-	 * the main thread.
-	 * @returns A proxy object that is a wrapper around the remote object.
+	 * It wraps the `MessagePort` in a `Proxy` that intercepts the `Symbol.asyncIterator` property and
+	 * returns the wrapped `MessagePort` as an `AsyncIterableIterator`
+	 * @param {MessagePort} port2 - MessagePort - The port that the worker will use to communicate with the
+	 * main thread.
+	 * @returns A proxy object that wraps the remote object.
 	 */
 	private wrap(port2: MessagePort) {
 		const createProxy = (target: Comlink.Remote<AsyncIterableIterator<I>> | Function) => {
@@ -164,7 +161,7 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 		return createProxy(proxy) as Comlink.Remote<AsyncIterableIterator<I>>;
 	}
 
-	/* Exposing the iterator to the other side of the channel. */
+	/* Creating a proxy to the SerialIterableProxy that will be exposed to the worker thread. */
 	private expose = (sip: SerialIterableProxy<I>, port1: MessagePort) => {
 		const createProxy = (target: SerialIterableProxy<I> | Function) => {
 			return new Proxy(target, {
@@ -188,7 +185,7 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 					return Reflect.has(_target, prop);
 				},
 				async apply(_target, thisArg, argArray) {
-					if (typeof _target === 'function') {
+					if (typeof _target === 'function' && _target.name === 'next') {
 						const next = await (Reflect.apply(_target, thisArg, argArray) as Promise<IteratorResult<I, any>>);
 						const sir = new SerialIteratorResult(next.value, next.done || false);
 						return sir;

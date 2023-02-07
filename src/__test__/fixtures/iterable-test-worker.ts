@@ -12,10 +12,32 @@ export default class IterableTestWorker {
 		return count;
 	}
 
-	async getTotalOrders(users: AsyncIterableIterator<User>): Promise<number> {
+	async getTotalOrdersArray(users: AsyncIterableIterator<User>): Promise<number> {
 		let total = 0;
 
 		for await (const user of users) {
+			total += user.totalOrders;
+		}
+
+		return total;
+	}
+
+	async getTotalOrdersBreakAfterFirstArray(users: AsyncIterableIterator<User>): Promise<number> {
+		let total = 0;
+
+		for await (const user of users) {
+			total += user.totalOrders;
+			break;
+		}
+
+		return total;
+	}
+
+	async getTotalOrdersMap(users: AsyncIterableIterator<[number, User]>): Promise<number> {
+		let total = 0;
+
+		for await (const [idx, user] of users) {
+			if (!(typeof idx === 'number')) return -1;
 			total += user.totalOrders;
 		}
 

@@ -55,7 +55,7 @@ export type SerializedMeta = {
 	hash?: SerializedHash; // generated
 };
 
-export interface SerializeDescriptorProperty {
+export interface SerializePropertyDescriptor {
 	prop: string;
 	type: 'Array' | 'Map' | 'Serializable';
 	classToken: SerialClassToken;

@@ -1,9 +1,9 @@
 import stringHash from 'string-hash';
 import { v5 as uuidv5 } from 'uuid';
 import SerialSymbol from '../serial-symbol';
-import { Serialized } from '../types';
+import { Dictionary, Serialized } from '../types';
 import Serializable, { SerializableObject } from './serializable';
-import { SerialClassToken, SerializedHash } from './types';
+import { SerialClassToken, SerializedHash, SerializePropertyDescriptor } from './types';
 
 export function isSerializableObject<T extends Serializable>(obj: any): obj is SerializableObject<T> {
 	return obj && typeof obj[SerialSymbol.serializable] === 'function';
@@ -43,4 +43,12 @@ function strToIntArr(str: string) {
 	});
 
 	return bytes;
+}
+
+function serializeDescriptor(descr: Dictionary<SerializePropertyDescriptor>) {
+	const newDescr: Dictionary<SerializePropertyDescriptor> = {};
+	for (const [key, val] of Object.entries(descr)) {
+		newDescr[key] = { ...val, classToken: val.classToken.toString() };
+	}
+	return newDescr;
 }

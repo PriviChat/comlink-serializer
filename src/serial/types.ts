@@ -1,5 +1,11 @@
 import * as Comlink from 'comlink';
-import { SerialClassToken, SerializedMeta, Serializable, SerializableObject } from './decorators';
+import {
+	SerialClassToken,
+	SerializedMeta,
+	Serializable,
+	SerializableObject,
+	SerializePropertyDescriptor,
+} from './decorators';
 import SerialArray from './serial-array';
 import SerialMap from './serial-map';
 import SerialProxy from './serial-proxy';
@@ -66,6 +72,7 @@ export interface SerializedProxy extends Serialized {
 	id: string;
 	port: MessagePort;
 	proxyClass: string;
+	proxyDescr: Dictionary<SerializePropertyDescriptor>;
 	proxyProp?: string;
 	refClass?: string;
 }

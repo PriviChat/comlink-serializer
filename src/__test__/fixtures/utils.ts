@@ -11,9 +11,9 @@ export function getRevived(obj: Serializable): boolean {
 	return (obj as any)[SerialSymbol.revived]();
 }
 
-export function getClassToken(obj: Serializable): string {
+export function getClassToken(obj: Serializable) {
 	const classToken = (obj as any)[SerialSymbol.classToken]() as SerialClassToken;
-	return classToken.toString();
+	return classToken;
 }
 
 export function getSerialized(obj: Serialized): SerializedMeta {

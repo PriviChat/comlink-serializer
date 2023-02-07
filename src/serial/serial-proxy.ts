@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
 import { v4 as uuid } from 'uuid';
-import { Revivable, SerializableObject, SerializeDescriptorProperty } from './decorators';
+import { Revivable, SerializableObject, SerializePropertyDescriptor } from './decorators';
 import Serializable from './decorators/serializable';
 import { Dictionary, ParentRef, SerializeCtx, SerializedProxy } from '.';
 import { isSerializableObject } from './decorators/utils';
@@ -14,7 +14,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 	private _port1?: MessagePort;
 	private _port2: MessagePort;
 	private _proxyClass: string;
-	private _proxyDescr: Dictionary<SerializeDescriptorProperty>;
+	private _proxyDescr: Dictionary<SerializePropertyDescriptor>;
 	private _proxyProp?: string;
 	private _refClass?: string;
 	private _obj: SerializableObject<T>;
@@ -48,7 +48,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		this._refClass = parentRef?.classToken.toString();
 	}
 
-	[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty> {
+	[SerialSymbol.serializeDescriptor](): Dictionary<SerializePropertyDescriptor> {
 		return this._proxyDescr;
 	}
 
@@ -92,7 +92,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 			throw new TypeError('ERR_NO_PORT: Port2 is undefined in call to toProxy()');
 		}
 		const proxy = Comlink.wrap<SerializableObject<T>>(this._port2);
-		this._proxy = this.wrap(proxy);
+		this._proxy = this.wrap(proxy, this._proxyDescr);
 		return this._proxy;
 	}
 
@@ -102,8 +102,14 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 			port: this._port2,
 			proxyClass: this.proxyClass,
 			proxyProp: this._proxyProp,
+			proxyDescr: {},
 			refClass: this._refClass,
 		};
+
+		for (const [key, val] of Object.entries(this._proxyDescr)) {
+			// class tokens must be converted to string for serialization
+			serialObj.proxyDescr[key] = { ...val, classToken: val.classToken.toString() };
+		}
 		return serialObj;
 	}
 
@@ -122,6 +128,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		this._port2 = sp.port;
 		this._proxyClass = sp.proxyClass;
 		this._proxyProp = sp.proxyProp;
+		this._proxyDescr = sp.proxyDescr;
 		this._refClass = sp.refClass;
 	}
 
@@ -172,7 +179,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		return this._port2;
 	}
 
-	private wrap(proxy: Comlink.Remote<SerializableObject<T>>) {
+	private wrap(proxy: Comlink.Remote<SerializableObject<T>>, descr: Dictionary<SerializePropertyDescriptor>) {
 		//let transfered: SerializableObject<T>;
 		const sp = this;
 		const createProxy = (target: Comlink.Remote<SerializableObject<T>> | Function) => {
@@ -187,18 +194,22 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 						} else if (prop === Symbol.iterator) {
 							return Reflect.get(_target, prop);
 						} else if (prop === Symbol.asyncIterator) {
-							return Reflect.get(_target, prop);
+							return () => Reflect.get(_target, prop);
 						} else {
 							return Reflect.get(_target, prop);
-						}
-					} else if (typeof prop === 'string') {
-						if (prop === 'then' || prop === 'call') {
-							return Reflect.get(_target, prop);
-						} else {
-							return createProxy(Reflect.get(_target, prop));
 						}
 					} else {
-						return Reflect.get(_target, prop);
+						const config = descr[prop];
+						if (config) {
+							if (config.type === 'Array' || config.type === 'Map') {
+								if (config.proxy) {
+									return Reflect.get(_target, prop);
+								} else {
+									return Reflect.get(_target, prop);
+								}
+							}
+						}
+						return createProxy(Reflect.get(_target, prop));
 					}
 				},
 				set(_target, prop, val, receiver) {

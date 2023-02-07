@@ -57,7 +57,8 @@ export default class SerializableTestWorker {
 	 */
 	async getOrderUserAddresses(order: Order): Promise<Address[]> {
 		const rtnArr = new Array<Address>();
-		for await (const address of order.user.addresses) {
+		// await is needed to fetch the addressses iterator
+		for await (const address of await order.user.addresses) {
 			rtnArr.push(address);
 		}
 		return toSerial(rtnArr);

@@ -5,7 +5,7 @@ import { AnyConstructor, Dictionary, SerializeCtx, Serialized } from '../types';
 import {
 	Revivable,
 	SerialClassToken,
-	SerializeDescriptorProperty,
+	SerializePropertyDescriptor,
 	SerialPropertyMetadataKey,
 	ValueObject,
 } from './types';
@@ -21,7 +21,7 @@ export interface SerializableObject<T extends Serializable = Serializable> {
 	[SerialSymbol.serializable]: () => boolean;
 	[SerialSymbol.revived]: () => boolean;
 	[SerialSymbol.classToken]: () => SerialClassToken;
-	[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty>;
+	[SerialSymbol.serializeDescriptor](): Dictionary<SerializePropertyDescriptor>;
 	get self(): SerializableObject<T>;
 }
 
@@ -34,7 +34,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 	settings?: SerializableSettings
 ): (base: Ctor) => any {
 	return function (base: Ctor) {
-		let serializeDescriptor: Dictionary<SerializeDescriptorProperty>;
+		let serializeDescriptor: Dictionary<SerializePropertyDescriptor>;
 
 		const serializable = class Serializable extends base implements SerializableObject<T> {
 			constructor(...args: any[]) {
@@ -50,7 +50,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 			[SerialSymbol.classToken](): SerialClassToken {
 				return classToken;
 			}
-			[SerialSymbol.serializeDescriptor](): Dictionary<SerializeDescriptorProperty> {
+			[SerialSymbol.serializeDescriptor](): Dictionary<SerializePropertyDescriptor> {
 				if (!serializeDescriptor) {
 					serializeDescriptor = this.getSerializeDescriptor();
 				}
@@ -59,7 +59,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 
 			/* Getting the serialize descriptor from the prototype chain. */
 			private getSerializeDescriptor() {
-				let rtnDescr: Dictionary<SerializeDescriptorProperty> = {};
+				let rtnDescr: Dictionary<SerializePropertyDescriptor> = {};
 				let target = Object.getPrototypeOf(this);
 				while (target != Object.prototype) {
 					const foundDescr = Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || undefined;
