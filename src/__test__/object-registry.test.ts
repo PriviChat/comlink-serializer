@@ -3,42 +3,36 @@ import User from '@test-fixtures/user';
 
 import objectRegistry from '../registry';
 import Order from '@test-fixtures/order';
-import { SerialArray } from '../serial';
 import { UserClass } from '@test-fixtures/types';
 import Product from '@test-fixtures/product';
-import SerialSymbol from 'src/serial/serial-symbol';
-
-//type SerializeFn<T> = () => T;
-//type DeserializeFn = (serialObj: Serialized) => Serializable<Serialized>;
-//type ConstructorFn = AnyConstructor<Serializable<Serialized> & Deserializable>;
+import SerialSymbol from '../serial/serial-symbol';
 
 describe('ObjectRegistry', () => {
 	beforeAll(() => {
 		Product;
 		User;
 		Order;
-		//SerialArray;
 	});
 	test('Check defined', () => {
 		expect(objectRegistry).toBeDefined();
 	});
 
 	test('Check registered User', () => {
-		const entry = objectRegistry.getEntry(UserClass);
+		const entry = objectRegistry.getEntryByToken(UserClass);
 		expect(entry).toBeDefined();
 		expect(entry?.classToken).toBe(UserClass);
 		expect(entry?.constructor).toBeDefined();
 	});
 
 	test('Check registered SerialArray', () => {
-		const entry = objectRegistry.getEntry(SerialSymbol.serialArray);
+		const entry = objectRegistry.getEntryByToken(SerialSymbol.serialArray);
 		expect(entry).toBeDefined();
 		expect(entry?.classToken).toBe(SerialSymbol.serialArray);
 		expect(entry?.constructor).toBeDefined();
 	});
 
 	test('Check invalid object', () => {
-		const entry = objectRegistry.getEntry('1234');
+		const entry = objectRegistry.getEntryByToken('1234');
 		expect(entry).toBeUndefined();
 	});
 
@@ -46,6 +40,7 @@ describe('ObjectRegistry', () => {
 		expect(() => {
 			objectRegistry.register({
 				constructor: {} as any,
+				class: 'User',
 				classToken: UserClass,
 			});
 		}).toThrow();
@@ -55,6 +50,7 @@ describe('ObjectRegistry', () => {
 		expect(() => {
 			objectRegistry.register({
 				constructor: {} as any,
+				class: '',
 				classToken: '',
 			});
 		}).toThrow();

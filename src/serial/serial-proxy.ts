@@ -2,14 +2,16 @@ import * as Comlink from 'comlink';
 import { v4 as uuid } from 'uuid';
 import { Revivable, SerializableObject, SerializePropertyDescriptor } from './decorators';
 import Serializable from './decorators/serializable';
-import { Dictionary, ParentRef, SerializeCtx, SerializedProxy } from '.';
+import { Dictionary, ParentRef, SerializedProxy } from '.';
 import { isSerializableObject } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { toSerialIterator } from './iterable/utils';
 import { hashCd, toSerial, toSerialProxy } from './utils';
 
 @Serializable(SerialSymbol.serialProxy)
-class SerialProxy<T extends Serializable> implements Serializable<SerializedProxy>, Revivable<SerializedProxy> {
+export default class SerialProxy<T extends Serializable>
+	implements Serializable<SerializedProxy>, Revivable<SerializedProxy>
+{
 	private _id = uuid();
 	private _port1?: MessagePort;
 	private _port2: MessagePort;
@@ -42,7 +44,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		this._port1 = port1;
 		this._port2 = port2;
 		this._obj = obj;
-		this._proxyClass = obj[SerialSymbol.classToken].toString();
+		this._proxyClass = obj[SerialSymbol.classToken]().toString();
 		this._proxyDescr = obj[SerialSymbol.serializeDescriptor]();
 		this._proxyProp = parentRef?.prop;
 		this._refClass = parentRef?.classToken.toString();
@@ -72,19 +74,19 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		return this._port1 === undefined;
 	}
 
-	private getCacheValue(lookupObj: Object, prop: string | symbol) {
+	private getCacheValue = (lookupObj: Object, prop: string | symbol) => {
 		const propVals = this.objValueCache.get(lookupObj);
 		if (!propVals) return undefined;
-		propVals.get(prop);
-	}
+		return propVals.get(prop);
+	};
 
-	private setCacheValue(lookupObj: Object, prop: string | symbol, val: any) {
+	private setCacheValue = (lookupObj: Object, prop: string | symbol, val: any) => {
 		if (!this.objValueCache.has(lookupObj)) {
 			this.objValueCache.set(lookupObj, new Map());
 		}
 		this.objValueCache.get(lookupObj)?.set(prop, val);
 		return val;
-	}
+	};
 
 	public toProxy(): Comlink.Remote<SerializableObject<T>> {
 		if (this._proxy) return this._proxy;
@@ -96,6 +98,11 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		return this._proxy;
 	}
 
+	/**
+	 * Creates a SerializedProxy
+	 * Converts classTokens to strings for serialization
+	 * @returns A serialized proxy object.
+	 */
 	public serialize(): SerializedProxy {
 		const serialObj: SerializedProxy = {
 			id: this._id,
@@ -113,13 +120,18 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		return serialObj;
 	}
 
-	public afterSerialize(ctx: SerializeCtx, serialObj: SerializedProxy): SerializedProxy {
+	/**
+	 * `afterSerialize()` is called after the object is serialized, and it returns an array of transferable
+	 * objects
+	 * @returns The port2 is being returned.
+	 */
+	public afterSerialize(): Transferable[] {
 		// expose and set port as transferable
 		if (!this._port1) {
 			throw new TypeError('ERR_NO_PORT: Port1 is undefined in call to expose()');
 		}
-		ctx.addTransferable(this.expose(this._port1));
-		return serialObj;
+		const port2 = this.expose(this._port1);
+		return [port2];
 	}
 
 	public revive(sp: SerializedProxy) {
@@ -142,8 +154,11 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 					return _target;
 				},
 				get(_target, prop, receiver): any {
+					const hit = getCacheValue(_target, prop);
+					if (hit) return hit;
+
 					const descr = _target[SerialSymbol.serializeDescriptor]();
-					const classToken = _target[SerialSymbol.classToken];
+					const classToken = _target[SerialSymbol.classToken]();
 					const config = descr[prop.toString()];
 
 					if (config) {
@@ -151,7 +166,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 						//TODO - add better type checking because of reflection
 						if (config.type === 'Serializable') {
 							if (config.proxy) {
-								so = toSerialProxy(Reflect.get(_target, prop, receiver));
+								so = createProxy(toSerialProxy(Reflect.get(_target, prop, receiver)));
 							} else {
 								so = Reflect.get(_target, prop, receiver);
 							}
@@ -165,6 +180,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 							//TODO update error messsage
 							throw Error('FIX THIS ERROR');
 						}
+						setCacheValue(_target, prop, so);
 						return so;
 					} else {
 						return Reflect.get(_target, prop, receiver);
@@ -179,10 +195,13 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		return this._port2;
 	}
 
-	private wrap(proxy: Comlink.Remote<SerializableObject<T>>, descr: Dictionary<SerializePropertyDescriptor>) {
+	private wrap(proxy: Comlink.Remote<SerializableObject<T>>, proxyDescr: Dictionary<SerializePropertyDescriptor>) {
 		//let transfered: SerializableObject<T>;
 		const sp = this;
-		const createProxy = (target: Comlink.Remote<SerializableObject<T>> | Function) => {
+		const createProxy = (
+			target: Comlink.Remote<SerializableObject<T>> | Function,
+			descr: Dictionary<SerializePropertyDescriptor> = {}
+		) => {
 			return new Proxy(target, {
 				getPrototypeOf(_target) {
 					return _target;
@@ -201,7 +220,13 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 					} else {
 						const config = descr[prop];
 						if (config) {
-							if (config.type === 'Array' || config.type === 'Map') {
+							if (config.type === 'Serializable') {
+								if (config.proxy) {
+									return Reflect.get(_target, prop);
+								} else {
+									return Reflect.get(_target, prop);
+								}
+							} else if (config.type === 'Array' || config.type === 'Map') {
 								if (config.proxy) {
 									return Reflect.get(_target, prop);
 								} else {
@@ -223,7 +248,7 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 				},
 			});
 		};
-		return createProxy(proxy) as Comlink.Remote<SerializableObject<T>>;
+		return createProxy(proxy, proxyDescr) as Comlink.Remote<SerializableObject<T>>;
 	}
 
 	public hashCode(): number {
@@ -234,5 +259,3 @@ class SerialProxy<T extends Serializable> implements Serializable<SerializedProx
 		return other instanceof SerialProxy && other._id === this._id;
 	}
 }
-
-export default SerialProxy;

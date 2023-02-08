@@ -44,11 +44,3 @@ function strToIntArr(str: string) {
 
 	return bytes;
 }
-
-function serializeDescriptor(descr: Dictionary<SerializePropertyDescriptor>) {
-	const newDescr: Dictionary<SerializePropertyDescriptor> = {};
-	for (const [key, val] of Object.entries(descr)) {
-		newDescr[key] = { ...val, classToken: val.classToken.toString() };
-	}
-	return newDescr;
-}

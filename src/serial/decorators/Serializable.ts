@@ -14,7 +14,7 @@ interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	beforeSerialize?(): void;
 	serialize?(ctx: SerializeCtx): S;
 	beforePropertySerialize?(prop: string): any;
-	afterSerialize?(ctx: SerializeCtx, serialObj: S): S;
+	afterSerialize?(): Transferable[] | undefined;
 }
 
 export interface SerializableObject<T extends Serializable = Serializable> {
@@ -39,6 +39,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 		const serializable = class Serializable extends base implements SerializableObject<T> {
 			constructor(...args: any[]) {
 				super(...args);
+				serializeDescriptor = this.getSerializeDescriptor();
 			}
 
 			[SerialSymbol.serializable](): boolean {
@@ -64,6 +65,12 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 				while (target != Object.prototype) {
 					const foundDescr = Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || undefined;
 					if (foundDescr) {
+						for (const [key, entry] of Object.entries(foundDescr)) {
+							if (typeof entry === 'function') {
+								// resolve the delayed @Serialize decorator discriptor
+								foundDescr[key] = entry();
+							}
+						}
 						rtnDescr = foundDescr;
 						break;
 					}
@@ -78,6 +85,7 @@ function Serializable<S extends Serialized, T extends Serializable<S>, Ctor exte
 		};
 
 		objectRegistry.register({
+			class: base.name,
 			classToken,
 			constructor: serializable,
 		});

@@ -1,6 +1,5 @@
 import * as Comlink from 'comlink';
 import { v4 as uuid } from 'uuid';
-import { SerializeCtx } from '..';
 import { Revivable, Serializable } from '../decorators';
 import SerialSymbol from '../serial-symbol';
 import { hashCd } from '../utils';
@@ -106,18 +105,17 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	}
 
 	/**
-	 * It exposes the port and adds it to the list of transferables
-	 * @param {SerializeCtx} ctx - SerializeCtx
-	 * @param {SerializedIterableProxy} serialObj - The object that will be serialized.
-	 * @returns The serialized object.
+	 * `afterSerialize()` is called after the object is serialized, and it returns an array of transferable
+	 * objects
+	 * @returns The port2 is being returned.
 	 */
-	public afterSerialize(ctx: SerializeCtx, serialObj: SerializedIterableProxy): SerializedIterableProxy {
+	public afterSerialize(): Transferable[] {
 		// expose and set port as transferable
 		if (!this._port1) {
 			throw new TypeError('ERR_NO_PORT: Port1 is undefined in call to expose()');
 		}
-		ctx.addTransferable(this.expose(this, this._port1));
-		return serialObj;
+		const port2 = this.expose(this, this._port1);
+		return [port2];
 	}
 
 	/**

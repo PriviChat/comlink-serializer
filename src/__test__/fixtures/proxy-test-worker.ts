@@ -1,42 +1,54 @@
 import * as Comlink from 'comlink';
-import ComlinkSerializer from '@comlink-serializer';
+import ComlinkSerializer, { toSerial } from '@comlink-serializer';
 import User from '@test-fixtures/user';
 import Order from '@test-fixtures/order';
 import Product from '@test-fixtures/product';
 import Address from '@test-fixtures/address';
+import { isProxy } from '../../serial/utils';
 
 export default class ProxyTestWorker {
-	getUser(user: User) {
-		return user;
+	/**
+	 * Returns the street property of a proxy Address
+	 * If the address is not a proxy, return NOT_A_PROXY
+	 *
+	 * @param {Address} address - Address - Should be a proxy
+	 * @returns {string} street - The street property of {Address}
+	 */
+	async getAddressStreet(address: Address): Promise<string> {
+		if (!isProxy(address)) throw TypeError('Not a proxy!');
+		const street = await address.street;
+		return street;
 	}
 
-	async getArray(arr: Array<User>) {
-		return arr;
-	}
-
-	async getUserCount(users: Array<User>): Promise<number> {
-		let count = 0;
-		for await (const user of users) {
-			count += 1;
+	/**
+	 *  Returns the products in an order.
+	 *	Products is not a proxy.
+	 * @param {Order} order - Order - the proxy order object that we're going to get the product count for
+	 * @returns The products in the order.
+	 */
+	async getOrderProducts(order: Order): Promise<Array<Product>> {
+		if (!isProxy(order)) throw TypeError('Not a proxy!');
+		const rtnArr = new Array<Product>();
+		for (const prod of await order.products) {
+			rtnArr.push(prod);
 		}
-		return count;
+		return toSerial(rtnArr);
 	}
 
-	async getOrderUser(order: Order): Promise<User> {
-		const id = order.orderId;
-		const user = order.user;
-		const last = await user.lastName;
-		const addresses = await user.addresses;
-		//const addresses = await user.addresses;
-		let ct = 0;
-		for await (const address of user.addresses) {
-			ct += 1;
+	/**
+	 * Returns the addresses for the user of the given order.
+	 * User is also a proxy on Order and Addresses is a proxy on User.
+	 * @param {Order} order - Order - The order object that we want to get the user's addresses from.
+	 * @returns An array of addresses
+	 */
+	async getOrderUserAddresses(order: Order): Promise<Array<Address>> {
+		if (!isProxy(order)) throw TypeError('Not a proxy!');
+		const rtnArr = new Array<Address>();
+		// await is needed to fetch the addressses iterator
+		for await (const address of await order.userProxy.addresses) {
+			rtnArr.push(address);
 		}
-		return user;
-	}
-
-	async getMap(map: Map<string, User>) {
-		return map;
+		return toSerial(rtnArr);
 	}
 }
 Comlink.expose(ProxyTestWorker);

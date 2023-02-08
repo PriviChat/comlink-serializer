@@ -5,7 +5,7 @@ import { AddressClass, SerializedUser, UserClass } from './types';
 @Serializable(UserClass)
 export default class User implements Serializable<SerializedUser> {
 	@Serialize()
-	readonly priAddress: Address;
+	private priAddress: Address;
 	@Serialize({ classToken: AddressClass, proxy: true })
 	readonly addresses: Address[];
 
@@ -25,7 +25,11 @@ export default class User implements Serializable<SerializedUser> {
 		this.totalOrders = total;
 	}
 
-	public getPrimaryAddress() {
+	public setPriAddress(address: Address) {
+		this.priAddress = address;
+	}
+
+	public getPriAddress() {
 		return this.priAddress;
 	}
 

@@ -2,11 +2,11 @@ import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/user';
 import { SerializedUser, UserClass } from '@test-fixtures/types';
 
-import { SerialArray, SerializedArray, Serializer } from '../serial';
+import SerialSymbol from '../serial/serial-symbol';
+import { SerializedArray, Serializer } from '../serial';
 import { makeObj } from './fixtures';
 import { makeSerial } from '../serial/utils';
-import { getSerialized } from '@test-fixtures/utils';
-import SerialSymbol from 'src/serial/serial-symbol';
+import { getSerializedMeta } from '@test-fixtures/utils';
 
 describe('SerialArray Tests', () => {
 	let serializer: Serializer;
@@ -21,17 +21,17 @@ describe('SerialArray Tests', () => {
 		const user1 = makeObj<User>('user', 1);
 		const userArr0 = [user0, user1];
 
-		const hash0 = getSerialized(serializer.serialize<SerializedUser>(user0)).hash;
-		const hash1 = getSerialized(serializer.serialize<SerializedUser>(user1)).hash;
+		const hash0 = getSerializedMeta(serializer.serialize<SerializedUser>(user0)).hash;
+		const hash1 = getSerializedMeta(serializer.serialize<SerializedUser>(user1)).hash;
 
 		const serializedArr = serializer.serialize<SerializedArray<SerializedUser>>(makeSerial(userArr0));
 
-		const arrMeta = getSerialized(serializedArr);
+		const arrMeta = getSerializedMeta(serializedArr);
 		expect(arrMeta.classToken).toEqual(SerialSymbol.serialArray.toString());
 		expect(arrMeta.hash).toBeDefined();
 
 		const serUser0 = serializedArr['ComSer.array'][0] as SerializedUser;
-		const serUserMeta0 = getSerialized(serUser0);
+		const serUserMeta0 = getSerializedMeta(serUser0);
 		expect(serUserMeta0.classToken).toBe(UserClass.toString());
 		expect(serUserMeta0.hash).toBe(hash0);
 		expect(serUser0.email).toBe(user0.email);
@@ -40,7 +40,7 @@ describe('SerialArray Tests', () => {
 		expect(serUser0.totalOrders).toBe(user0.totalOrders);
 
 		const serUser1 = serializedArr['ComSer.array'][1] as SerializedUser;
-		const serUserMeta1 = getSerialized(serUser1);
+		const serUserMeta1 = getSerializedMeta(serUser1);
 		expect(serUserMeta1.classToken).toBe(UserClass.toString());
 		expect(serUserMeta1.hash).toBe(hash1);
 		expect(serUser1.email).toBe(user1.email);

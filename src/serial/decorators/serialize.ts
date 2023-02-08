@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { Dictionary } from '..';
 import SerialSymbol from '../serial-symbol';
+import objectRegistry, { ObjectRegistryEntry } from '../../registry';
 import { SerialClassToken, SerializePropertyDescriptor, SerializeSettings, SerialPropertyMetadataKey } from './types';
 
 /**
@@ -32,43 +33,86 @@ export default function Serialize(settings?: SerialClassToken | SerializeSetting
 
 function defineSerializePropertyMetadata({ classToken, proxy }: SerializeSettings) {
 	return function (target: any, prop: string | symbol) {
-		const refMeta = Reflect.getMetadata('design:type', target, prop);
-		const type = refMeta.name;
-		if (type === 'Serializable') {
-			const refClassToken: SerialClassToken = refMeta.prototype[SerialSymbol.classToken]();
-			if (classToken && classToken !== refClassToken) {
-				const err = `ERR_INCORRECT_CLASS_TOKEN: Class - [${target.constructor.name}] Property - [${
-					prop.toString
-				}] - The classToken: ${classToken.toString()} passed to @Serialize does not matched the expected classToken: ${refClassToken.toString()}.`;
-				console.error(err);
-				throw new TypeError(err);
-			}
-			classToken = refClassToken;
-		} else if (type === 'Array' || type === 'Map') {
-			if (!classToken) {
-				const err = `ERR_MISSING_CLASS_TOKEN: Class - [${
-					target.constructor.name
-				}] Property - [${prop.toString()}] - You must pass the classToken parameter when decorating an Array or Map with @Serialize. Also, the class contained within Array or Map must be decorated with @Serializable. `;
-				console.error(err);
-				throw new TypeError(err);
-			}
-		} else {
-			const err = `ERR_NOT_SERIALIZABLE: Class - [${
-				target.constructor.name
-			}] Property - [${prop.toString()}] - You may only decorate Serializable objects, Array, and Map with @Serialize. Also, the class contained within Array and Map must be decorated with @Serializable.`;
-			console.error(err);
-			throw new TypeError(err);
-		}
+		const hasMeta = Reflect.getMetadata('design:type', target, prop) ? true : false;
 
-		const propConfig: SerializePropertyDescriptor = {
-			prop: prop.toString(),
-			type,
-			classToken,
-			proxy,
-		};
-		const descriptors: Dictionary<SerializePropertyDescriptor> =
-			Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || {};
-		descriptors[prop.toString()] = propConfig;
-		Reflect.defineMetadata(SerialPropertyMetadataKey, descriptors, target);
+		// allow for delayed loading to make sure all
+		// serializable classes are registered first
+		const resolver =
+			(_target: any, _prop: string | symbol, _classToken: SerialClassToken | undefined, _proxy: boolean) => () => {
+				// class that contains the property decorator
+				const className: string | undefined = _target?.constructor ? _target.constructor.name : undefined;
+
+				if (!className) {
+					const err = `ERR_UNKNOWN_CLASSNAME: target - [${JSON.stringify(
+						_target
+					)}] is an invalid type. Unable to determain the class name from the constructor. Perhaps you are using @Serialize to decorate something other then a class property?`;
+					console.error(err);
+					throw new TypeError(err);
+				}
+
+				// fetch registry entry by class
+				const classEntry = objectRegistry.getEntryByClass(className);
+
+				// check if the target class is registered Serializable
+				if (!classEntry) {
+					const err = `ERR_NOT_SERIALIZABLE: Class: [${className}] Property: [${_prop.toString()}] - The class is not registered as Serializable. You can only use @Serialize inside a @Serializable class.`;
+					console.error(err);
+					throw new TypeError(err);
+				}
+
+				const meta = Reflect.getMetadata('design:type', _target, _prop);
+				if (!meta) {
+					const err = `ERR_MISSING_REFLECT_META: Class: [${classEntry.class}
+						
+					}] classToken: [${classEntry.classToken.toString()}] Property: [${_prop.toString()}] - Unable to access class metadata, make sure you set 'emitDecoratorMetadata: true' in your tsconfig file. `;
+					console.error(err);
+					throw new TypeError(err);
+				}
+
+				let type = meta.name;
+				if (type === 'Serializable') {
+					const metaClassToken = meta.prototype[SerialSymbol.classToken]() as SerialClassToken;
+					if (_classToken && _classToken !== metaClassToken) {
+						const err = `ERR_INCORRECT_CLASS_TOKEN: Class: [${className}] classToken: [${classEntry.classToken.toString()}] Property: [${
+							_prop.toString
+						}] - the classToken: [${_classToken.toString()}] passed to @Serialize does not matched the expected classToken: [${metaClassToken.toString()}] for the property.`;
+						console.error(err);
+						throw new TypeError(err);
+					}
+					_classToken = metaClassToken;
+				} else if (type === 'Array' || type === 'Map') {
+					if (!_classToken) {
+						const err = `ERR_MISSING_CLASS_TOKEN: Class: [${className}] classToken: [${classEntry.classToken.toString()}] Property: [${_prop.toString()}] - You must pass the classToken parameter when decorating an Array or Map with @Serialize. Also, the class contained within Array or Map must be decorated with @Serializable. `;
+						console.error(err);
+						throw new TypeError(err);
+					}
+				} else {
+					// this can happen when a decorator is self reference
+					const propEntry = objectRegistry.getEntryByClass(meta.name);
+					if (!propEntry) {
+						const err = `ERR_NOT_SERIALIZABLE: Class: [${className}] Property: [${_prop.toString()}] - The property is not registered as Serializable. You can only use @Serialize on an Array, Map or Serializable object.`;
+						console.error(err);
+						throw new TypeError(err);
+					}
+					_classToken = propEntry.classToken;
+					type = 'Serializable';
+				}
+
+				const propConfig: SerializePropertyDescriptor = {
+					prop: _prop.toString(),
+					type,
+					classToken: _classToken,
+					proxy: _proxy,
+				};
+				return propConfig;
+			};
+
+		const descrFns: Dictionary<Function> = Reflect.getOwnMetadata(SerialPropertyMetadataKey, target) || {};
+
+		// set the function for the property
+		descrFns[prop.toString()] = resolver(target, prop, classToken, proxy);
+
+		// write descriptor function to class metadata
+		Reflect.defineMetadata(SerialPropertyMetadataKey, descrFns, target);
 	};
 }

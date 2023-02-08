@@ -67,12 +67,20 @@ export default class Reviver {
 			const { classToken, hash } = serialObj[SerialSymbol.serialized];
 
 			if (!classToken) {
-				const err = `ERR_MISSING_CLASS Object missing meta property: classToken. Object: ${JSON.stringify(serialObj)}`;
+				const err = `ERR_MISSING_CLASS: Serialized object missing meta property: 'classToken' Object: ${JSON.stringify(
+					serialObj
+				)}`;
 				console.error(err);
 				throw TypeError(err);
 			}
 
-			const entry = objectRegistry.getEntry(classToken);
+			if (!hash) {
+				const err = `ERR_MISSING_HASH: Object missing meta property: 'hash' Object: ${JSON.stringify(serialObj)}`;
+				console.error(err);
+				throw TypeError(err);
+			}
+
+			const entry = objectRegistry.getEntryByToken(classToken);
 			if (!entry) {
 				const err = `ERR_MISSING_REG: Object with classToken: ${classToken.toString()} not found in registry.
 					 Make sure you are property configuring the transfer handler. Remember the object must be registered on each thread.`;
@@ -80,25 +88,23 @@ export default class Reviver {
 				throw new Error(err);
 			}
 
-			let inCache = hash ? this.revivedCache.has(hash) : false;
-			const revived = inCache && hash ? this.revivedCache.get(hash)! : this.create(entry);
+			const inCache = this.revivedCache.has(hash);
+			// get cached value or return newly created obj
+			const revived = inCache ? this.revivedCache.get(hash)! : this.create(entry);
 
 			if (!inCache) {
+				// add obj to revived cache
+				this.revivedCache.set(hash, revived);
+
 				if (revived.revive) {
 					// hook to override the default reviver
 					revived.revive(serialObj, { revive: this.revive, parentRef });
 				} else {
-					//const parent = parentRef?.parent as Revivable;
-					traverse(serialObj, this.traverser(revived), { maxDepth: 1 });
+					traverse(serialObj, this.traverser(revived), { maxDepth: 1, cycleHandling: false });
 				}
 
 				// update revived property on revivable object
 				markObjRevived(revived);
-
-				// add revived item to the cache
-				if (hash) {
-					this.revivedCache.set(hash, revived);
-				}
 
 				if (revived.afterRevive) {
 					// hook after the object has been revived

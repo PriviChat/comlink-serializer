@@ -54,7 +54,7 @@ function mO(idx: number) {
 	else {
 		const loopArr = new Array<number>(idx + 1).fill(idx + 1);
 		const prodArr = loopArr.map((_, i) => mP(i));
-		const o = new Order('ORD_' + idx, mU(idx), prodArr);
+		const o = new Order('ORD_' + idx, mU(idx), mA(idx), prodArr);
 		orders.set(idx, o);
 		return o;
 	}

@@ -23,8 +23,9 @@ export default class Serializer {
 		return this.transfers;
 	}
 
-	private addTransferable = (transfer: Transferable): void => {
-		this.transfers.push(transfer);
+	private addTransferable = (transfer: Transferable | Array<Transferable>): void => {
+		if (Array.isArray(transfer)) this.transfers = this.transfers.concat(transfer);
+		else this.transfers.push(transfer);
 	};
 
 	/* Checking the cache for a serialized object. */
@@ -57,7 +58,7 @@ export default class Serializer {
 	private updateSerialCache = <S extends Serialized>(
 		obj: SerializableObject & Serializable,
 		serialObj: S
-	): SerializedHash | undefined => {
+	): SerializedHash => {
 		let hash: string | undefined;
 
 		//check for obj in instance cache
@@ -74,24 +75,44 @@ export default class Serializer {
 		if (!hash) {
 			// get user defined hashCode for obj
 			const hashCode = obj.hashCode();
-			// if hashCode is -1 the obj cannot be cached
-			if (hashCode < 0) return undefined;
-
 			const classToken = obj[SerialSymbol.classToken]();
+
 			// generate hash
-			hash = serializedHash(hashCode, classToken);
+			if (hashCode < 0) {
+				// if hashCode is less than zero no valid hashCode
+				// could be created, pass -1
+				hash = serializedHash(-1, classToken);
+			} else {
+				hash = serializedHash(hashCode, classToken);
+			}
 			//check if hash exists
-			const hit = this.serialCache.get(hash);
+			let hit = this.serialCache.get(hash);
 			if (hit) {
-				// must check equals due to collisions
+				// must check equals due to collision
 				// if objs are equal it has already been cached
-				// return the valid hash
+				// so return the valid hash
 				if (obj.equals(hit.obj)) return hash;
-				else return undefined;
+				else {
+					// if hashCode > -1 user might actually care about the cache collision
+					if (hashCode > -1)
+						console.warn(
+							`WRN_CACHE_COLLISION: classToken: ${classToken.toString()} hashCode: ${hashCode} obj: ${JSON.stringify(
+								obj
+							)} had a collision. Generating new cache key.`
+						);
+					while (hit) {
+						// generate random hash
+						hash = serializedHash(-1, classToken);
+						// test for hit
+						hit = this.serialCache.get(hash);
+					}
+				}
 			}
 		}
 		// at this point hash and must be unique
+		// we are caching valid hash with random hash
 		this.serialCache.set(hash, { obj, serialObj });
+		// return
 		return hash;
 	};
 
@@ -116,12 +137,24 @@ export default class Serializer {
 		const hit = this.checkSerialCache<S>(obj);
 		if (hit) return hit;
 
-		const classToken = obj[SerialSymbol.classToken]();
-		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
-		const serializeCtx: SerializeCtx = { serialize: this.serialize, addTransferable: this.addTransferable, parentRef };
-
 		// initialize to empty object
 		let serialObj = {} as S;
+
+		// access class symbols
+		const classToken = obj[SerialSymbol.classToken]();
+		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
+
+		// create serialize context
+		const serializeCtx: SerializeCtx = { serialize: this.serialize, addTransferable: this.addTransferable, parentRef };
+
+		// update cache with new serialObj.
+		const hash = this.updateSerialCache(obj, serialObj);
+
+		// add the serialized meta to the serialized object
+		serialObj[SerialSymbol.serialized] = {
+			classToken: classToken.toString(),
+			hash,
+		};
 
 		// hook before serialize
 		if (obj.beforeSerialize) {
@@ -129,8 +162,8 @@ export default class Serializer {
 		}
 
 		if (obj.serialize) {
-			// hook to override default serializer
-			serialObj = obj.serialize(serializeCtx) as S;
+			// hook to override default serializer and merge objs
+			serialObj = { ...obj.serialize(serializeCtx), ...serialObj };
 		} else {
 			traverse(
 				obj,
@@ -154,8 +187,9 @@ export default class Serializer {
 						// if object has a serial descriptor
 						if (sdp) {
 							let so: Serializable | undefined;
-							if (sdp.type === 'Serializable') so = value;
-							else if (sdp.type === 'Array') {
+							if (sdp.type === 'Serializable') {
+								so = value;
+							} else if (sdp.type === 'Array') {
 								if (Array.isArray(value)) {
 									so = SerialArray.from(value);
 								} else {
@@ -205,33 +239,19 @@ export default class Serializer {
 						} else {
 							sv = value;
 						}
+						// add property to serialObj
 						Object.assign(serialObj, { [key]: sv });
 					}
 				},
-				{ maxDepth: 1 }
+				{ maxDepth: 1, cycleHandling: false }
 			);
 		}
 
 		// hook after serialize
 		if (obj.afterSerialize) {
-			serialObj = obj.afterSerialize(serializeCtx, serialObj) as S;
+			const transf = obj.afterSerialize();
+			if (transf) this.addTransferable(transf);
 		}
-
-		// Update cache with new serialObj.
-		// Cache collisions should be very rare if
-		// hashCode is generated properly, but in the
-		// event of a collision, serialObj will only be in
-		// the instance cache and the hash returned will be undefined.
-		const hash = this.updateSerialCache(obj, serialObj);
-
-		// generate serial meta object
-		const serialMeta = {
-			classToken: classToken.toString(),
-			hash,
-		};
-
-		// add the serial meta to the serialized object
-		serialObj[SerialSymbol.serialized] = serialMeta;
 
 		// return
 		return serialObj;

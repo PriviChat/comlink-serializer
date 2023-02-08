@@ -32,7 +32,7 @@ export default class SerializableTestWorker {
 	 * @returns {Address} The primary address of the user who placed the order.
 	 */
 	async getOrderUserAddress(order: Order) {
-		const priAddress = await order.user.priAddress;
+		const priAddress = await order.userProxy.getPriAddress();
 		return priAddress;
 	}
 
@@ -44,7 +44,7 @@ export default class SerializableTestWorker {
 	 * @returns {Address} The primary address of the user who placed the order.
 	 */
 	async callOrderUserGetPrimaryAddress(order: Order) {
-		const priAddress = await order.user.getPrimaryAddress();
+		const priAddress = await order.userProxy.getPriAddress();
 		return priAddress;
 	}
 
@@ -58,7 +58,7 @@ export default class SerializableTestWorker {
 	async getOrderUserAddresses(order: Order): Promise<Address[]> {
 		const rtnArr = new Array<Address>();
 		// await is needed to fetch the addressses iterator
-		for await (const address of await order.user.addresses) {
+		for await (const address of await order.userProxy.addresses) {
 			rtnArr.push(address);
 		}
 		return toSerial(rtnArr);
@@ -71,7 +71,7 @@ export default class SerializableTestWorker {
 	 * @param {number} total - The total number of orders the user has.
 	 */
 	async callOrderUserSetOrderTotal(order: Order, total: number) {
-		await order.user.setOrderTotal(total);
+		await order.userProxy.setOrderTotal(total);
 	}
 	/**
 	 * User is a proxy on Order. User.totalOrders property is set on the main thread.
@@ -81,13 +81,25 @@ export default class SerializableTestWorker {
 	 * @param {number} total - The total number of orders for the user.
 	 */
 	async setOrderUserTotalOrders(order: Order, total: number) {
-		order.user.totalOrders = total;
+		order.userProxy.totalOrders = total;
 	}
 
+	/**
+	 * The function getArray takes an array of User objects and returns a promise that resolves to an
+	 * array of User objects
+	 * @param arr - Array<User> - This is the parameter that we're passing into the function. It's an
+	 * array of User objects.
+	 * @returns An array of users
+	 */
 	async getArray(arr: Array<User>) {
-		return arr;
+		return toSerial(arr);
 	}
 
+	/**
+	 * Get the number of users in the array.
+	 * @param users - Array<User>
+	 * @returns The number of users in the array.
+	 */
 	async getUserCount(users: Array<User>): Promise<number> {
 		let count = 0;
 		for await (const user of users) {
@@ -96,22 +108,30 @@ export default class SerializableTestWorker {
 		return count;
 	}
 
-	async getTotalOrders(arr: Array<User>, method: 'for-await' | 'reduce'): Promise<number> {
+	/**
+	 * "Get the total number of orders for all users in the array."
+	 *
+	 * The function is async, so it returns a promise. The promise resolves to a number
+	 * @param arr - Array<User> - This is the array of users that we want to get the total orders for.
+	 * @returns The total number of orders for all users.
+	 */
+	async getTotalOrders(arr: Array<User>): Promise<number> {
 		let total = 0;
-		if (method === 'for-await') {
-			for await (const user of arr) {
-				total += user.totalOrders;
-			}
-		} else if (method === 'reduce') {
-			total = arr.reduce((accum, user) => {
-				return accum + user.totalOrders;
-			}, 0);
+
+		for await (const user of arr) {
+			total += user.totalOrders;
 		}
+
 		return total;
 	}
 
+	/**
+	 * `getMap` returns a `Map` of `User`s
+	 * @param map - Map<any, User> - The map to get the data from.
+	 * @returns A Map<any, User>
+	 */
 	async getMap(map: Map<any, User>) {
-		return map;
+		return toSerial(map);
 	}
 }
 Comlink.expose(SerializableTestWorker);

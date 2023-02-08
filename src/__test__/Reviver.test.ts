@@ -2,12 +2,12 @@ import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/user';
 import Product from '@test-fixtures/product';
 import Order from '@test-fixtures/order';
-import { ProductClass, SerializedUser, UserClass } from '@test-fixtures/types';
+import { CircleClass, ProductClass, UserClass } from '@test-fixtures/types';
 import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils';
-import { Reviver, Serializer, SerialProxy } from '../serial';
+import { Reviver, Serializer } from '../serial';
 import { makeArr, makeObj } from './fixtures';
 import { makeSerial } from '../serial/utils';
-import SerialSymbol from 'src/serial/serial-symbol';
+import Circle from '@test-fixtures/circle';
 
 describe('Reviver', () => {
 	let serializer: Serializer;
@@ -19,72 +19,89 @@ describe('Reviver', () => {
 		serializer = new Serializer();
 	});
 
-	test('Flat object manual revive', async () => {
-		const user0 = makeObj<User>('user', 0);
-
-		const user = reviver.revive<User>(serializer.serialize(user0));
-		expect(getSerializable(user)).toBeTruthy();
-		expect(getRevived(user)).toBeTruthy();
-		expect(getClassToken(user)).toEqual(UserClass.toString());
-		expect(user.email).toEqual(user0.email);
-		expect(user.firstName).toEqual(user0.firstName);
-		expect(user.lastName).toEqual(user0.lastName);
-	});
-
-	test('Flat object auto revive', () => {
+	test('Revive Product', () => {
 		const prod0 = makeObj<Product>('prod', 0);
 
-		const prod = reviver.revive<Product>(serializer.serialize(prod0));
-		expect(getSerializable(prod)).toBeTruthy();
-		expect(getRevived(prod)).toBeTruthy();
-		expect(getClassToken(prod)).toEqual(ProductClass.toString());
-		expect(prod.productId).toEqual(prod0.productId);
-		expect(prod.productName).toEqual(prod0.productName);
+		const rtnProd = reviver.revive<Product>(serializer.serialize(prod0));
+		expect(getSerializable(rtnProd)).toBeTruthy();
+		expect(getRevived(rtnProd)).toBeTruthy();
+		expect(getClassToken(rtnProd)).toBe(ProductClass);
+		expect(rtnProd.productId).toBe(prod0.productId);
+		expect(rtnProd.productName).toBe(prod0.productName);
+	});
+
+	test('Revive User', () => {
+		const user0 = makeObj<User>('user', 0);
+
+		const rtnUser = reviver.revive<User>(serializer.serialize(user0));
+		expect(getSerializable(rtnUser)).toBeTruthy();
+		expect(getRevived(rtnUser)).toBeTruthy();
+		expect(getClassToken(rtnUser)).toBe(UserClass);
+		expect(rtnUser.email).toEqual(user0.email);
+		expect(rtnUser.firstName).toBe(user0.firstName);
+		expect(rtnUser.lastName).toBe(user0.lastName);
+
+		expect(rtnUser.getPriAddress()).toEqual(user0.getPriAddress());
+	});
+
+	test('Revive circular relationship', () => {
+		const circle = new Circle('Red');
+
+		const rtnCircle = reviver.revive<Circle>(serializer.serialize(circle));
+		expect(getSerializable(rtnCircle)).toBeTruthy();
+		expect(getRevived(rtnCircle)).toBeTruthy();
+		expect(getClassToken(rtnCircle)).toBe(CircleClass);
+		expect(rtnCircle.color).toBe(circle.color);
+
+		const rtnCirCircle = rtnCircle.circle;
+		expect(getSerializable(rtnCirCircle)).toBeTruthy();
+		expect(getRevived(rtnCirCircle)).toBeTruthy();
+		expect(getClassToken(rtnCirCircle)).toEqual(CircleClass);
+		expect(rtnCirCircle.color).toBe(circle.color);
+
+		expect(rtnCirCircle).toEqual(rtnCircle);
 	});
 
 	test('Nested object with array revive', () => {
-		const user0 = makeObj<User>('user', 0);
-
 		const prod0 = makeObj<Product>('prod', 0);
 		const prod1 = makeObj<Product>('prod', 1);
 		const prod2 = makeObj<Product>('prod', 2);
 
 		const order0 = makeObj<Order>('order', 3);
 
-		const order = reviver.revive<Order>(serializer.serialize(order0));
-		expect(order.orderId).toEqual(order0.orderId);
+		const rtnOrder = reviver.revive<Order>(serializer.serialize(order0));
+		expect(rtnOrder.orderId).toEqual(order0.orderId);
 
 		//user is a proxy...how will this get tested
-		const user = order.user;
-		expect(getSerializable(user)).toBeTruthy();
-		expect(getClassToken(user)).toEqual(SerialSymbol.serialProxy.toString());
-		expect(user.email).toEqual(user0.email);
-		expect(user.firstName).toEqual(user0.firstName);
-		expect(user.lastName).toEqual(user0.lastName);
+		expect(getSerializable(rtnOrder.user)).toBeTruthy();
+		expect(getClassToken(rtnOrder.user)).toBe(UserClass);
+		expect(rtnOrder.user.email).toBe(order0.user.email);
+		expect(rtnOrder.user.firstName).toBe(order0.user.firstName);
+		expect(rtnOrder.user.lastName).toBe(order0.user.lastName);
 
-		expect(order.products.length).toEqual(3);
-		const products = order.products;
+		expect(rtnOrder.products.length).toEqual(order0.products.length);
+		const products = rtnOrder.products;
 
 		const prodObj0 = products[0];
 		expect(getSerializable(prodObj0)).toBeTruthy();
 		expect(getRevived(prodObj0)).toBeTruthy();
-		expect(getClassToken(prodObj0)).toEqual(ProductClass.toString());
-		expect(prodObj0.productId).toEqual(prod0.productId);
-		expect(prodObj0.productName).toEqual(prod0.productName);
+		expect(getClassToken(prodObj0)).toBe(ProductClass);
+		expect(prodObj0.productId).toBe(prod0.productId);
+		expect(prodObj0.productName).toBe(prod0.productName);
 
 		const prodObj1 = products[1];
 		expect(getSerializable(prodObj1)).toBeTruthy();
 		expect(getRevived(prodObj1)).toBeTruthy();
-		expect(getClassToken(prodObj1)).toEqual(ProductClass.toString());
-		expect(prodObj1.productId).toEqual(prod1.productId);
-		expect(prodObj1.productName).toEqual(prod1.productName);
+		expect(getClassToken(prodObj1)).toBe(ProductClass);
+		expect(prodObj1.productId).toBe(prod1.productId);
+		expect(prodObj1.productName).toBe(prod1.productName);
 
 		const prodObj2 = products[2];
 		expect(getSerializable(prodObj2)).toBeTruthy();
 		expect(getRevived(prodObj2)).toBeTruthy();
-		expect(getClassToken(prodObj2)).toEqual(ProductClass.toString());
-		expect(prodObj2.productId).toEqual(prod2.productId);
-		expect(prodObj2.productName).toEqual(prod2.productName);
+		expect(getClassToken(prodObj2)).toBe(ProductClass);
+		expect(prodObj2.productId).toBe(prod2.productId);
+		expect(prodObj2.productName).toBe(prod2.productName);
 	});
 
 	test('Array revive', () => {
@@ -96,14 +113,14 @@ describe('Reviver', () => {
 		for (const user of revArr) {
 			expect(getSerializable(user)).toBeTruthy();
 			expect(getRevived(user)).toBeTruthy();
-			expect(getClassToken(user)).toEqual(UserClass.toString());
-			expect(user.email).toEqual('bob@email.org_' + idx);
-			expect(user.firstName).toEqual('Bob_' + idx);
-			expect(user.lastName).toEqual('Smith_' + idx);
-			expect(user.totalOrders).toEqual(idx);
+			expect(getClassToken(user)).toBe(UserClass);
+			expect(user.email).toBe('bob@email.org_' + idx);
+			expect(user.firstName).toBe('Bob_' + idx);
+			expect(user.lastName).toBe('Smith_' + idx);
+			expect(user.totalOrders).toBe(idx);
 			idx += 1;
 		}
-		expect(revArr.length).toEqual(userArr.length);
+		expect(revArr.length).toBe(userArr.length);
 	});
 
 	test('Map string keys revive', () => {
@@ -122,12 +139,12 @@ describe('Reviver', () => {
 		for (const [key, user] of revMap) {
 			expect(getSerializable(user)).toBeTruthy();
 			expect(getRevived(user)).toBeTruthy();
-			expect(getClassToken(user)).toEqual(UserClass.toString());
-			expect(key).toEqual(idx.toString());
-			expect(user.email).toEqual('bob@email.org_' + idx);
-			expect(user.firstName).toEqual('Bob_' + idx);
-			expect(user.lastName).toEqual('Smith_' + idx);
-			expect(user.totalOrders).toEqual(idx);
+			expect(getClassToken(user)).toBe(UserClass);
+			expect(key).toBe(idx.toString());
+			expect(user.email).toBe('bob@email.org_' + idx);
+			expect(user.firstName).toBe('Bob_' + idx);
+			expect(user.lastName).toBe('Smith_' + idx);
+			expect(user.totalOrders).toBe(idx);
 			idx += 1;
 		}
 		expect(revMap.size).toEqual(userMap.size);
@@ -149,10 +166,10 @@ describe('Reviver', () => {
 		for (const [key, user] of revMap) {
 			expect(getSerializable(user)).toBeTruthy();
 			expect(getRevived(user)).toBeTruthy();
-			expect(getClassToken(user)).toEqual(UserClass.toString());
-			expect(key).toEqual(idx);
-			expect(user.email).toEqual('bob@email.org_' + idx);
-			expect(user.totalOrders).toEqual(idx);
+			expect(getClassToken(user)).toBe(UserClass);
+			expect(key).toBe(idx);
+			expect(user.email).toBe('bob@email.org_' + idx);
+			expect(user.totalOrders).toBe(idx);
 			idx += 1;
 		}
 		expect(revMap.size).toEqual(userMap.size);
@@ -174,10 +191,10 @@ describe('Reviver', () => {
 		for (const [key, user] of revMap) {
 			expect(getSerializable(user)).toBeTruthy();
 			expect(getRevived(user)).toBeTruthy();
-			expect(getClassToken(user)).toEqual(UserClass.toString());
+			expect(getClassToken(user)).toBe(UserClass);
 			expect(key).toEqual(idx === 1);
-			expect(user.email).toEqual('bob@email.org_' + idx);
-			expect(user.totalOrders).toEqual(idx);
+			expect(user.email).toBe('bob@email.org_' + idx);
+			expect(user.totalOrders).toBe(idx);
 			idx += 1;
 		}
 		expect(revMap.size).toEqual(2);
@@ -192,7 +209,7 @@ describe('Reviver', () => {
 
 	test('Reviver error handling no class', () => {
 		const user0 = makeObj<User>('user', 0);
-		const userSerial0 = serializer.serialize<SerializedUser>(user0);
+		const userSerial0 = serializer.serialize(user0);
 
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
 		userSerial0['ComSer.serialized']!.classToken = '';
@@ -205,21 +222,8 @@ describe('Reviver', () => {
 
 	test('Reviver error handling invalid class', () => {
 		const user0 = makeObj<User>('user', 0);
-		const userSerial0 = serializer.serialize<SerializedUser>(user0);
+		const userSerial0 = serializer.serialize(user0);
 		userSerial0['ComSer.serialized']!.classToken = '123456';
-
-		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
-		expect(() => {
-			reviver.revive(userSerial0);
-		}).toThrow();
-		expect(err.mock.calls).toHaveLength(1);
-		err.mockReset();
-	});
-
-	test('Reviver error handling no hash', () => {
-		const user0 = makeObj<User>('user', 0);
-		const userSerial0 = serializer.serialize<SerializedUser>(user0);
-		userSerial0['ComSer.serialized']!.hash = '';
 
 		const err = jest.spyOn(console, 'error').mockImplementation(() => {});
 		expect(() => {
