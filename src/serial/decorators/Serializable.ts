@@ -10,6 +10,22 @@ import {
 	ValueObject,
 } from './types';
 
+/**
+ * This interface shares a name with the decorator @Serializable
+ *
+ * If you choose (it is not required), you can implment this interface on your @Serializable classes.
+ *
+ * It will inform you of the available hooks you can implement durring serialization.
+ *
+ * @interface Serializable
+ * @function {void} beforeSerialize - called right before serialization begings on the object
+ * @function {Serialized} serialize - implement this function to override the default serializer. You
+ * will also need to override the default reviver if you are making changes to property names or overall structure of
+ * your Serialized object.
+ * You can access the serializer through the {SerializeCtx} if you need to serialize nested objects.
+ * @function {any} beforePropertySerialize - called before a property is serialized. Return the value you want serialized for the passed property.
+ * @function {Transferable[] | undefined} afterSerialize - called after the object is serialized. You may return an array of Transferable.
+ */
 interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	beforeSerialize?(): void;
 	serialize?(ctx: SerializeCtx): S;
@@ -17,6 +33,7 @@ interface Serializable<S extends Serialized = Serialized> extends ValueObject {
 	afterSerialize?(): Transferable[] | undefined;
 }
 
+/* this is the interface that is implemented by the decorator @Serializable */
 export interface SerializableObject<T extends Serializable = Serializable> {
 	[SerialSymbol.serializable]: () => boolean;
 	[SerialSymbol.revived]: () => boolean;
@@ -25,10 +42,26 @@ export interface SerializableObject<T extends Serializable = Serializable> {
 	get self(): SerializableObject<T>;
 }
 
+/**
+ * Not implemented yet.
+ *
+ * @interface SerializableSettings
+ */
 interface SerializableSettings {}
 
 type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S> & Revivable<S>>;
-
+/**
+ * The @Serializable decorator allows your class to be registered as serializable.
+ *
+ * There are two interfaces available implement, Serializable and Revivable, to see the availaible lifecycle hooks.
+ *
+ * You are only required to implemnt `hashCode`and `equals` to make an object Serializable.
+ *
+ * @param {SerialClassToken} classToken - This is a unique identifier for the class. It's used to
+ * identify the class when serializing and deserializing.
+ * @param {SerializableSettings} [settings] - SerializableSettings
+ * @returns An object wrapping your class to enable it to passed to a seperate thread and revived on the other side.
+ */
 function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S>>(
 	classToken: SerialClassToken,
 	settings?: SerializableSettings

@@ -4,11 +4,23 @@ import { Serializable } from '../decorators';
 import SerialIterableProxy from './serial-iterable-proxy';
 import SerialIteratorResult from './serial-iterator-result';
 
+/**
+ * If the object is a SerialIterableProxy, return true, otherwise return false.
+ * @param {any} obj - any - The object to check.
+ * @returns A function that returns a boolean.
+ */
 export function isSerialIterableProxy(obj: any): obj is SerialIterableProxy {
 	if (!obj) return false;
 	return obj instanceof SerialIterableProxy;
 }
 
+/**
+ * If the object is an instance of the SerialIteratorResult class, then return true, otherwise return
+ * false.
+ * @param {any} obj - any - The object to check.
+ * @returns A function that takes an object and returns true if the object is an instance of the
+ * function.
+ */
 export function isSerialIteratorResult(obj: any): obj is SerialIteratorResult {
 	if (!obj) return false;
 	return obj instanceof isSerialIteratorResult;

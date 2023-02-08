@@ -14,8 +14,15 @@ import SerialSymbol from './serial-symbol';
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type AnyConstructor<T = void> = new (...input: any[]) => T;
 
+/**
+ * All serialized objects derived from Serializable objects
+ * must implment this interface.
+ *
+ * @interface Serialized
+ * @field {SerializedMeta} Igore [ComSer.serialized] this field. Don't set a value it is as it is readonly for a reason.
+ */
 export interface Serialized {
-	[SerialSymbol.serialized]?: SerializedMeta;
+	readonly [SerialSymbol.serialized]?: SerializedMeta;
 }
 
 export interface ToSerial {

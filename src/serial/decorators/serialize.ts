@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Dictionary } from '..';
 import SerialSymbol from '../serial-symbol';
-import objectRegistry, { ObjectRegistryEntry } from '../../registry';
+import objectRegistry from '../../registry';
 import { SerialClassToken, SerializePropertyDescriptor, SerializeSettings, SerialPropertyMetadataKey } from './types';
 
 /**
@@ -33,8 +33,6 @@ export default function Serialize(settings?: SerialClassToken | SerializeSetting
 
 function defineSerializePropertyMetadata({ classToken, proxy }: SerializeSettings) {
 	return function (target: any, prop: string | symbol) {
-		const hasMeta = Reflect.getMetadata('design:type', target, prop) ? true : false;
-
 		// allow for delayed loading to make sure all
 		// serializable classes are registered first
 		const resolver =

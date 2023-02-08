@@ -1,6 +1,6 @@
 import { traverse, TraversalCallbackContext } from 'object-traversal';
 import { ParentRef, SerialArray, SerializeCtx, SerializedCacheEntry, SerialMap, SerialProxy } from '../serial';
-import { Serializable, SerializableObject, SerializedHash } from './decorators';
+import { Serializable, SerializableObject, SerializedHash, SerializedMeta } from './decorators';
 import { isSerializableObject, serializedHash } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { Serialized } from './types';
@@ -150,11 +150,15 @@ export default class Serializer {
 		// update cache with new serialObj.
 		const hash = this.updateSerialCache(obj, serialObj);
 
-		// add the serialized meta to the serialized object
-		serialObj[SerialSymbol.serialized] = {
+		// create SerializedMeta
+		const serializedMeta: SerializedMeta = {
 			classToken: classToken.toString(),
 			hash,
 		};
+
+		// add the serialized meta to the serialized object
+		// we are using Object.assign to keep the property readonly
+		Object.assign(serialObj, { [SerialSymbol.serialized]: serializedMeta });
 
 		// hook before serialize
 		if (obj.beforeSerialize) {

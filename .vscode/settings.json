@@ -1,5 +1,5 @@
 {
 	"jest.rootPath": "./",
 	"jest.jestCommandLine": "npm test --",
-	"docwriter.style": "Auto-detect"
+	"docwriter.style": "JSDoc"
 }

@@ -49,6 +49,13 @@ export default class SerialIteratorResult<T extends Serializable = Serializable>
 		}
 	}
 
+	/**
+	 * If the result is an array, then the first element is the key and the second element is the value
+	 * @param {SerializedIteratorResult} serialObj - The serialized object that was sent from the other
+	 * side.
+	 * @param {ReviverCtx} ctx - ReviverCtx - This is the context object that is passed to the reviver
+	 * function.
+	 */
 	public revive?(serialObj: SerializedIteratorResult, ctx: ReviverCtx) {
 		this.id = serialObj.id;
 		const result = serialObj.result;
