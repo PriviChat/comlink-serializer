@@ -15,7 +15,7 @@ import {
  *
  * If you choose (it is not required), you can implment this interface on your @Serializable classes.
  *
- * It will inform you of the available hooks you can implement durring serialization.
+ * It will inform you of the available hooks you can implement during serialization.
  *
  * @interface Serializable
  * @function {void} beforeSerialize - called right before serialization begings on the object
@@ -63,8 +63,8 @@ type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S> & R
  * @returns An object wrapping your class to enable it to passed to a seperate thread and revived on the other side.
  */
 function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S>>(
-	classToken: SerialClassToken,
-	settings?: SerializableSettings
+	classToken: SerialClassToken
+	//settings?: SerializableSettings
 ): (base: Ctor) => any {
 	return function (base: Ctor) {
 		let serializeDescriptor: Dictionary<SerializePropertyDescriptor>;

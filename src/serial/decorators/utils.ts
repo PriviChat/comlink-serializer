@@ -1,7 +1,7 @@
 import stringHash from 'string-hash';
 import { v5 as uuidv5 } from 'uuid';
 import SerialSymbol from '../serial-symbol';
-import { Dictionary, Serialized } from '../types';
+import { Serialized } from '../types';
 import Serializable, { SerializableObject } from './serializable';
 import { SerialClassToken, SerializedHash, SerializePropertyDescriptor } from './types';
 

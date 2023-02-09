@@ -56,7 +56,7 @@ export type SerialClassToken = string | symbol;
  * @function {any} beforePropertySerialize - called before a property is serialized. Return the value you want serialized for the passed property.
  * @function {Transferable[] | undefined} afterSerialize - called after the object is serialized. You may return an array of Transferable.
  */
-export interface Revivable<S extends Serialized = Serialized> {
+export interface Revivable<S extends Serialized = Serialized> extends ValueObject {
 	revive?(serialObj: S, ctx: ReviverCtx): void;
 	afterPropertyRevive?(prop: string, value: any): any;
 	afterRevive?(): void;

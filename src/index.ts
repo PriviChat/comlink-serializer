@@ -3,7 +3,7 @@ import { hashCd, toSerial, toSerialProxy } from './serial/utils';
 import { serializableTransferHandler, SerialTransferHandlers, TransferHandlerRegistration } from './serial/comlink';
 import { Serialized, ReviverCtx, SerializeCtx } from './serial';
 
-import { Serializable, Serialize } from './serial/decorators';
+import { Serializable, Serialize, Revivable } from './serial/decorators';
 import { toSerialIterator } from './serial/iterable/utils';
 import objectRegistry, { defaultRegistryObjects } from './registry';
 
@@ -29,6 +29,7 @@ const ComlinkSerializer = {
 export {
 	Serialized,
 	Serializable,
+	Revivable,
 	Serialize,
 	ReviverCtx,
 	SerializeCtx,

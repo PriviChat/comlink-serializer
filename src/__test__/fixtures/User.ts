@@ -1,9 +1,9 @@
-import { Serializable, Serialize, hashCd } from '@comlink-serializer';
+import { Serializable, Serialize, Revivable, hashCd } from '@comlink-serializer';
 import Address from './address';
 import { AddressClass, SerializedUser, UserClass } from './types';
 
 @Serializable(UserClass)
-export default class User implements Serializable<SerializedUser> {
+export default class User implements Serializable<SerializedUser>, Revivable<SerializedUser> {
 	@Serialize()
 	private priAddress: Address;
 	@Serialize({ classToken: AddressClass, proxy: true })

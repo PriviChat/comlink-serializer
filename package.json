@@ -60,7 +60,7 @@
     "type": "git",
     "url": "git+https://github.com/PriviChat/comlink-serializer.git"
   },
-  "license": "Apache-2.0",
+  "license": "MIT License",
   "author": {
     "name": "Josh Manton",
     "email": "josh.manton@privichat.com",

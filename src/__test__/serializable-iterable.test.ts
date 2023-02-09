@@ -4,6 +4,8 @@ import { makeObj } from './fixtures';
 
 import { toSerialIterator } from '@comlink-serializer';
 
+//TODO write test case for Map in one of the objects
+
 describe('SerialIterable Tests', () => {
 	test('Iterator accepts empty array', async () => {
 		const userItr = toSerialIterator(new Array<User>());
