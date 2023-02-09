@@ -15,11 +15,11 @@ import SerialSymbol from './serial-symbol';
 export type AnyConstructor<T = void> = new (...input: any[]) => T;
 
 /**
- * All serialized objects derived from Serializable objects
+ * A serialized object derived from a Serializable object
  * must implment this interface.
  *
  * @interface Serialized
- * @field {SerializedMeta} Igore [ComSer.serialized] this field. Don't set a value it is as it is readonly for a reason.
+ * @field {SerializedMeta} - Igore [ComSer.serialized] this field. Don't set a value, it is readonly for a reason.
  */
 export interface Serialized {
 	readonly [SerialSymbol.serialized]?: SerializedMeta;

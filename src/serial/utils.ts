@@ -58,6 +58,12 @@ export function isSerialProxy(obj: any): obj is SerialProxy<Serializable> {
 	return obj instanceof SerialProxy;
 }
 
+/**
+ * It checks if the object has a property called `Comlink.proxyMarker` and if that property is set to
+ * `true`
+ * @param {any} obj - any
+ * @returns A function that takes an object and returns true if it is a proxy.
+ */
 export function isProxy(obj: any): boolean {
 	return obj && obj[Comlink.proxyMarker] === true;
 }
@@ -99,15 +105,15 @@ export function isSerializedMap(obj: any): obj is SerializedMap {
 }
 
 /**
- *	Flags an Array<T> as an object that should be serialized
- *	@param arr - Array<T>
+ *	Indicates that Array<T> is an object that should be serialized
+ *	@param {Array<T>} array - the array you want to serialize
  *  @returns An Array<T>
  **/
-export function toSerial<T extends Serializable>(arr: Array<T>): Array<T>;
+export function toSerial<T extends Serializable>(array: Array<T>): Array<T>;
 /**
- *	Flags a Map<K, T> as an object that should be serialized
- *	@param arr - Map<K, T>
- *  @returns An Map<K, T>
+ *	Indicates that Map<K, T> is an object that should be serialized
+ *	@param {Map<K, T>} map - the map you want to serialize
+ *  @returns A Map<K, T>
  **/
 export function toSerial<T extends Serializable, K extends SerialPrimitive>(map: Map<K, T>): Map<K, T>;
 export function toSerial<T extends Serializable, K extends SerialPrimitive>(target: Array<T> | Map<K, T>) {
@@ -123,6 +129,11 @@ export function toSerial<T extends Serializable, K extends SerialPrimitive>(targ
 	});
 }
 
+/**
+ * It takes a serializable object and returns a serial type
+ * @param {T | Array<T> | Map<K, T>} obj - T | Array<T> | Map<K, T>
+ * @returns A SerialType<T>
+ */
 export function makeSerial<T extends Serializable, K extends SerialPrimitive = SerialPrimitive>(
 	obj: T | Array<T> | Map<K, T>
 ): SerialType<T> {
@@ -135,6 +146,12 @@ export function makeSerial<T extends Serializable, K extends SerialPrimitive = S
 	}
 }
 
+/**
+ * It returns a SerialProxy for the given object, but if the object is already a SerialProxy, it just
+ * returns the object
+ * @param {T} obj - The object to be serialized.
+ * @returns A SerialProxy<T>
+ */
 export function makeSerialProxy<T extends Serializable>(obj: T): SerialProxy<T> {
 	if (obj instanceof SerialProxy) return obj;
 	else return new SerialProxy<T>(obj);
@@ -146,15 +163,15 @@ export function makeSerialProxy<T extends Serializable>(obj: T): SerialProxy<T> 
  *	@param serial - T
  *   @returns T
  **/
-export function toSerialProxy<T extends Serializable>(serial: T) {
-	if (!isSerializable(serial)) {
+export function toSerialProxy<T extends Serializable>(obj: T) {
+	if (!isSerializable(obj)) {
 		const err = `ERR_NOT_SERIALIZABLE: Object: ${JSON.stringify(
-			serial
+			obj
 		)} is not serializable. All serializable objects must be decoratorated with @Serializable.`;
 		console.error(err);
 		throw new TypeError(err);
 	}
-	return new Proxy(serial, {
+	return new Proxy(obj, {
 		get(_target, prop, receiver) {
 			if (typeof prop === 'symbol' && prop === SerialSymbol.toSerialProxy) return true;
 			else if (typeof prop === 'string' && prop === 'makeSerialProxy') return () => makeSerialProxy(_target);

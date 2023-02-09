@@ -421,6 +421,8 @@ export default class Address {
 }
 ```
 
+<br/>
+
 When a `user` object is passed to a worker and revived, the `user` object and `priAddress` property will be copied, complete with the prototype. The `addresses` Array will be a proxy (not copied). When you iterate over `addresses`, for each iteration it will serialize and revive an entry.
 
 ```ts
@@ -503,7 +505,7 @@ export default class OrderWorker {
 		const addresses = new Array<Address>();
 		// await is needed to fetch the addressses iterator
 		// for-await is needed because its an async iterator
-		// both user and addresses proxies
+		// both user and addresses are proxies
 		for await (const address of await order.user.addresses) {
 			addresses.push(address);
 		}
