@@ -1,6 +1,7 @@
 export default class SerialSymbol {
 	static readonly serializable: unique symbol = Symbol('ComSer.serializable');
 	static readonly serialized = 'ComSer.serialized';
+	static readonly transferables = 'ComSer.transferables';
 
 	static readonly revived: unique symbol = Symbol('ComSer.revived');
 

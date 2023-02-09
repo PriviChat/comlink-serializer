@@ -10,10 +10,11 @@
 
 - [Comlink Serializer](#comlink-serializer)
   - [Introduction](#introduction)
-  - [Installation](#installation)
-  - [Setup](#setup)
-    - [TypeScript](#typescript)
-    - [Babel](#babel)
+  - [Getting Started](#getting-started)
+    - [Install](#install)
+    - [Setup](#setup)
+      - [TypeScript](#typescript)
+      - [Babel](#babel)
   - [Usage](#usage)
     - [@Serializable](#serializable)
       - [hashCode()](#hashcode)
@@ -21,7 +22,6 @@
     - [@Serialize](#serialize)
     - [Serializable](#serializable-1)
     - [Revivable](#revivable)
-    - [Serialized](#serialized)
     - [toSerial()](#toserial)
     - [toSerialProxy()](#toserialproxy)
     - [toSerialIterable()](#toserialiterable)
@@ -40,9 +40,20 @@
 
 Comlink Serializer makes working with [Comlink](https://github.com/GoogleChromeLabs/comlink) even more enjoyable by providing a framework for the serialization and reviving of your transfer objects. Your objects come out on the Worker side with their prototypes intact.
 
-The framework supports deep serialization, handles circular references, and allows you to indicate that a property value should be sent as a proxy. If you send an Array or Map object as a proxy and it will send the entries using an AsyncIterableIterator, meaning you don't need to wait for the whole collection to transfer before you start processing entries. If you send a basic object as a proxy, any function calls or property changes automatically get reflected in the main thread.
+The framework supports deep serialization, handles circular references, and allows you to indicate that a property value should be sent as a proxy. If you send an Array or Map object as a proxy and it will send the entries using an `AsyncIterableIterator`, meaning you don't need to wait for the whole collection to transfer before you start processing entries. If you send a basic object as a proxy, any function calls or property changes automatically get reflected in the main thread.
 
 There is no need for multiple transfer handlers because Comlink Serializer handles that for you. If you are new to Comlink, it's a good idea to start reading that documentation first.
+
+> **Warning**
+> While we have a lot of unit tests in place and feel comfortable that the library is working as expected, we need to see how it performs in the wild.
+> <br/>
+> The following still needs to be implemented:
+>
+> - Stress Testing - Making sure allocated objects are getting garage collected and memory usage is stable
+> - Performance Testing - Figure out how fast (or slow) the processing is with very large datasets
+> - Unit Testing - We have many but can always use more
+>
+> Contact me if you are interested in helping out!
 
 <br/>
 
@@ -50,26 +61,30 @@ There is no need for multiple transfer handlers because Comlink Serializer handl
 
 <br/>
 
-## Installation
+## Getting Started
+
+<br/>
+
+### Install
+
+<br/>
+
+Using npm:
 
 ```bash
 npm i comlink comlink-serializer reflect-metadata
 ```
 
-<br/>
-
----
+### Setup
 
 <br/>
-
-## Setup
 
 Comlink Serializer leverages [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) to enable the serialization and reviving of your class objects. Decorators are still an experimental feature and as such, it is subject to change, but as far as I can tell has significant developer adoption. Compatibility issues do exist if you are using tools like Babel to transpile your source code and dependencies.
 
 > **Note**
 > The `experimentalDecorators` feature must be enabled along with setting `emitDecoratorMetadata` to true in your project. Below are some examples, but consult the documentation for your setup.
 
-### TypeScript
+#### TypeScript
 
 **_Command Line:_**
 
@@ -89,7 +104,7 @@ tsc --target ES5 --experimentalDecorators --emitDecoratorMetadata
 }
 ```
 
-### Babel
+#### Babel
 
 If you're using [Babel](https://babeljs.io/docs/en/). More on Babel [Decorators](https://babel.dev/docs/en/babel-plugin-proposal-decorators).
 
@@ -259,31 +274,9 @@ Not to be confused with the decorator of the same name, Serializable is an inter
 
 Revivable is an interface you can choose to implement on your class that should allow the IDE to automatically add the method hooks that are called at different stages of the revive process.
 
-- `revive?(serialObj: S, ctx: ReviverCtx)` - override the default reviver
+- `revive?(serialObj: Object, ctx: ReviverCtx)` - override the default reviver
 - `afterPropertyRevive?(prop: string, value: any)` - after the property is revived but before it is set on the object
 - `afterRevive?()` - called after the object has been revived
-
-<br/>
-
----
-
-<br/>
-
-### Serialized
-
-<br/>
-
-The two interfaces, `Serializable` and `Revivable` both take one argument optional generic parameter that extends `Serialized`. If needed, this allows you to strongly type your serialized object.
-
-```ts
-import { Serialized } from 'comlink-serializer';
-
-export interface SerializedUser extends Serialized {
-	email: string;
-	firstName: string;
-	lastName: string;
-}
-```
 
 <br/>
 

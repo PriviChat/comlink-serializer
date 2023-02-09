@@ -15,15 +15,17 @@ import SerialSymbol from './serial-symbol';
 export type AnyConstructor<T = void> = new (...input: any[]) => T;
 
 /**
- * A serialized object derived from a Serializable object
- * must implment this interface.
+ * A serialized form of a Serializable object
  *
  * @interface Serialized
- * @field {SerializedMeta} - Igore [ComSer.serialized] this field. Don't set a value, it is readonly for a reason.
+ * @field {SerializedMeta}
  */
 export interface Serialized {
-	readonly [SerialSymbol.serialized]?: SerializedMeta;
+	readonly [SerialSymbol.serialized]: SerializedMeta;
+	readonly [SerialSymbol.transferables]: Array<Transferable>;
 }
+
+export type SerializedObject<O extends Object = Object> = O & Serialized;
 
 export interface ToSerial {
 	[SerialSymbol.toSerial]: boolean;
@@ -51,7 +53,6 @@ export interface SerializedCacheEntry {
 
 export interface SerializeCtx {
 	serialize<S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S;
-	addTransferable(transfer: Transferable): void;
 	parentRef?: ParentRef;
 }
 
@@ -75,21 +76,20 @@ export interface ParentRef {
 	prop: Readonly<string>;
 }
 
-export interface SerializedProxy extends Serialized {
+export interface SerializedProxy {
 	id: string;
-	port: MessagePort;
 	proxyClass: string;
 	proxyDescr: Dictionary<SerializePropertyDescriptor>;
 	proxyProp?: string;
 	refClass?: string;
 }
 
-export interface SerializedArray<S extends Serialized = Serialized> extends Serialized {
+export interface SerializedArray<O extends Object = Object, S extends SerializedObject<O> = SerializedObject<O>> {
 	id: string;
 	'ComSer.array': S[];
 }
 
-export interface SerializedMap<S extends Serialized = Serialized> extends Serialized {
+export interface SerializedMap<O extends Object = Object, S extends SerializedObject<O> = SerializedObject<O>> {
 	id: string;
 	'ComSer.size': number;
 	'ComSer.keyType'?: SerializedKeyType;

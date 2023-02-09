@@ -11,8 +11,6 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	implements AsyncIterableIterator<I>, Serializable<SerializedIterableProxy>, Revivable<SerializedIterableProxy>
 {
 	private _id = uuid();
-	private _port1?: MessagePort;
-	private _port2: MessagePort;
 	private _iterator: AnySerialIterator<I>;
 	private _proxy?: Comlink.Remote<AsyncIterableIterator<I>>;
 	private done = false;
@@ -24,9 +22,6 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	 */
 	constructor(iterator: AnySerialIterator<I>) {
 		this._iterator = iterator;
-		const { port1, port2 } = new MessageChannel();
-		this._port1 = port1;
-		this._port2 = port2;
 	}
 
 	[Symbol.asyncIterator](): AsyncIterableIterator<I> {
@@ -80,15 +75,20 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	}
 
 	/**
+	 * > called by comlink when the proxy is released
+	 * > good place to do some cleanup if needed
+	 * @returns Nothing.
+	 */
+	private proxyReleased = () => {
+		return;
+	};
+
+	/**
 	 * `toProxy()` returns a proxy to the iterator on the other side of the channel
 	 * @returns A proxy to the iterator.
 	 */
 	public toProxy(): Comlink.Remote<AsyncIterableIterator<I>> {
-		if (this._proxy) return this._proxy;
-		if (!this._port2) {
-			throw new TypeError('ERR_NO_PORT: Port2 is undefined in call to toProxy()');
-		}
-		this._proxy = this.wrap(this._port2);
+		if (!this._proxy) throw new TypeError('ERR_NO_PROXY: Proxy is undefined in call to toProxy');
 		return this._proxy;
 	}
 
@@ -99,7 +99,6 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	public serialize(): SerializedIterableProxy {
 		const serialObj: SerializedIterableProxy = {
 			id: this._id,
-			port: this._port2,
 		};
 		return serialObj;
 	}
@@ -110,30 +109,38 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	 * @returns The port2 is being returned.
 	 */
 	public afterSerialize(): Transferable[] {
-		// expose and set port as transferable
-		if (!this._port1) {
-			throw new TypeError('ERR_NO_PORT: Port1 is undefined in call to expose()');
-		}
-		const port2 = this.expose(this, this._port1);
+		const port2 = this.expose(this);
 		return [port2];
 	}
 
 	/**
-	 * It takes a serialized proxy and sets the `_id` and `_port2` properties to the values in the
+	 * It takes a serialized proxy and sets the `_id` properties to the values in the
 	 * serialized proxy
 	 * @param {SerializedIterableProxy} sp - SerializedIterableProxy
 	 */
 	public revive(sp: SerializedIterableProxy) {
 		this._id = sp.id;
-		this._port1 = undefined;
-		this._port2 = sp.port;
+	}
+
+	/**
+	 * `afterRevive` is called after the object is revived and it's used to set the `_proxy` property to
+	 * the `MessagePort` object that was passed to the `transfer` function
+	 * @param {Transferable[] | undefined} transferables - An array of Transferable objects that are to be
+	 * transferred to the worker.
+	 */
+	public afterRevive(transferables: Transferable[] | undefined): void {
+		if (!transferables || !transferables[0])
+			throw new TypeError('ERR_NO_PORT: The trasferables array is undefined or empty in afterRevive');
+
+		// wrap and set the proxy
+		this._proxy = this.wrap(transferables[0] as MessagePort);
 	}
 
 	/**
 	 * It wraps the `MessagePort` in a `Proxy` that intercepts the `Symbol.asyncIterator` property and
 	 * returns the wrapped `MessagePort` as an `AsyncIterableIterator`
-	 * @param {MessagePort} port2 - MessagePort - The port that the worker will use to communicate with the
-	 * main thread.
+	 * @param {MessagePort} port2 - MessagePort - The port that will be used to communicate with the
+	 * worker.
 	 * @returns A proxy object that wraps the remote object.
 	 */
 	private wrap(port2: MessagePort) {
@@ -160,13 +167,22 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 	}
 
 	/* Creating a proxy to the SerialIterableProxy that will be exposed to the worker thread. */
-	private expose = (sip: SerialIterableProxy<I>, port1: MessagePort) => {
+	private expose = (sip: SerialIterableProxy<I>) => {
+		// create a new message channel
+		const { port1, port2 } = new MessageChannel();
+		const proxyReleased = this.proxyReleased;
 		const createProxy = (target: SerialIterableProxy<I> | Function) => {
 			return new Proxy(target, {
 				getPrototypeOf(_target) {
 					return _target;
 				},
 				get(_target, prop, receiver): any {
+					if (prop === Comlink.finalizer) {
+						// called by comlink when the proxy is released
+						// TODO this does not seem to get called every time it could be related to jest
+						proxyReleased();
+						return;
+					}
 					if (_target instanceof SerialIterableProxy && typeof prop === 'string') {
 						if (prop === 'next') {
 							return createProxy(_target.next);
@@ -180,6 +196,7 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 					return Reflect.get(_target, prop, receiver);
 				},
 				has(_target, prop) {
+					if (prop === Comlink.finalizer) return true;
 					return Reflect.has(_target, prop);
 				},
 				async apply(_target, thisArg, argArray) {
@@ -192,7 +209,7 @@ export default class SerialIterableProxy<I extends SerialIterType = SerialIterTy
 			});
 		};
 		Comlink.expose(createProxy(sip), port1);
-		return this._port2;
+		return port2;
 	};
 
 	/**

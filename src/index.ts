@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink';
 import { hashCd, toSerial, toSerialProxy } from './serial/utils';
 import { serializableTransferHandler, SerialTransferHandlers, TransferHandlerRegistration } from './serial/comlink';
-import { Serialized, ReviverCtx, SerializeCtx } from './serial';
+import { ReviverCtx, SerializeCtx } from './serial';
 
 import { Serializable, Serialize, Revivable } from './serial/decorators';
 import { toSerialIterator } from './serial/iterable/utils';
@@ -27,7 +27,6 @@ const ComlinkSerializer = {
 };
 
 export {
-	Serialized,
 	Serializable,
 	Revivable,
 	Serialize,

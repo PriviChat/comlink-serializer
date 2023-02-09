@@ -1,5 +1,4 @@
-import * as Comlink from 'comlink';
-import { Serializable, Serialized } from '@comlink-serializer';
+import { Serializable } from '@comlink-serializer';
 import { SerialClassToken, SerializedMeta } from '../../serial/decorators';
 import { isSerialized } from '../../serial/decorators/utils';
 import SerialSymbol from '../../serial/serial-symbol';
@@ -17,9 +16,14 @@ export function getClassToken(obj: Serializable) {
 	return classToken;
 }
 
-export function getSerializedMeta(obj: Serialized): SerializedMeta {
-	if (!isSerialized(obj)) return { classToken: '', hash: '' };
+export function getSerializedMeta(obj: any): SerializedMeta {
+	if (!isSerialized(obj)) throw Error('Object is not of type Serialized');
 	return obj[SerialSymbol.serialized];
+}
+
+export function getSerializedTransferables(obj: any): Transferable[] {
+	if (!isSerialized(obj)) throw Error('Object is not of type Serialized');
+	return obj[SerialSymbol.transferables];
 }
 
 export function getSerializedClassToken(obj: any): string {

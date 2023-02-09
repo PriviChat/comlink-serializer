@@ -13,8 +13,6 @@ export default class SerialProxy<T extends Serializable>
 	implements Serializable<SerializedProxy>, Revivable<SerializedProxy>
 {
 	private _id = uuid();
-	private _port1?: MessagePort;
-	private _port2: MessagePort;
 	private _proxyClass: string;
 	private _proxyDescr: Dictionary<SerializePropertyDescriptor>;
 	private _proxyProp?: string;
@@ -40,9 +38,7 @@ export default class SerialProxy<T extends Serializable>
 			console.error(err);
 			throw new TypeError(err);
 		}
-		const { port1, port2 } = new MessageChannel();
-		this._port1 = port1;
-		this._port2 = port2;
+
 		this._obj = obj;
 		this._proxyClass = obj[SerialSymbol.classToken]().toString();
 		this._proxyDescr = obj[SerialSymbol.serializeDescriptor]();
@@ -70,10 +66,6 @@ export default class SerialProxy<T extends Serializable>
 		return this._proxyDescr;
 	}
 
-	public get revived() {
-		return this._port1 === undefined;
-	}
-
 	private getCacheValue = (lookupObj: Object, prop: string | symbol) => {
 		const propVals = this.objValueCache.get(lookupObj);
 		if (!propVals) return undefined;
@@ -88,13 +80,26 @@ export default class SerialProxy<T extends Serializable>
 		return val;
 	};
 
+	/**
+	 * > called by comlink when the proxy is released
+	 * > good place to do some cleanup if needed
+	 * @returns Nothing.
+	 */
+	private proxyReleased = () => {
+		return;
+		//console.info(`THE PROXY FOR CLASS: ${this._proxyClass} HAS BEEN RELEASED`);
+	};
+
+	/**
+	 * "If the proxy is undefined, throw an error, otherwise return the proxy."
+	 *
+	 * The `if` statement is a conditional statement. It's a way to check if something is true or false. If
+	 * it's true, the code inside the `if` block will run. If it's false, the code inside the `if` block
+	 * will not run
+	 * @returns A proxy to the object.
+	 */
 	public toProxy(): Comlink.Remote<SerializableObject<T>> {
-		if (this._proxy) return this._proxy;
-		if (!this._port2) {
-			throw new TypeError('ERR_NO_PORT: Port2 is undefined in call to toProxy()');
-		}
-		const proxy = Comlink.wrap<SerializableObject<T>>(this._port2);
-		this._proxy = this.wrap(proxy, this._proxyDescr);
+		if (!this._proxy) throw new TypeError('ERR_NO_PROXY: Proxy is undefined in call to toProxy');
 		return this._proxy;
 	}
 
@@ -106,7 +111,6 @@ export default class SerialProxy<T extends Serializable>
 	public serialize(): SerializedProxy {
 		const serialObj: SerializedProxy = {
 			id: this._id,
-			port: this._port2,
 			proxyClass: this.proxyClass,
 			proxyProp: this._proxyProp,
 			proxyDescr: {},
@@ -126,34 +130,83 @@ export default class SerialProxy<T extends Serializable>
 	 * @returns The port2 is being returned.
 	 */
 	public afterSerialize(): Transferable[] {
-		// expose and set port as transferable
-		if (!this._port1) {
-			throw new TypeError('ERR_NO_PORT: Port1 is undefined in call to expose()');
-		}
-		const port2 = this.expose(this._port1);
+		const port2 = this.expose(this._obj);
 		return [port2];
 	}
 
+	/**
+	 * > The `revive` function is called by the `ProxyManager` when it is time to revive a proxy
+	 * @param {SerializedProxy} sp - SerializedProxy - this is the object that was serialized and is now
+	 * being revived.
+	 */
 	public revive(sp: SerializedProxy) {
 		this._id = sp.id;
-		this._port1 = undefined;
-		this._port2 = sp.port;
 		this._proxyClass = sp.proxyClass;
 		this._proxyProp = sp.proxyProp;
 		this._proxyDescr = sp.proxyDescr;
 		this._refClass = sp.refClass;
 	}
 
-	private expose(port1: MessagePort) {
+	/**
+	 * `afterRevive` is called after the object is revived and it's used to set the `_proxy` property to
+	 * the `MessagePort` object that was passed to the `transfer` function
+	 * @param {Transferable[] | undefined} transferables - An array of Transferable objects that are to be
+	 * transferred to the worker.
+	 */
+	public afterRevive(transferables: Transferable[] | undefined): void {
+		if (!transferables || !transferables[0])
+			throw new TypeError('ERR_NO_PORT: The trasferables array is undefined or empty in afterRevive');
+
+		// wrap and set the proxy
+		this._proxy = this.wrap(transferables[0] as MessagePort, this._proxyDescr);
+	}
+
+	/**
+	 * We create a new message channel, and then we create a proxy that will be exposed on the first port
+	 * of the message channel.
+	 *
+	 * The proxy will be created using the `createProxy` function.
+	 *
+	 * The `createProxy` function will create a proxy that will intercept all get operations on the
+	 * object.
+	 *
+	 * If the property is a serializable object, then we will create a new proxy for that object.
+	 *
+	 * If the property is an array or a map, then we will create a new serial iterator for that object.
+	 *
+	 * If the property is neither of the above, then we will return the property.
+	 *
+	 * The proxy will also intercept the `has` operation.
+	 *
+	 * The `has` operation will simply return the result of the `Reflect.has` operation.
+	 *
+	 * The `createProxy` function will also create a cache for the object.
+	 *
+	 * The cache will be used to store
+	 * @param obj - The object to be exposed.
+	 * @returns A proxy object that is being exposed to the other side of the message channel.
+	 */
+	private expose(obj: SerializableObject<T>) {
+		// create a new message channel
+		const { port1, port2 } = new MessageChannel();
+
 		const getCacheValue = this.getCacheValue;
 		const setCacheValue = this.setCacheValue;
-		const sp = this;
-		const createProxy = (obj: SerializableObject<T>) => {
-			return new Proxy(obj, {
+		const proxyReleased = this.proxyReleased;
+
+		const createProxy = (target: SerializableObject<T>) => {
+			return new Proxy(target, {
 				getPrototypeOf(_target) {
 					return _target;
 				},
 				get(_target, prop, receiver): any {
+					if (prop === Comlink.finalizer) {
+						// called by comlink when the proxy is released
+						// TODO this does not seem to get called every time it could be related to jest
+						proxyReleased();
+						return;
+					}
+
 					const hit = getCacheValue(_target, prop);
 					if (hit) return hit;
 
@@ -163,7 +216,7 @@ export default class SerialProxy<T extends Serializable>
 
 					if (config) {
 						let so;
-						//TODO - add better type checking because of reflection
+						//TODO - add better type checking because you never know especially with reflection
 						if (config.type === 'Serializable') {
 							if (config.proxy) {
 								so = createProxy(toSerialProxy(Reflect.get(_target, prop, receiver)));
@@ -177,8 +230,11 @@ export default class SerialProxy<T extends Serializable>
 								so = toSerial(Reflect.get(_target, prop, receiver));
 							}
 						} else {
-							//TODO update error messsage
-							throw Error('FIX THIS ERROR');
+							throw TypeError(
+								`ERR_UNKNOWN_CONFIG_TYPE: The SerializePropertyDescriptor type: ${
+									config.type
+								} is unknown for classToken: ${classToken.toString()}`
+							);
 						}
 						setCacheValue(_target, prop, so);
 						return so;
@@ -187,17 +243,23 @@ export default class SerialProxy<T extends Serializable>
 					}
 				},
 				has(_target, prop) {
+					if (prop === Comlink.finalizer) return true;
 					return Reflect.has(_target, prop);
 				},
 			});
 		};
-		Comlink.expose(createProxy(this._obj), port1);
-		return this._port2;
+		Comlink.expose(createProxy(obj), port1);
+		return port2;
 	}
 
-	private wrap(proxy: Comlink.Remote<SerializableObject<T>>, proxyDescr: Dictionary<SerializePropertyDescriptor>) {
-		//let transfered: SerializableObject<T>;
-		const sp = this;
+	/**
+	 * It creates a proxy that wraps the remote object and returns it
+	 * @param {MessagePort} port2 - MessagePort - The port that the proxy will use to communicate with the
+	 * worker.
+	 * @param proxyDescr - Dictionary<SerializePropertyDescriptor>
+	 * @returns A proxy object that is a wrapper around the object that was passed in.
+	 */
+	private wrap(port2: MessagePort, proxyDescr: Dictionary<SerializePropertyDescriptor>) {
 		const createProxy = (
 			target: Comlink.Remote<SerializableObject<T>> | Function,
 			descr: Dictionary<SerializePropertyDescriptor> = {}
@@ -248,6 +310,7 @@ export default class SerialProxy<T extends Serializable>
 				},
 			});
 		};
+		const proxy = Comlink.wrap<SerializableObject<T>>(port2);
 		return createProxy(proxy, proxyDescr) as Comlink.Remote<SerializableObject<T>>;
 	}
 

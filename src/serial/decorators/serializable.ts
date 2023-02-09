@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import objectRegistry from '../../registry';
 import SerialSymbol from '../serial-symbol';
-import { AnyConstructor, Dictionary, SerializeCtx, Serialized } from '../types';
+import { AnyConstructor, Dictionary, SerializeCtx } from '../types';
 import {
 	Revivable,
 	SerialClassToken,
@@ -19,16 +19,16 @@ import {
  *
  * @interface Serializable
  * @function {void} beforeSerialize - called right before serialization begings on the object
- * @function {Serialized} serialize - implement this function to override the default serializer. You
+ * @function {Serialized} serialize - used to override the default serializer. You
  * will also need to override the default reviver if you are making changes to property names or overall structure of
- * your Serialized object.
+ * your Serialized object. Return the serialized object.
  * You can access the serializer through the {SerializeCtx} if you need to serialize nested objects.
  * @function {any} beforePropertySerialize - called before a property is serialized. Return the value you want serialized for the passed property.
  * @function {Transferable[] | undefined} afterSerialize - called after the object is serialized. You may return an array of Transferable.
  */
-interface Serializable<S extends Serialized = Serialized> extends ValueObject {
+interface Serializable<O extends Object = Object> extends ValueObject {
 	beforeSerialize?(): void;
-	serialize?(ctx: SerializeCtx): S;
+	serialize?(ctx: SerializeCtx): O;
 	beforePropertySerialize?(prop: string): any;
 	afterSerialize?(): Transferable[] | undefined;
 }
@@ -49,7 +49,7 @@ export interface SerializableObject<T extends Serializable = Serializable> {
  */
 interface SerializableSettings {}
 
-type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S> & Revivable<S>>;
+type SerializableCtor<O extends Object> = AnyConstructor<Serializable<O> & Revivable<O>>;
 /**
  * The @Serializable decorator allows your class to be registered as serializable.
  *
@@ -62,7 +62,7 @@ type SerializableCtor<S extends Serialized> = AnyConstructor<Serializable<S> & R
  * @param {SerializableSettings} [settings] - SerializableSettings
  * @returns An object wrapping your class to enable it to passed to a seperate thread and revived on the other side.
  */
-function Serializable<S extends Serialized, T extends Serializable<S>, Ctor extends SerializableCtor<S>>(
+function Serializable<O extends Object, T extends Serializable<O>, Ctor extends SerializableCtor<O>>(
 	classToken: SerialClassToken
 	//settings?: SerializableSettings
 ): (base: Ctor) => any {

@@ -1,6 +1,4 @@
-import { Serialized } from '@comlink-serializer';
-
-export interface SerializedUser extends Serialized {
+export interface SerializedUser {
 	email: string;
 	firstName: string;
 	lastName: string;
@@ -9,7 +7,7 @@ export interface SerializedUser extends Serialized {
 	addresses: SerializedAddress[];
 }
 
-export interface SerializedAddress extends Serialized {
+export interface SerializedAddress {
 	id: string;
 	street: string;
 	city: string;
@@ -17,19 +15,19 @@ export interface SerializedAddress extends Serialized {
 	zip: number;
 }
 
-export interface SerializedOrder extends Serialized {
+export interface SerializedOrder {
 	orderId: string;
 	user: SerializedUser;
 	address: SerializedAddress;
 	products: SerializedProduct[];
 }
 
-export interface SerializedProduct extends Serialized {
+export interface SerializedProduct {
 	productId: string;
 	productName: string;
 }
 
-export interface SerializedCircle extends Serialized {
+export interface SerializedCircle {
 	color: 'Red' | 'Green' | 'Blue';
 	circle: SerializedCircle;
 }

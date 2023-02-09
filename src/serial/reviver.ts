@@ -65,6 +65,7 @@ export default class Reviver {
 
 		if (isSerialized(serialObj)) {
 			const { classToken, hash } = serialObj[SerialSymbol.serialized];
+			const transfs = serialObj[SerialSymbol.transferables];
 
 			if (!classToken) {
 				const err = `ERR_MISSING_CLASS: Serialized object missing meta property: 'classToken' Object: ${JSON.stringify(
@@ -80,6 +81,15 @@ export default class Reviver {
 				throw TypeError(err);
 			}
 
+			if (!transfs) {
+				const err = `ERR_MISSING_TRANS: Object missing property '${SerialSymbol.transferables.toString()}' Object: ${JSON.stringify(
+					serialObj
+				)}`;
+				console.error(err);
+				throw TypeError(err);
+			}
+
+			// retrieve registry entry by classToken
 			const entry = objectRegistry.getEntryByToken(classToken);
 			if (!entry) {
 				const err = `ERR_MISSING_REG: Object with classToken: ${classToken.toString()} not found in registry.
@@ -108,7 +118,7 @@ export default class Reviver {
 
 				if (revived.afterRevive) {
 					// hook after the object has been revived
-					revived.afterRevive();
+					revived.afterRevive(transfs.length ? transfs : undefined);
 				}
 			}
 

@@ -49,7 +49,7 @@ describe('SerializableTransferHandler tests', () => {
 	test('deserialize throws exception when object is not valid', () => {
 		const handler = serializableTransferHandler.handler;
 		expect(() => {
-			handler.deserialize({});
+			handler.deserialize({} as any);
 		}).toThrow();
 	});
 });
@@ -64,7 +64,8 @@ describe('SerializableTransferHandler Serializable', () => {
 		testWorker = await new comlinkWorker();
 	});
 
-	afterAll(() => {
+	afterAll(async () => {
+		//await new Promise((r) => setTimeout(r, 2000));
 		worker.terminate();
 	});
 

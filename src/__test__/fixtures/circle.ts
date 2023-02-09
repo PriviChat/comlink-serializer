@@ -1,8 +1,8 @@
-import { Serializable, Serialize } from '@comlink-serializer';
-import { CircleClass } from './types';
+import { Revivable, Serializable, Serialize } from '@comlink-serializer';
+import { CircleClass, SerializedCircle } from './types';
 
 @Serializable(CircleClass)
-export default class Circle {
+export default class Circle implements Serializable<SerializedCircle>, Revivable<SerializedCircle> {
 	readonly color: 'Red' | 'Green' | 'Blue';
 
 	@Serialize()

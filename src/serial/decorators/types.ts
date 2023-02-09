@@ -50,16 +50,14 @@ export type SerialClassToken = string | symbol;
  * It will inform you of the available hooks you can implement when your object is revived.
  *
  * @interface Revivable
- * @function {void} beforeSerialize - called right before serialization begings on the object
  * @function {Serialized} revive - implement this function to override the default reviver.
- * You can access the reviver through the {ReviverCtx} if you need to revive nested objects.
- * @function {any} beforePropertySerialize - called before a property is serialized. Return the value you want serialized for the passed property.
- * @function {Transferable[] | undefined} afterSerialize - called after the object is serialized. You may return an array of Transferable.
- */
-export interface Revivable<S extends Serialized = Serialized> extends ValueObject {
-	revive?(serialObj: S, ctx: ReviverCtx): void;
+ * You can access the reviver through the {ReviverCtx} if you need to revive nested Serializable objects.
+ * @function {string, any} afterPropertyRevive - called after a property is revived but before it is set. Return the value you want set on the object.
+ * @function {Transferable[] | undefined} afterRevive - called when the object is revived and passes any Transferable objects that were returned from `afterSerialize()`.
+ */ export interface Revivable<O extends Object = Object> extends ValueObject {
+	revive?(serialObj: O, ctx: ReviverCtx): void;
 	afterPropertyRevive?(prop: string, value: any): any;
-	afterRevive?(): void;
+	afterRevive?(transferables: Transferable[] | undefined): void;
 }
 
 export type SerializedHash = string;

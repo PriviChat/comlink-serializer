@@ -19,6 +19,11 @@ describe('Reviver', () => {
 		serializer = new Serializer();
 	});
 
+	afterEach(() => {
+		// close the message ports
+		serializer.destroy();
+	});
+
 	test('Revive Product', () => {
 		const prod0 = makeObj<Product>('prod', 0);
 
@@ -201,7 +206,7 @@ describe('Reviver', () => {
 	});
 
 	test('Reviver error handling empty object', () => {
-		const foo = {};
+		const foo = {} as any;
 		expect(() => {
 			reviver.revive(foo);
 		}).toThrow();

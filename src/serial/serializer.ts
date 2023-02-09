@@ -1,6 +1,14 @@
 import { traverse, TraversalCallbackContext } from 'object-traversal';
-import { ParentRef, SerialArray, SerializeCtx, SerializedCacheEntry, SerialMap, SerialProxy } from '../serial';
-import { Serializable, SerializableObject, SerializedHash, SerializedMeta } from './decorators';
+import {
+	ParentRef,
+	SerialArray,
+	SerializeCtx,
+	SerializedCacheEntry,
+	SerializedObject,
+	SerialMap,
+	SerialProxy,
+} from '../serial';
+import { Serializable, SerializableObject, SerializedHash } from './decorators';
 import { isSerializableObject, serializedHash } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { Serialized } from './types';
@@ -10,26 +18,39 @@ export default class Serializer {
 	/*
 	 * A cache of Serialized objects based on instance equality.
 	 */
-	private serialInstanceCache = new WeakMap<Serializable, Serialized>();
+	private serialInstanceCache = new WeakMap<Serializable, SerializedObject>();
 	/*
 	 * A cache of serializable / Serialized objects based on a uuid.
 	 */
 	private serialCache = new Map<SerializedHash, SerializedCacheEntry>();
+	/*
+	 * A cache of Transferable for the Serializer context.
+	 */
+	private transferCache = new Array<Transferable>();
 
-	private transfers = new Array<Transferable>();
 	constructor() {}
 
 	get transferable(): Array<Transferable> {
-		return this.transfers;
+		return this.transferCache;
+	}
+
+	// this function is added because Jest was hanging
+	// presumable because the Serializer was not be garbage collected
+	public destroy() {
+		for (const transf of this.transferCache) {
+			if (transf instanceof MessagePort) {
+				transf.close();
+			}
+		}
 	}
 
 	private addTransferable = (transfer: Transferable | Array<Transferable>): void => {
-		if (Array.isArray(transfer)) this.transfers = this.transfers.concat(transfer);
-		else this.transfers.push(transfer);
+		if (Array.isArray(transfer)) this.transferCache = this.transferCache.concat(transfer);
+		else this.transferCache.push(transfer);
 	};
 
 	/* Checking the cache for a serialized object. */
-	private checkSerialCache = <S extends Serialized>(obj: SerializableObject & Serializable): S | undefined => {
+	private checkSerialCache = <S = Serialized>(obj: SerializableObject & Serializable): S | undefined => {
 		// first check for an instance hit
 		const hit = this.serialInstanceCache.get(obj);
 		if (hit) return hit as S;
@@ -55,10 +76,7 @@ export default class Serializer {
 	};
 
 	/* A method that is used to cache serialized objects. */
-	private updateSerialCache = <S extends Serialized>(
-		obj: SerializableObject & Serializable,
-		serialObj: S
-	): SerializedHash => {
+	private updateSerialCache = (obj: SerializableObject & Serializable, serialObj: Serialized): SerializedHash => {
 		let hash: string | undefined;
 
 		//check for obj in instance cache
@@ -117,7 +135,10 @@ export default class Serializer {
 	};
 
 	/* Serializing an object. */
-	public serialize = <S extends Serialized>(obj: Serializable, parentRef?: ParentRef): S => {
+	public serialize = <O extends Object, S extends SerializedObject<O> = SerializedObject<O>>(
+		obj: Serializable,
+		parentRef?: ParentRef
+	): S => {
 		if (!isSerializableObject(obj)) {
 			let err;
 			if (parentRef) {
@@ -134,31 +155,31 @@ export default class Serializer {
 		}
 
 		// check if an already serialized object exists in the cache
-		const hit = this.checkSerialCache<S>(obj);
-		if (hit) return hit;
+		const hit = this.checkSerialCache(obj);
+		if (hit) return hit as S;
 
-		// initialize to empty object
-		let serialObj = {} as S;
+		// initialize a serialObj
+		let serialObj: Serialized = {
+			[SerialSymbol.serialized]: {
+				classToken: '',
+				hash: '',
+			},
+			[SerialSymbol.transferables]: [],
+		};
 
 		// access class symbols
 		const classToken = obj[SerialSymbol.classToken]();
 		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
 
 		// create serialize context
-		const serializeCtx: SerializeCtx = { serialize: this.serialize, addTransferable: this.addTransferable, parentRef };
+		const serializeCtx: SerializeCtx = { serialize: this.serialize, parentRef };
 
 		// update cache with new serialObj.
 		const hash = this.updateSerialCache(obj, serialObj);
 
-		// create SerializedMeta
-		const serializedMeta: SerializedMeta = {
-			classToken: classToken.toString(),
-			hash,
-		};
-
 		// add the serialized meta to the serialized object
-		// we are using Object.assign to keep the property readonly
-		Object.assign(serialObj, { [SerialSymbol.serialized]: serializedMeta });
+		serialObj[SerialSymbol.serialized].classToken = classToken.toString();
+		serialObj[SerialSymbol.serialized].hash = hash;
 
 		// hook before serialize
 		if (obj.beforeSerialize) {
@@ -253,11 +274,19 @@ export default class Serializer {
 
 		// hook after serialize
 		if (obj.afterSerialize) {
-			const transf = obj.afterSerialize();
-			if (transf) this.addTransferable(transf);
+			const transfs = obj.afterSerialize();
+			if (transfs) {
+				// add transferables to the serializer context
+				this.addTransferable(transfs);
+
+				// add transferables to the serialized object
+				for (const transf of transfs) {
+					serialObj[SerialSymbol.transferables].push(transf);
+				}
+			}
 		}
 
 		// return
-		return serialObj;
+		return serialObj as S;
 	};
 }

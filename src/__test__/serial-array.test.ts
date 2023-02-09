@@ -16,6 +16,11 @@ describe('SerialArray Tests', () => {
 		serializer = new Serializer();
 	});
 
+	afterEach(() => {
+		// close the message ports
+		serializer.destroy();
+	});
+
 	test('Array serializes contents', () => {
 		const user0 = makeObj<User>('user', 0);
 		const user1 = makeObj<User>('user', 1);
