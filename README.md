@@ -63,11 +63,7 @@ There is no need for multiple transfer handlers because Comlink Serializer handl
 
 ## Getting Started
 
-<br/>
-
 ### Install
-
-<br/>
 
 Using npm:
 
@@ -76,8 +72,6 @@ npm i comlink comlink-serializer reflect-metadata
 ```
 
 ### Setup
-
-<br/>
 
 Comlink Serializer leverages [decorators](https://www.typescriptlang.org/docs/handbook/decorators.html) to enable the serialization and reviving of your class objects. Decorators are still an experimental feature and as such, it is subject to change, but as far as I can tell has significant developer adoption. Compatibility issues do exist if you are using tools like Babel to transpile your source code and dependencies.
 
@@ -149,11 +143,7 @@ npm install --save-dev @babel/plugin-proposal-decorators
 
 ## Usage
 
-<br/>
-
 ### @Serializable
-
-<br/>
 
 ```ts
 @Serializable(classToken: SerialClassToken)
@@ -162,8 +152,6 @@ npm install --save-dev @babel/plugin-proposal-decorators
 The Serializable class decorator should be applied to any class you'd like to be transferred to a worker (or vice versa), and have the prototype maintained. You are only required to implement hashCode() and equals() to fulfill the interface contract.
 
 The `classToken` argument is either a string or a symbol that uniquely identifies the class.
-
-<br/>
 
 #### hashCode()
 
@@ -176,8 +164,6 @@ If you have no way to uniquely identify an object, return -1 from hashCode(). Do
 		return hashCd(this._id);
 	}
 ```
-
-<br/>
 
 #### equals()
 
@@ -199,8 +185,6 @@ A hashCode is not guaranteed to be unique. When two objects have different hashC
 <br/>
 
 ### @Serialize
-
-<br/>
 
 ```ts
 @Serialize(settings?: SerialClassToken | SerializeSettings | boolean)
@@ -253,8 +237,6 @@ A Serializable Map is Map containing primitive keys, 'boolean', 'number', 'bigin
 
 ### Serializable
 
-<br/>
-
 Not to be confused with the decorator of the same name, Serializable is an interface you can choose to implement on your class that should allow the IDE to automatically add the method hooks that are called at different stages of the serialization process.
 
 - `beforeSerialize?()` - called at the start of the object serialization process
@@ -270,8 +252,6 @@ Not to be confused with the decorator of the same name, Serializable is an inter
 
 ### Revivable
 
-<br/>
-
 Revivable is an interface you can choose to implement on your class that should allow the IDE to automatically add the method hooks that are called at different stages of the revive process.
 
 - `revive?(serialObj: Object, ctx: ReviverCtx)` - override the default reviver
@@ -285,8 +265,6 @@ Revivable is an interface you can choose to implement on your class that should 
 <br/>
 
 ### toSerial()
-
-<br/>
 
 When you are working directly with an Array, Map or Iterator of Serializable objects and you want to pass it as a parameter to a worker or return it from a worker you need to wrap it in toSerial() to tell the underlining transfer handler and serializer to properly handle the object.
 
@@ -319,8 +297,6 @@ export default class OrderWorker {
 
 ### toSerialProxy()
 
-<br/>
-
 When you are working with a Serializable object and you want to pass it as a proxy to a worker or return a proxy from a worker wrap the object in toSerialProxy().
 
 **_Main Thread_**
@@ -343,8 +319,6 @@ const processOrder = async (order: Order) => {
 <br/>
 
 ### toSerialIterable()
-
-<br/>
 
 When you are working directly with an Array, Map or Iterator of Serializable objects and you want to pass it as a proxy to a worker or return it from a worker you need to wrap it in toSerialIterable() to tell the underlining transfer handler and serializer to properly handle the object. The object received will be of type `AsyncIterableIterator` and you need to use the `for-await` syntax.
 
@@ -387,8 +361,6 @@ export default class OrderWorker {
 <br/>
 
 ### Example Serializable Classes
-
-<br/>
 
 ```ts
 import { Serializable, hashCd } from '@comlink-serializer';
@@ -471,8 +443,6 @@ export default class User implements Serializable<SerializedUser>, Revivable<Ser
 <br/>
 
 ## Comlink Integration
-
-<br/>
 
 > **Note**
 > This document assumes a good understanding of how to work with Comlink. If you are new to Comlink, please do a little homework.
