@@ -1,6 +1,6 @@
 {
   "name": "comlink-serializer",
-  "version": "0.5.2",
+  "version": "1.1.0",
   "description": "Comlink Serializer makes Comlink and WebWorkers more enjoyable.",
   "keywords": [
     "typescript",
