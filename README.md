@@ -41,6 +41,19 @@ You don't need to configure multiple transfer handlers for each `Serializable` c
 
 <br/>
 
+> **Warning**
+> While there are many unit tests in place and feel comfortable that the library is working as expected, we need to see how it performs in the wild.
+> <br/>
+> The following still needs to be implemented:
+>
+> - Stress Testing - Making sure allocated objects are getting garage collected and memory usage is stable
+> - Performance Testing - Figure out how fast (or slow) the processing is with very large datasets
+> - Unit Testing - We have many but can always use more
+>
+> Contact me if you are interested in helping out!
+
+<br/>
+
 ## Getting Started
 
 Getting started with Comlink Serializer is relatively easy. Once you have the dependencies installed and the correct [TypeScript](#typescript) and/or [Babel](#babel) configuration in place just follow these steps:
@@ -150,7 +163,7 @@ Comlink.expose(OrderWorker);
 ComlinkSerializer.registerTransferHandler(handlerRegistration);
 ```
 
-1. Calling your WebWorker`from the main thread.
+1. Calling your WebWorker from the main thread.
 
 ```ts
 import * as Comlink from 'comlink';
