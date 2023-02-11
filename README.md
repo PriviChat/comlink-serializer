@@ -30,12 +30,6 @@
     - [RegisterTransferHandler](#registertransferhandler)
   - [License](#license)
 
-<br/>
-
----
-
-<br/>
-
 ## Introduction
 
 Comlink Serializer makes working with [Comlink](https://github.com/GoogleChromeLabs/comlink) even more enjoyable by providing a framework for serializing and reviving your transfer objects. Your objects come out on the `WebWorker` side with their `prototype` intact.
@@ -256,12 +250,6 @@ npm install --save-dev babel-plugin-transform-typescript-metadata @babel/plugin-
 > **Warning**
 > There is an open issue [12007](https://github.com/babel/babel/pull/12007) in Babel that prevents class decorators from getting applied when you attempt to instantiate a class from within itself. This is often done when using the singleton pattern or any type of static factory method. If you instantiate your class this way, the resulting object will not be wrapped by the @Serializable decorator and will fail to be properly serialized and revive. We have only experienced this when configuring the plugin-proposal-decorators with **version:"legacy"**. To work around this you can create a factory function outside your class that creates a new instance.
 
-<br/>
-
----
-
-<br/>
-
 ## Usage
 
 ### @Serializable
@@ -298,12 +286,6 @@ A `hashCode` is not guaranteed to be unique. When two objects have different `ha
 
 > **Note**
 > It is often the case to use the same properties to generate the `hashCode` that you use for equality.
-
-<br/>
-
----
-
-<br/>
 
 ### @Serialize
 
@@ -350,12 +332,6 @@ An `Array`, `Set` or `Map` passed as a `proxy` causes the entries to be serializ
 
 A Serializable `Map` only supports primitive keys, `boolean`, `number`, `bigint`, `string`, with an entry that is `Serializable`.
 
-<br/>
-
----
-
-<br/>
-
 ### Serializable
 
 Not to be confused with the decorator of the same name, `Serializable` is an interface you can choose to implement on your class that should allow the IDE to automatically add the method hooks that are called at different stages of the serialization process.
@@ -365,12 +341,6 @@ Not to be confused with the decorator of the same name, `Serializable` is an int
 - `beforePropertySerialize?(prop: string)` - called before the property is serialized
 - `afterSerialize?()` - called after the object has been serialized
 
-<br/>
-
----
-
-<br/>
-
 ### Revivable
 
 `Revivable` is an interface you can choose to implement on your class that should allow the IDE to automatically add the method hooks that are called at different stages of the revive process.
@@ -378,12 +348,6 @@ Not to be confused with the decorator of the same name, `Serializable` is an int
 - `revive?(serialObj: Object, ctx: ReviverCtx)` - override the default reviver
 - `afterPropertyRevive?(prop: string, value: any)` - after the property is revived but before it is set on the object
 - `afterRevive?()` - called after the object has been revived
-
-<br/>
-
----
-
-<br/>
 
 ### toSerial()
 
@@ -410,12 +374,6 @@ export default class OrderWorker {
 }
 ```
 
-<br/>
-
----
-
-<br/>
-
 ### toSerialProxy()
 
 When you are working with a `Serializable` object and you want to pass it as a proxy to a Worker or return a proxy from a Worker wrap the object in _toSerialProxy()_.
@@ -432,12 +390,6 @@ const processOrder = async (order: Order) => {
 	return processedOrder;
 };
 ```
-
-<br/>
-
----
-
-<br/>
 
 ### toSerialIterable()
 
@@ -474,12 +426,6 @@ export default class OrderWorker {
 	}
 }
 ```
-
-<br/>
-
----
-
-<br/>
 
 ### Example Serializable Classes
 
@@ -557,12 +503,6 @@ export default class User implements Serializable<SerializedUser>, Revivable<Ser
 }
 ```
 
-<br/>
-
----
-
-<br/>
-
 ## Comlink Integration
 
 > **Note**
@@ -633,12 +573,6 @@ You can read more about [Comlink.expose()](https://github.com/GoogleChromeLabs/c
 
 > **Warning**
 > It is possible if you are using transpiled or bundled code that [Tree Shaking](https://developer.mozilla.org/en-US/docs/Glossary/Tree_shaking) may remove the references to the `Serializable` classes from the _TransferHandlerRegistration_. Please report this by opening an issue and giving sufficient detail to both describe and reproduce the circumstances.
-
-<br/>
-
----
-
-<br/>
 
 ## License
 
