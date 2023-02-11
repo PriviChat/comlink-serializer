@@ -8,8 +8,9 @@
 [![Commitizen Friendly][commitizen-img]][commitizen-url]
 [![Semantic Release][semantic-release-img]][semantic-release-url]
 
-- [Comlink Serializer](#comlink-serializer)
-  - [Introduction](#introduction)
+# Table of contents
+
+- [Introduction](#introduction)
   - [Getting Started](#getting-started)
     - [Install](#install)
     - [Setup](#setup)
