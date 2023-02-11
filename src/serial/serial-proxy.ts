@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { Revivable, SerializableObject, SerializePropertyDescriptor } from './decorators';
 import Serializable from './decorators/serializable';
 import { Dictionary, ParentRef, SerializedProxy } from '.';
-import { isSerializableObject } from './decorators/utils';
+import { isSerializable, isSerializableObject } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { toSerialIterator } from './iterable/utils';
 import { hashCd, toSerial, toSerialProxy } from './utils';
@@ -216,26 +216,88 @@ export default class SerialProxy<T extends Serializable>
 
 					if (config) {
 						let so;
-						//TODO - add better type checking because you never know especially with reflection
-						if (config.type === 'Serializable') {
-							if (config.proxy) {
-								so = createProxy(toSerialProxy(Reflect.get(_target, prop, receiver)));
-							} else {
-								so = Reflect.get(_target, prop, receiver);
+						const obj = Reflect.get(_target, prop, receiver);
+						switch (config.type) {
+							case 'Serializable': {
+								if (!isSerializable(obj)) {
+									throw TypeError(
+										`ERR_NOT_SERIALIZABLE: Class: ${classToken.toString()} Property: ${prop.toString()} is decorated with @Serialize but it is not Serializable`
+									);
+								} else {
+									if (config.proxy) {
+										so = createProxy(toSerialProxy(obj as any));
+									} else {
+										so = obj;
+									}
+								}
+								break;
 							}
-						} else if (config.type === 'Array' || config.type === 'Map') {
-							if (config.proxy) {
-								so = toSerialIterator(Reflect.get(_target, prop, receiver));
-							} else {
-								so = toSerial(Reflect.get(_target, prop, receiver));
+							case 'Array': {
+								let arr: Array<any>;
+								if (!Array.isArray(obj)) {
+									if (obj instanceof Object && 'length' in obj) {
+										arr = Array.from(obj);
+									} else {
+										throw TypeError(
+											`ERR_INVALID_TYPE: Class: ${classToken.toString()} Property: ${prop.toString()} is not a valid ${
+												config.type
+											} Object: ${JSON.stringify(obj)}`
+										);
+									}
+								} else {
+									arr = obj;
+								}
+
+								if (config.proxy) {
+									so = toSerialIterator(arr);
+								} else {
+									so = toSerial(arr);
+								}
+								break;
 							}
-						} else {
-							throw TypeError(
-								`ERR_UNKNOWN_CONFIG_TYPE: The SerializePropertyDescriptor type: ${
-									config.type
-								} is unknown for classToken: ${classToken.toString()}`
-							);
+							case 'Set': {
+								if (!(obj instanceof Set)) {
+									throw TypeError(
+										`ERR_INVALID_TYPE: Class: ${classToken.toString()} Property: ${prop.toString()} is not a valid ${
+											config.type
+										} Object: ${JSON.stringify(obj)}`
+									);
+								} else {
+									if (config.proxy) {
+										so = toSerialIterator(obj as any);
+									} else {
+										so = toSerial(obj);
+									}
+								}
+								break;
+							}
+							case 'Map': {
+								if (!(obj instanceof Map)) {
+									throw TypeError(
+										`ERR_INVALID_TYPE: Class: ${classToken.toString()} Property: ${prop.toString()} is not a valid ${
+											config.type
+										} Object: ${JSON.stringify(obj)}`
+									);
+								} else {
+									if (config.proxy) {
+										so = toSerialIterator(obj as any);
+									} else {
+										so = toSerial(obj);
+									}
+								}
+								break;
+							}
+							default: {
+								throw TypeError(
+									`ERR_INVALID_DESCRIPTOR_TYPE: Class: ${classToken.toString()} Property: ${prop.toString()} contains an invalid descriptor Type: ${
+										config.type
+									}`
+								);
+							}
 						}
+
+						// set value in cache because
+						// comlink will call this a second time.
 						setCacheValue(_target, prop, so);
 						return so;
 					} else {
@@ -273,7 +335,7 @@ export default class SerialProxy<T extends Serializable>
 						if (prop === Comlink.proxyMarker) {
 							return true;
 						} else if (prop === Symbol.iterator) {
-							return Reflect.get(_target, prop);
+							return () => Reflect.get(_target, prop);
 						} else if (prop === Symbol.asyncIterator) {
 							return () => Reflect.get(_target, prop);
 						} else {
@@ -288,7 +350,7 @@ export default class SerialProxy<T extends Serializable>
 								} else {
 									return Reflect.get(_target, prop);
 								}
-							} else if (config.type === 'Array' || config.type === 'Map') {
+							} else if (config.type === 'Array' || config.type === 'Set' || config.type === 'Map') {
 								if (config.proxy) {
 									return Reflect.get(_target, prop);
 								} else {

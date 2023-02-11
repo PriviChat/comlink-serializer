@@ -84,8 +84,8 @@ describe('Reviver', () => {
 		expect(rtnOrder.user.firstName).toBe(order0.user.firstName);
 		expect(rtnOrder.user.lastName).toBe(order0.user.lastName);
 
-		expect(rtnOrder.products.length).toEqual(order0.products.length);
-		const products = rtnOrder.products;
+		expect(rtnOrder.productArr.length).toEqual(order0.productArr.length);
+		const products = rtnOrder.productArr;
 
 		const prodObj0 = products[0];
 		expect(getSerializable(prodObj0)).toBeTruthy();
@@ -126,6 +126,25 @@ describe('Reviver', () => {
 			idx += 1;
 		}
 		expect(revArr.length).toBe(userArr.length);
+	});
+
+	test('Set revive', () => {
+		const userSet = new Set(makeArr<User>('user', 4));
+
+		const revSet = reviver.revive<Set<User>>(serializer.serialize(makeSerial(userSet)));
+
+		let idx = 0;
+		for (const user of revSet) {
+			expect(getSerializable(user)).toBeTruthy();
+			expect(getRevived(user)).toBeTruthy();
+			expect(getClassToken(user)).toBe(UserClass);
+			expect(user.email).toBe('bob@email.org_' + idx);
+			expect(user.firstName).toBe('Bob_' + idx);
+			expect(user.lastName).toBe('Smith_' + idx);
+			expect(user.totalOrders).toBe(idx);
+			idx += 1;
+		}
+		expect(revSet.size).toBe(userSet.size);
 	});
 
 	test('Map string keys revive', () => {

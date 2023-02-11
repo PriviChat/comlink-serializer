@@ -13,6 +13,7 @@ export enum SerialTransferHandlerEnum {
 export type TransferableSerializable<T extends Serializable = Serializable> =
 	| T
 	| T[]
+	| Set<T>
 	| Map<SerialPrimitive, T>
 	| Comlink.Remote<SerializableObject<T>>
 	| IteratorResult<T | [SerialPrimitive, T]>;

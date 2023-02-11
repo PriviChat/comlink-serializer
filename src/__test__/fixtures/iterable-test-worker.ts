@@ -22,6 +22,16 @@ export default class IterableTestWorker {
 		return total;
 	}
 
+	async getTotalOrdersSet(users: AsyncIterableIterator<User>): Promise<number> {
+		let total = 0;
+
+		for await (const user of users) {
+			total += user.totalOrders;
+		}
+
+		return total;
+	}
+
 	async getTotalOrdersBreakAfterFirstArray(users: AsyncIterableIterator<User>): Promise<number> {
 		let total = 0;
 

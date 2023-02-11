@@ -4,7 +4,8 @@ export interface SerializedUser {
 	lastName: string;
 	totalOrders: number;
 	priAddress: SerializedAddress;
-	addresses: SerializedAddress[];
+	addressArr: SerializedAddress[];
+	addressArrProxy: SerializedAddress[];
 }
 
 export interface SerializedAddress {
@@ -18,8 +19,12 @@ export interface SerializedAddress {
 export interface SerializedOrder {
 	orderId: string;
 	user: SerializedUser;
+	userProxy: SerializedUser;
 	address: SerializedAddress;
-	products: SerializedProduct[];
+	addressProxy: SerializedAddress;
+	productArr: SerializedProduct[];
+	productSet: Set<SerializedProduct>;
+	productSetProxy: Set<SerializedProduct>;
 }
 
 export interface SerializedProduct {

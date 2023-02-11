@@ -67,9 +67,11 @@ export type SerializedMeta = {
 	hash: SerializedHash; // generated
 };
 
+export type PropertyDescriptorType = 'Array' | 'Map' | 'Set' | 'Serializable';
+
 export interface SerializePropertyDescriptor {
 	prop: string;
-	type: 'Array' | 'Map' | 'Serializable';
+	type: PropertyDescriptorType;
 	classToken: SerialClassToken;
 	proxy: boolean;
 }

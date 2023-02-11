@@ -78,7 +78,8 @@ describe('SerializableTransferHandler Serializable', () => {
 		expect(getRevived(rtnObj)).toBeTruthy();
 		expect(getClassToken(rtnObj)).toBe(UserClass);
 		// you cannot currently pass a proxy (addresses) back through comlink.
-		expect(rtnObj.addresses).toBeUndefined();
+		expect(rtnObj.addressArrProxy).toBeUndefined();
+		expect(rtnObj.addressArr).toEqual(user.addressArr);
 		expect(rtnObj.email).toBe(user.email);
 		expect(rtnObj.firstName).toBe(user.firstName);
 		expect(rtnObj.lastName).toBe(user.lastName);
@@ -106,7 +107,7 @@ describe('SerializableTransferHandler Serializable', () => {
 		expect(rtnOrder.user.firstName).toBe(order.user.firstName);
 		expect(rtnOrder.user.lastName).toBe(order.user.lastName);
 		expect(rtnOrder.user.totalOrders).toBe(order.user.totalOrders);
-		expect(rtnOrder.products).toEqual(order.products);
+		expect(rtnOrder.productArr).toEqual(order.productArr);
 	});
 
 	test('Check for single instance of Address after Order pass-through Comlink', async () => {
@@ -154,7 +155,7 @@ describe('SerializableTransferHandler Serializable', () => {
 
 		const rtnArr = await testWorker.getOrderUserAddresses(order);
 		expect(rtnArr).toBeInstanceOf(Array);
-		expect(rtnArr).toEqual(order.user.addresses);
+		expect(rtnArr).toEqual(order.user.addressArrProxy);
 	});
 
 	test('Callback to main User.totalOrders property from proxy User on Order', async () => {
@@ -172,9 +173,9 @@ describe('SerializableTransferHandler Serializable', () => {
 
 	test('Callback to main User.setTotalOrders() function from proxy User on Order', async () => {
 		const order = makeObj<Order>('order', 3);
-		order.user.totalOrders = 3;
+		order.userProxy.totalOrders = 7;
 
-		expect(order.userProxy.totalOrders).toBe(3);
+		expect(order.userProxy.totalOrders).toBe(7);
 		await testWorker.callOrderUserSetOrderTotal(order, 1000);
 		expect(order.userProxy.totalOrders).toBe(1000);
 	});
@@ -211,6 +212,18 @@ describe('SerializableTransferHandler toSerialIterator()', () => {
 
 		const total = await testWorker.getTotalOrdersBreakAfterFirstArray(toSerialIterator([user0, user1]));
 		expect(total).toBe(5);
+	});
+
+	test('Return a total of orders from Set<User> iterator', async () => {
+		const userSet = new Set(makeArr<User>('user', 8));
+		let totalOrders = 0;
+
+		userSet.forEach((user) => {
+			totalOrders += user.totalOrders;
+		});
+
+		const total = await testWorker.getTotalOrdersSet(toSerialIterator(userSet));
+		expect(total).toBe(totalOrders);
 	});
 
 	test('Return a total of orders Map<number, User> iterator', async () => {
@@ -260,14 +273,16 @@ describe('SerializableTransferHandler toSerial()', () => {
 		expect(getRevived(rtnArr[0])).toBeTruthy();
 		expect(getClassToken(rtnArr[0])).toBe(UserClass);
 		// you cannot currently pass a proxy (addresses) back through comlink.
-		expect(rtnArr[0].addresses).toBeUndefined();
+		expect(rtnArr[0].addressArrProxy).toBeUndefined();
+		expect(rtnArr[0].addressArr).toEqual(user0.addressArr);
 		expect(rtnArr[0].email).toBe(user0.email);
 		expect(rtnArr[0].firstName).toBe(user0.firstName);
 		expect(rtnArr[0].lastName).toBe(user0.lastName);
 		expect(rtnArr[0].totalOrders).toBe(user0.totalOrders);
 		expect(rtnArr[0].getPriAddress()).toEqual(user0.getPriAddress());
 		// you cannot currently pass a proxy (addresses) back through comlink.
-		expect(rtnArr[1].addresses).toBeUndefined();
+		expect(rtnArr[1].addressArrProxy).toBeUndefined();
+		expect(rtnArr[1].addressArr).toEqual(user1.addressArr);
 		expect(rtnArr[1].email).toBe(user1.email);
 		expect(rtnArr[1].firstName).toBe(user1.firstName);
 		expect(rtnArr[1].lastName).toBe(user1.lastName);
@@ -282,6 +297,22 @@ describe('SerializableTransferHandler toSerial()', () => {
 
 		let idx = 0;
 		for (const user of rtnArr) {
+			expect(user).toBeInstanceOf(User);
+			expect(user.email).toEqual('bob@email.org_' + idx);
+			expect(user.firstName).toEqual('Bob_' + idx);
+			expect(user.lastName).toEqual('Smith_' + idx);
+			expect(user.totalOrders).toEqual(idx);
+			idx++;
+		}
+	});
+
+	test('Check that Set<User> can pass-through Comlink verify with for-loop', async () => {
+		const userSet = new Set(makeArr<User>('user', 6));
+		const rtnSet = await testWorker.getSet(toSerial(userSet));
+		expect(rtnSet).toBeInstanceOf(Set);
+
+		let idx = 0;
+		for (const user of rtnSet) {
 			expect(user).toBeInstanceOf(User);
 			expect(user.email).toEqual('bob@email.org_' + idx);
 			expect(user.firstName).toEqual('Bob_' + idx);
@@ -343,16 +374,30 @@ describe('SerializableTransferHandler toSerialProxy()', () => {
 		expect(rtnStreet).toBe(addr0.street);
 	});
 
-	test('Return product count from Order proxy', async () => {
+	test('Return product count from Order proxy return Array', async () => {
 		const order = makeObj<Order>('order', 10);
 
 		const rtnArrProd = await testWorker.getOrderProducts(toSerialProxy(order));
+		expect(rtnArrProd).toBeInstanceOf(Array);
 		for (const prod of rtnArrProd) {
 			expect(getSerializable(prod)).toBeTruthy();
 			expect(getRevived(prod)).toBeTruthy();
 			expect(getClassToken(prod)).toBe(ProductClass);
 		}
-		expect(rtnArrProd).toEqual(order.products);
+		expect(rtnArrProd).toEqual(order.productArr);
+	});
+
+	test('Return product count from Order proxy return Set', async () => {
+		const order = makeObj<Order>('order', 8);
+
+		const rtnSetProd = await testWorker.getOrderProductsSet(toSerialProxy(order));
+		expect(rtnSetProd).toBeInstanceOf(Set);
+		for (const prod of rtnSetProd) {
+			expect(getSerializable(prod)).toBeTruthy();
+			expect(getRevived(prod)).toBeTruthy();
+			expect(getClassToken(prod)).toBe(ProductClass);
+		}
+		expect(rtnSetProd).toEqual(order.productSet);
 	});
 
 	test('Return addresses count from Order and User and Addresses proxy', async () => {
@@ -364,7 +409,7 @@ describe('SerializableTransferHandler toSerialProxy()', () => {
 			expect(getRevived(addr)).toBeTruthy();
 			expect(getClassToken(addr)).toBe(AddressClass);
 		}
-		expect(rtnArrAddr).toEqual(order.user.addresses);
+		expect(rtnArrAddr).toEqual(order.user.addressArrProxy);
 	});
 
 	test('Return addresses count from Order and User and Addresses proxy', async () => {
@@ -376,6 +421,6 @@ describe('SerializableTransferHandler toSerialProxy()', () => {
 			expect(getRevived(addr)).toBeTruthy();
 			expect(getClassToken(addr)).toBe(AddressClass);
 		}
-		expect(rtnArrAddr).toEqual(order.user.addresses);
+		expect(rtnArrAddr).toEqual(order.user.addressArrProxy);
 	});
 });

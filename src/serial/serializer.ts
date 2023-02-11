@@ -7,9 +7,10 @@ import {
 	SerializedObject,
 	SerialMap,
 	SerialProxy,
+	SerialSet,
 } from '../serial';
 import { Serializable, SerializableObject, SerializedHash } from './decorators';
-import { isSerializableObject, serializedHash } from './decorators/utils';
+import { isSerializable, isSerializableObject, serializedHash } from './decorators/utils';
 import SerialSymbol from './serial-symbol';
 import { Serialized } from './types';
 import { isProxy } from './utils';
@@ -30,12 +31,21 @@ export default class Serializer {
 
 	constructor() {}
 
+	/**
+	 * It returns the transferCache array.
+	 * @returns An array of Transferable objects.
+	 */
 	get transferable(): Array<Transferable> {
 		return this.transferCache;
 	}
 
-	// this function is added because Jest was hanging
-	// presumable because the Serializer was not be garbage collected
+	/**
+	 * It closes all the message ports in the transfer cache.
+	 * This is used only for jest tests where the Serializer is
+	 * used but the proxy does not get transfered through Comlink. When
+	 * the proxy does get transfered through Comlink, Comlink closes
+	 * the port.
+	 */
 	public destroy() {
 		for (const transf of this.transferCache) {
 			if (transf instanceof MessagePort) {
@@ -44,6 +54,7 @@ export default class Serializer {
 		}
 	}
 
+	/* Add the transfer object(s) to the transfer cache */
 	private addTransferable = (transfer: Transferable | Array<Transferable>): void => {
 		if (Array.isArray(transfer)) this.transferCache = this.transferCache.concat(transfer);
 		else this.transferCache.push(transfer);
@@ -158,18 +169,18 @@ export default class Serializer {
 		const hit = this.checkSerialCache(obj);
 		if (hit) return hit as S;
 
+		// access class symbols
+		const classToken = obj[SerialSymbol.classToken]();
+		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
+
 		// initialize a serialObj
 		let serialObj: Serialized = {
 			[SerialSymbol.serialized]: {
-				classToken: '',
+				classToken: classToken.toString(),
 				hash: '',
 			},
 			[SerialSymbol.transferables]: [],
 		};
-
-		// access class symbols
-		const classToken = obj[SerialSymbol.classToken]();
-		const serialDescr = obj[SerialSymbol.serializeDescriptor]();
 
 		// create serialize context
 		const serializeCtx: SerializeCtx = { serialize: this.serialize, parentRef };
@@ -177,8 +188,7 @@ export default class Serializer {
 		// update cache with new serialObj.
 		const hash = this.updateSerialCache(obj, serialObj);
 
-		// add the serialized meta to the serialized object
-		serialObj[SerialSymbol.serialized].classToken = classToken.toString();
+		// add the serialized meta hash to the serialized object
 		serialObj[SerialSymbol.serialized].hash = hash;
 
 		// hook before serialize
@@ -198,8 +208,8 @@ export default class Serializer {
 
 						if (isProxy(value)) {
 							// this would happen if someone tried to pass an object containing a proxy back through comlink.
-							const wrn = `WRN_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} is a proxy and cannot be re-serialized.`;
-							console.error(wrn);
+							const wrn = `WRN_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} is a proxy and cannot be re-serialized. It will be removed from the object.`;
+							console.warn(wrn);
 							return;
 						}
 
@@ -213,8 +223,16 @@ export default class Serializer {
 						if (sdp) {
 							let so: Serializable | undefined;
 							if (sdp.type === 'Serializable') {
-								so = value;
+								// check if object is valid type or throw
+								if (isSerializable(value)) {
+									so = value;
+								} else {
+									const err = `ERR_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} has a type Serializable, but it is not a Serializable object.`;
+									console.error(err);
+									throw new TypeError(err);
+								}
 							} else if (sdp.type === 'Array') {
+								// convert Array to SerialArray or throw
 								if (Array.isArray(value)) {
 									so = SerialArray.from(value);
 								} else {
@@ -222,7 +240,17 @@ export default class Serializer {
 									console.error(err);
 									throw new TypeError(err);
 								}
+							} else if (sdp.type === 'Set') {
+								// convert Set to SerialSet or throw
+								if (value instanceof Set) {
+									so = SerialSet.from(value);
+								} else {
+									const err = `ERR_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} has a type Set, but it is not an Set.`;
+									console.error(err);
+									throw new TypeError(err);
+								}
 							} else if (sdp.type === 'Map') {
+								// convert Map to SerialMap or throw
 								if (value instanceof Map) {
 									so = SerialMap.from(value);
 								} else {
@@ -231,37 +259,48 @@ export default class Serializer {
 									throw new TypeError(err);
 								}
 							}
-							if (sdp.proxy && so) {
+							// if object should be sent as a proxy
+							if (so && sdp.proxy) {
 								const sp = new SerialProxy(so, { parent: obj, classToken, prop: key });
 								so = sp;
 							}
+							/** serialize resulting object or throw **/
 							if (so) {
 								sv = this.serialize(so, { parent: obj, classToken, prop: key });
 							} else {
-								const err = `ERR_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} has decorator @Serialize but the property is not a valid type. Valid types are @Serializable, Array, and Map.`;
+								const err = `ERR_INVALID_TYPE: Property: ${key} of class: ${classToken.toString()} has decorator @Serialize but the property is not a valid type. Valid types are @Serializable, Array, Set or Map.`;
 								console.error(err);
 								throw new TypeError(err);
 							}
 						} else if (Array.isArray(value)) {
-							if (value.length < 0) {
+							// inform of possible mistake
+							if (value.length > 0) {
 								if (isSerializableObject(value[0])) {
-									const err = `ERR_MISSING_DECORATOR: Array: ${key} of class ${classToken.toString()} contains @Serializable objects and must be decorated with @Serialize.`;
-									console.error(err);
-									throw new TypeError(err);
+									const wrn = `WRN_MISSING_DECORATOR: Array: ${key} of class ${classToken.toString()} contains @Serializable objects but is not decorated with @Serialize.`;
+									console.warn(wrn);
+								}
+							}
+							sv = value;
+						} else if (value instanceof Set) {
+							// inform of possible mistake
+							if (value.size > 0) {
+								if (isSerializableObject(value.entries().next())) {
+									const wrn = `WRN_MISSING_DECORATOR: Set: ${key} of class ${classToken.toString()} contains @Serializable objects but is not decorated with @Serialize.`;
+									console.warn(wrn);
 								}
 							}
 							sv = value;
 						} else if (value instanceof Map) {
+							// inform of possible mistake
 							if (value.size > 0) {
-								const entry = value.entries().next();
-								if (isSerializableObject(entry)) {
-									const err = `ERR_MISSING_DECORATOR: Map: ${key} of class ${classToken.toString()} contains @Serializable objects and must be decorated with @Serialize.`;
-									console.error(err);
-									throw new TypeError(err);
+								if (isSerializableObject(value.entries().next())) {
+									const wrn = `WRN_MISSING_DECORATOR: Map: ${key} of class ${classToken.toString()} contains @Serializable objects but is not decorated with @Serialize.`;
+									console.warn(wrn);
 								}
 							}
 							sv = value;
 						} else {
+							// primitive value
 							sv = value;
 						}
 						// add property to serialObj

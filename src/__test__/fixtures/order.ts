@@ -3,7 +3,6 @@ import Product from './product';
 import User from './user';
 import Address from './address';
 import { OrderClass, ProductClass, SerializedOrder } from './types';
-import { cloneDeep } from 'lodash';
 
 @Serializable(OrderClass)
 class Order implements Serializable<SerializedOrder> {
@@ -18,15 +17,27 @@ class Order implements Serializable<SerializedOrder> {
 	@Serialize(false)
 	private address: Address;
 
+	@Serialize(true)
+	readonly addressProxy: Address;
+
 	@Serialize(ProductClass)
-	readonly products: Product[];
+	readonly productArr: Product[];
+
+	@Serialize(ProductClass)
+	readonly productSet: Set<Product>;
+
+	@Serialize({ classToken: ProductClass, proxy: true })
+	readonly productSetProxy: Set<Product>;
 
 	constructor(orderId: string, user: User, address: Address, products: Product[]) {
 		this.orderId = orderId;
-		this.userProxy = user;
-		this.user = cloneDeep(user);
+		this.user = user;
+		this.userProxy = new User(user.email, user.firstName, user.lastName, user.getPriAddress(), user.addressArr);
 		this.address = address;
-		this.products = products;
+		this.addressProxy = new Address(address.id, address.street, address.city, address.state, address.zip);
+		this.productArr = products;
+		this.productSet = new Set(products);
+		this.productSetProxy = new Set(products);
 	}
 
 	public setAddress(address: Address) {

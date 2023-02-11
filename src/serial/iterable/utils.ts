@@ -36,6 +36,15 @@ export function toSerialIterator<S extends Serialized, T extends Serializable<S>
 ): AsyncIterableIterator<T>;
 
 /**
+ *	Converts a Set<T> to an iterator that can be transferred
+ *	@param set - Set<T>
+ *  @returns An AsyncIterableIterator<T>
+ **/
+export function toSerialIterator<S extends Serialized, T extends Serializable<S>>(
+	set: Set<T>
+): AsyncIterableIterator<T>;
+
+/**
  *	Converts a Map<K, T> to an iterator that can be transferred
  *	@param map - Map<K, T>
  *   @returns An AsyncIterableIterator<[K, T]>
@@ -52,10 +61,12 @@ export function toSerialIterator<S extends Serialized, T extends Serializable<S>
 export function toSerialIterator<S extends Serialized, T extends Serializable<S>>(
 	iterator: AnySerialIterator<T>
 ): AsyncIterableIterator<SerialIterType<T>>;
+
 export function toSerialIterator<S extends Serialized, T extends Serializable<S>, K extends SerialPrimitive>(
-	obj: Array<T> | Map<K, T> | AnySerialIterator<T>
+	obj: Array<T> | Set<T> | Map<K, T> | AnySerialIterator<T>
 ) {
 	if (obj instanceof Array) return new SerialIterableProxy(obj.values());
+	else if (obj instanceof Set) return new SerialIterableProxy(obj.values());
 	else if (obj instanceof Map) return new SerialIterableProxy(obj.entries());
 	return new SerialIterableProxy(obj);
 }

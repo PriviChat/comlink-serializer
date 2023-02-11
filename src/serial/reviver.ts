@@ -11,13 +11,16 @@ import SerialProxy from './serial-proxy';
 import { markObjRevived } from './utils';
 import { SerialIterableProxy } from './iterable';
 import SerialIteratorResult from './iterable/serial-iterator-result';
+import SerialSet from './serial-set';
 
 export default class Reviver {
 	private revivedCache = new Map<SerializedHash, Revivable>();
 	private static NoTraversal = new Set<SerialClassToken>([
 		SerialSymbol.serialArray.toString(),
 		SerialSymbol.serialMap.toString(),
+		SerialSymbol.serialSet.toString(),
 		SerialSymbol.serialProxy.toString(),
+		SerialSymbol.serialIteratorResult.toString(),
 	]);
 
 	/**
@@ -32,6 +35,8 @@ export default class Reviver {
 			return new SerialArray<T>();
 		} else if (entry.classToken === SerialSymbol.serialMap) {
 			return new SerialMap<SerialPrimitive, T>();
+		} else if (entry.classToken === SerialSymbol.serialSet) {
+			return new SerialSet<T>();
 		} else {
 			const obj = Object.create(entry.constructor.prototype);
 			return obj;
@@ -127,11 +132,13 @@ export default class Reviver {
 			} else if (revived instanceof SerialIterableProxy) {
 				return revived.toProxy() as R;
 			} else if (revived instanceof SerialIteratorResult) {
-				return SerialIteratorResult.toIteratorResult(revived) as R;
+				return SerialIteratorResult.toResult(revived) as R;
 			} else if (revived instanceof SerialArray) {
 				return SerialArray.toArray(revived) as R;
 			} else if (revived instanceof SerialMap) {
 				return SerialMap.toMap(revived) as R;
+			} else if (revived instanceof SerialSet) {
+				return SerialSet.toSet(revived) as R;
 			} else {
 				return revived as R;
 			}

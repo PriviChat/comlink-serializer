@@ -18,7 +18,7 @@ export default class SerialIteratorResult<T extends Serializable = Serializable>
 		this.done = done;
 	}
 
-	static toIteratorResult<T extends Serializable>(
+	static toResult<T extends Serializable>(
 		sir: SerialIteratorResult<T>
 	): IteratorResult<T | [SerialPrimitive, T] | undefined> {
 		return {

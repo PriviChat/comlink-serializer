@@ -15,6 +15,7 @@ export default class SerialSymbol {
 	/* serial classes */
 	static readonly serialMap: unique symbol = Symbol('ComSer.serialMap');
 	static readonly serialArray: unique symbol = Symbol('ComSer.serialArray');
+	static readonly serialSet: unique symbol = Symbol('ComSer.serialSet');
 	static readonly serialProxy: unique symbol = Symbol('ComSer.serialProxy');
 	static readonly serialIterableProxy: unique symbol = Symbol('ComSer.serialIterableProxy');
 	static readonly serialIteratorResult: unique symbol = Symbol('ComSer.serialIteratorResult');

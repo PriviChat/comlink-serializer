@@ -3,7 +3,7 @@ import { v5 as uuidv5 } from 'uuid';
 import SerialSymbol from '../serial-symbol';
 import { Serialized } from '../types';
 import Serializable, { SerializableObject } from './serializable';
-import { SerialClassToken, SerializedHash, SerializePropertyDescriptor } from './types';
+import { SerialClassToken, SerializedHash } from './types';
 
 export function isSerializableObject<T extends Serializable>(obj: any): obj is SerializableObject<T> {
 	return obj && typeof obj[SerialSymbol.serializable] === 'function';
@@ -13,8 +13,8 @@ export function isSerializable<T extends Serializable = Serializable>(obj: any):
 	return obj && typeof obj[SerialSymbol.serializable] === 'function';
 }
 
-export function isSerialized(obj: any): obj is Required<Serialized> {
-	return SerialSymbol.serialized in obj;
+export function isSerialized(obj: any): obj is Serialized {
+	return obj && obj[SerialSymbol.serialized];
 }
 
 /**

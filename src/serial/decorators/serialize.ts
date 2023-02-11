@@ -2,7 +2,13 @@ import 'reflect-metadata';
 import { Dictionary } from '..';
 import SerialSymbol from '../serial-symbol';
 import objectRegistry from '../../registry';
-import { SerialClassToken, SerializePropertyDescriptor, SerializeSettings, SerialPropertyMetadataKey } from './types';
+import {
+	PropertyDescriptorType,
+	SerialClassToken,
+	SerializePropertyDescriptor,
+	SerializeSettings,
+	SerialPropertyMetadataKey,
+} from './types';
 
 /**
  * The @Serialize decorator tells the serializer to serialize the property.
@@ -67,8 +73,8 @@ function defineSerializePropertyMetadata({ classToken, proxy }: SerializeSetting
 					throw new TypeError(err);
 				}
 
-				let type = meta.name;
-				if (type === 'Serializable') {
+				let type: PropertyDescriptorType;
+				if (meta.name === 'Serializable') {
 					const metaClassToken = meta.prototype[SerialSymbol.classToken]() as SerialClassToken;
 					if (_classToken && _classToken !== metaClassToken) {
 						const err = `ERR_INCORRECT_CLASS_TOKEN: Class: [${className}] classToken: [${classEntry.classToken.toString()}] Property: [${
@@ -77,18 +83,20 @@ function defineSerializePropertyMetadata({ classToken, proxy }: SerializeSetting
 						console.error(err);
 						throw new TypeError(err);
 					}
+					type = meta.name;
 					_classToken = metaClassToken;
-				} else if (type === 'Array' || type === 'Map') {
+				} else if (meta.name === 'Array' || meta.name === 'Set' || meta.name === 'Map') {
 					if (!_classToken) {
-						const err = `ERR_MISSING_CLASS_TOKEN: Class: [${className}] classToken: [${classEntry.classToken.toString()}] Property: [${_prop.toString()}] - You must pass the classToken parameter when decorating an Array or Map with @Serialize. Also, the class contained within Array or Map must be decorated with @Serializable. `;
+						const err = `ERR_MISSING_CLASS_TOKEN: Class: [${className}] classToken: [${classEntry.classToken.toString()}] Property: [${_prop.toString()}] - You must pass the classToken parameter when decorating an Array, Set, or Map with @Serialize. Also, the class contained within Array or Map must be decorated with @Serializable. `;
 						console.error(err);
 						throw new TypeError(err);
 					}
+					type = meta.name;
 				} else {
 					// this can happen when a decorator is self reference
 					const propEntry = objectRegistry.getEntryByClass(meta.name);
 					if (!propEntry) {
-						const err = `ERR_NOT_SERIALIZABLE: Class: [${className}] Property: [${_prop.toString()}] - The property is not registered as Serializable. You can only use @Serialize on an Array, Map or Serializable object.`;
+						const err = `ERR_NOT_SERIALIZABLE: Class: [${className}] Property: [${_prop.toString()}] - The property is not registered as Serializable. You can only use @Serialize on an Array, Set, Map or Serializable object.`;
 						console.error(err);
 						throw new TypeError(err);
 					}

@@ -6,19 +6,24 @@ import { AddressClass, SerializedUser, UserClass } from './types';
 export default class User implements Serializable<SerializedUser>, Revivable<SerializedUser> {
 	@Serialize()
 	private priAddress: Address;
+
+	@Serialize({ classToken: AddressClass, proxy: false })
+	readonly addressArr: Address[];
+
 	@Serialize({ classToken: AddressClass, proxy: true })
-	readonly addresses: Address[];
+	readonly addressArrProxy: Address[];
 
 	constructor(
 		readonly email: string,
 		readonly firstName: string,
 		readonly lastName: string,
 		priAddress: Address,
-		addresses: Address[],
+		addressArr: Address[],
 		public totalOrders: number = 0
 	) {
 		this.priAddress = priAddress;
-		this.addresses = addresses;
+		this.addressArr = addressArr;
+		this.addressArrProxy = new Array(...addressArr);
 	}
 
 	public setOrderTotal(total: number) {

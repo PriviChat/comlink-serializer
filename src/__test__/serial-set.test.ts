@@ -3,12 +3,12 @@ import User from '@test-fixtures/user';
 import { SerializedUser, UserClass } from '@test-fixtures/types';
 
 import SerialSymbol from '../serial/serial-symbol';
-import { SerializedArray, Serializer } from '../serial';
+import { SerializedSet, Serializer } from '../serial';
 import { makeObj } from './fixtures';
 import { makeSerial } from '../serial/utils';
 import { getSerializedMeta } from '@test-fixtures/utils';
 
-describe('SerialArray Tests', () => {
+describe('SerialSet Tests', () => {
 	let serializer: Serializer;
 
 	beforeEach(() => {
@@ -21,21 +21,21 @@ describe('SerialArray Tests', () => {
 		serializer.destroy();
 	});
 
-	test('Serialize array contents', () => {
+	test('Serialize set contents', () => {
 		const user0 = makeObj<User>('user', 0);
 		const user1 = makeObj<User>('user', 1);
-		const userArr0 = [user0, user1];
+		const userSet0 = new Set([user0, user1]);
 
 		const hash0 = getSerializedMeta(serializer.serialize<SerializedUser>(user0)).hash;
 		const hash1 = getSerializedMeta(serializer.serialize<SerializedUser>(user1)).hash;
 
-		const serializedArr = serializer.serialize<SerializedArray<SerializedUser>>(makeSerial(userArr0));
+		const serializedSet = serializer.serialize<SerializedSet<SerializedUser>>(makeSerial(userSet0));
 
-		const arrMeta = getSerializedMeta(serializedArr);
-		expect(arrMeta.classToken).toEqual(SerialSymbol.serialArray.toString());
+		const arrMeta = getSerializedMeta(serializedSet);
+		expect(arrMeta.classToken).toEqual(SerialSymbol.serialSet.toString());
 		expect(arrMeta.hash).toBeDefined();
 
-		const serUser0 = serializedArr['ComSer.array'][0] as SerializedUser;
+		const serUser0 = serializedSet['ComSer.set'][0] as SerializedUser;
 		const serUserMeta0 = getSerializedMeta(serUser0);
 		expect(serUserMeta0.classToken).toBe(UserClass.toString());
 		expect(serUserMeta0.hash).toBe(hash0);
@@ -44,7 +44,7 @@ describe('SerialArray Tests', () => {
 		expect(serUser0.lastName).toBe(user0.lastName);
 		expect(serUser0.totalOrders).toBe(user0.totalOrders);
 
-		const serUser1 = serializedArr['ComSer.array'][1] as SerializedUser;
+		const serUser1 = serializedSet['ComSer.set'][1] as SerializedUser;
 		const serUserMeta1 = getSerializedMeta(serUser1);
 		expect(serUserMeta1.classToken).toBe(UserClass.toString());
 		expect(serUserMeta1.hash).toBe(hash1);

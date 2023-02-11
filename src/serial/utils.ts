@@ -5,6 +5,7 @@ import {
 	SerializedArray,
 	SerializedMap,
 	SerializedProxy,
+	SerializedSet,
 	SerialPrimitive,
 	serialPrimitives,
 	SerialType,
@@ -17,6 +18,7 @@ import SerialArray from './serial-array';
 import SerialMap from './serial-map';
 import { isSerializable, isSerialized } from './decorators/utils';
 import SerialProxy from './serial-proxy';
+import SerialSet from './serial-set';
 
 /**
  * If the type of the value is a `SerialPrimitive` type, return true, otherwise return false.
@@ -93,6 +95,18 @@ export function isSerializedArray(obj: any): obj is SerializedArray {
 }
 
 /**
+ * If the object is serialized, and the class token is the same as the class token for SerialSet,
+ * then the object is a SerializedSet.
+ * @param {any} obj - any - The object to check.
+ * @returns A boolean.
+ */
+export function isSerializedSet(obj: any): obj is SerializedSet {
+	if (!isSerialized(obj)) return false;
+	const { classToken } = obj[SerialSymbol.serialized];
+	return classToken === SerialSymbol.serialSet.toString();
+}
+
+/**
  * If the object is serialized, and the class token is the same as the class token for SerialMap,
  * then the object is a SerializedMap.
  * @param {any} obj - any - The object to check
@@ -111,12 +125,25 @@ export function isSerializedMap(obj: any): obj is SerializedMap {
  **/
 export function toSerial<T extends Serializable>(array: Array<T>): Array<T>;
 /**
+ *	Indicates that Set<T> is an object that should be serialized
+ *	@param {Set<T>} set - the set you want to serialize
+ *  @returns A Set<T>
+ **/
+export function toSerial<T extends Serializable>(set: Set<T>): Set<T>;
+/**
  *	Indicates that Map<K, T> is an object that should be serialized
  *	@param {Map<K, T>} map - the map you want to serialize
  *  @returns A Map<K, T>
  **/
 export function toSerial<T extends Serializable, K extends SerialPrimitive>(map: Map<K, T>): Map<K, T>;
-export function toSerial<T extends Serializable, K extends SerialPrimitive>(target: Array<T> | Map<K, T>) {
+export function toSerial<T extends Serializable, K extends SerialPrimitive>(target: Array<T> | Set<T> | Map<K, T>) {
+	if (!(target instanceof Array) && !(target instanceof Set) && !(target instanceof Map)) {
+		const err = `ERR_INVALID_TYPE: Object: ${JSON.stringify(
+			target
+		)} is not a valid Array, Set, or Map in call to 'toSerial'.`;
+		console.error(err);
+		throw new TypeError(err);
+	}
 	return new Proxy(target, {
 		get(_target, prop, receiver) {
 			if (typeof prop === 'symbol' && prop === SerialSymbol.toSerial) return true;
@@ -131,14 +158,16 @@ export function toSerial<T extends Serializable, K extends SerialPrimitive>(targ
 
 /**
  * It takes a serializable object and returns a serial type
- * @param {T | Array<T> | Map<K, T>} obj - T | Array<T> | Map<K, T>
+ * @param {T | Array<T> | Set<T> | Map<K, T>} obj - the object to convert to a Serializable object
  * @returns A SerialType<T>
  */
 export function makeSerial<T extends Serializable, K extends SerialPrimitive = SerialPrimitive>(
-	obj: T | Array<T> | Map<K, T>
+	obj: T | Array<T> | Set<T> | Map<K, T>
 ): SerialType<T> {
 	if (obj instanceof Array) {
 		return SerialArray.from<T>(obj);
+	} else if (obj instanceof Set) {
+		return SerialSet.from<T>(obj);
 	} else if (obj instanceof Map) {
 		return SerialMap.from<K, T>(obj);
 	} else {

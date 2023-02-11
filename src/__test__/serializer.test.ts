@@ -41,7 +41,9 @@ describe('Serializer', () => {
 		expect(rtnUser.firstName).toBe(user0.firstName);
 		expect(rtnUser.lastName).toBe(user0.lastName);
 		expect(rtnUser.email).toBe(user0.email);
-		expect(isSerializedProxy(rtnUser.addresses)).toBeTruthy();
+		// has 1 proxy
+		expect(isSerializedProxy(rtnUser.addressArrProxy)).toBeTruthy();
+		// serializer should have 1 transferable
 		expect(serializer.transferable.length).toBe(1);
 	});
 
@@ -60,9 +62,14 @@ describe('Serializer', () => {
 			expect(rtnUser.firstName).toBe(userArr[idx].firstName);
 			expect(rtnUser.lastName).toBe(userArr[idx].lastName);
 			expect(rtnUser.email).toBe(userArr[idx].email);
-			expect(isSerializedProxy(rtnUser.addresses)).toBeTruthy();
+
+			// each has 1 serialized proxy
+			expect(isSerializedProxy(rtnUser.addressArrProxy)).toBeTruthy();
 			idx += 1;
 		}
+
+		// transferables will equal the number of users in array
+		// since User has 1 proxy
 		expect(serializer.transferable.length).toBe(userArr.length);
 	});
 
@@ -83,9 +90,14 @@ describe('Serializer', () => {
 			expect(rtnUser.firstName).toBe(userArr[idx].firstName);
 			expect(rtnUser.lastName).toBe(userArr[idx].lastName);
 			expect(rtnUser.email).toBe(userArr[idx].email);
-			expect(isSerializedProxy(rtnUser.addresses)).toBeTruthy();
+
+			// each has 1 serialized proxy
+			expect(isSerializedProxy(rtnUser.addressArrProxy)).toBeTruthy();
 		}
-		expect(serializer.transferable.length).toBe(userArr.length);
+
+		// transferables will equal the number of users in map
+		// since User has 1 proxy
+		expect(serializer.transferable.length).toBe(userMap.size);
 	});
 
 	test('Serialize order check for single instance of address', () => {
@@ -122,6 +134,24 @@ describe('Serializer', () => {
 
 		expect(rtnCircle.color).toBe(circle.color);
 		expect(rtnCircle.circle.color).toBe(circle.color);
+	});
+
+	test('Serialize order', () => {
+		const order = makeObj<Order>('order', 10);
+
+		const rtnOrder = serializer.serialize<SerializedOrder>(order);
+		const meta = getSerializedMeta(rtnOrder);
+		expect(meta.classToken).toBe(OrderClass.toString());
+		expect(meta.hash).toBeDefined();
+
+		// should be 4 proxies
+		expect(isSerializedProxy(rtnOrder.userProxy)).toBeTruthy();
+		expect(isSerializedProxy(rtnOrder.user.addressArrProxy)).toBeTruthy();
+		expect(isSerializedProxy(rtnOrder.productSetProxy)).toBeTruthy();
+		expect(isSerializedProxy(rtnOrder.addressProxy)).toBeTruthy();
+
+		// so serializer should have 4 transferables
+		expect(serializer.transferable.length).toBe(4);
 	});
 
 	test('Serialize order with makeSerialProxy', () => {

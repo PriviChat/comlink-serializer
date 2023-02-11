@@ -58,7 +58,7 @@ export default class SerializableTestWorker {
 	async getOrderUserAddresses(order: Order): Promise<Address[]> {
 		const rtnArr = new Array<Address>();
 		// await is needed to fetch the addressses iterator
-		for await (const address of await order.userProxy.addresses) {
+		for await (const address of await order.userProxy.addressArrProxy) {
 			rtnArr.push(address);
 		}
 		return toSerial(rtnArr);
@@ -82,17 +82,6 @@ export default class SerializableTestWorker {
 	 */
 	async setOrderUserTotalOrders(order: Order, total: number) {
 		order.userProxy.totalOrders = total;
-	}
-
-	/**
-	 * The function getArray takes an array of User objects and returns a promise that resolves to an
-	 * array of User objects
-	 * @param arr - Array<User> - This is the parameter that we're passing into the function. It's an
-	 * array of User objects.
-	 * @returns An array of users
-	 */
-	async getArray(arr: Array<User>) {
-		return toSerial(arr);
 	}
 
 	/**
@@ -126,11 +115,33 @@ export default class SerializableTestWorker {
 	}
 
 	/**
+	 * The function getArray takes an array of User objects and returns a promise that resolves to an
+	 * array of User objects
+	 * @param arr - Array<User> - This is the parameter that we're passing into the function. It's an
+	 * array of User objects.
+	 * @returns An array of users
+	 */
+	async getArray(arr: Array<User>): Promise<Array<User>> {
+		return toSerial(arr);
+	}
+
+	/**
+	 * The function getSet takes a set of User objects and returns a promise that resolves to an
+	 * set of User objects
+	 * @param arr - Array<User> - This is the parameter that we're passing into the function. It's an
+	 * array of User objects.
+	 * @returns An array of users
+	 */
+	async getSet(set: Set<User>): Promise<Set<User>> {
+		return toSerial(set);
+	}
+
+	/**
 	 * `getMap` returns a `Map` of `User`s
 	 * @param map - Map<any, User> - The map to get the data from.
 	 * @returns A Map<any, User>
 	 */
-	async getMap(map: Map<any, User>) {
+	async getMap(map: Map<any, User>): Promise<Map<any, User>> {
 		return toSerial(map);
 	}
 }
