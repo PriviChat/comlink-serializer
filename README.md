@@ -163,7 +163,7 @@ Comlink.expose(OrderWorker);
 ComlinkSerializer.registerTransferHandler(handlerRegistration);
 ```
 
-1. Calling your WebWorker from the main thread.
+6. Calling your WebWorker from the main thread.
 
 ```ts
 import * as Comlink from 'comlink';
