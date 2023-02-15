@@ -1,0 +1,99 @@
+[
+	{
+		"timestamp": 1676413116206,
+		"files": [
+			{ "filename": "bundle.*****.esm.js", "previous": 41843, "size": 45280, "diff": 3437 },
+			{ "filename": "polyfills.*****.esm.js", "previous": 2317, "size": 2317, "diff": 0 },
+			{ "filename": "route-home.chunk.352ef.css", "previous": 375, "size": 375, "diff": 0 },
+			{ "filename": "route-home.chunk.*****.esm.js", "previous": 375, "size": 376, "diff": 1 },
+			{ "filename": "sw-esm.js", "previous": 11488, "size": 11491, "diff": 3 },
+			{ "filename": "sw.js", "previous": 11511, "size": 11510, "diff": -1 },
+			{ "filename": "polyfills.88a73.js", "previous": 2416, "size": 2416, "diff": 0 },
+			{ "filename": "index.html", "previous": 648, "size": 648, "diff": 0 },
+			{ "filename": "200.html", "previous": 648, "size": 648, "diff": 0 },
+			{ "filename": "hard.worker.540ad.esm.worker.js", "previous": 14590, "size": 14590, "diff": 0 },
+			{ "filename": "bundle.77755.css", "previous": 579, "size": 579, "diff": 0 },
+			{ "filename": "route-perf.chunk.c44b8.css", "previous": 90, "size": 90, "diff": 0 },
+			{ "filename": "route-perf.chunk.*****.esm.js", "previous": 63990, "size": 55319, "diff": -8671 },
+			{ "filename": "hard.worker.8c7fe.worker.js", "previous": 17441, "size": 17441, "diff": 0 },
+			{ "filename": "route-home.chunk.ab08f.js", "previous": 380, "size": 0, "diff": -380 },
+			{ "filename": "bundle.ba29b.js", "previous": 46473, "size": 0, "diff": -46473 },
+			{ "filename": "route-perf.chunk.16a4a.js", "previous": 68607, "size": 0, "diff": -68607 },
+			{ "filename": "bundle.d3825.js", "previous": 0, "size": 51574, "diff": 51574 },
+			{ "filename": "route-home.chunk.85dbb.js", "previous": 0, "size": 382, "diff": 382 },
+			{ "filename": "route-perf.chunk.c44a3.js", "previous": 0, "size": 58240, "diff": 58240 }
+		]
+	},
+	{
+		"timestamp": 1676404888001,
+		"files": [
+			{ "filename": "bundle.*****.esm.js", "previous": 40109, "size": 41843, "diff": 1734 },
+			{ "filename": "polyfills.*****.esm.js", "previous": 2317, "size": 2317, "diff": 0 },
+			{ "filename": "route-home.chunk.352ef.css", "previous": 375, "size": 375, "diff": 0 },
+			{ "filename": "route-home.chunk.*****.esm.js", "previous": 375, "size": 375, "diff": 0 },
+			{ "filename": "sw-esm.js", "previous": 11487, "size": 11488, "diff": 1 },
+			{ "filename": "sw.js", "previous": 11513, "size": 11511, "diff": -2 },
+			{ "filename": "polyfills.88a73.js", "previous": 2416, "size": 2416, "diff": 0 },
+			{ "filename": "index.html", "previous": 649, "size": 648, "diff": -1 },
+			{ "filename": "200.html", "previous": 649, "size": 648, "diff": -1 },
+			{ "filename": "hard.worker.540ad.esm.worker.js", "previous": 14590, "size": 14590, "diff": 0 },
+			{ "filename": "bundle.77755.css", "previous": 579, "size": 579, "diff": 0 },
+			{ "filename": "route-perf.chunk.c44b8.css", "previous": 90, "size": 90, "diff": 0 },
+			{ "filename": "route-perf.chunk.*****.esm.js", "previous": 65462, "size": 63990, "diff": -1472 },
+			{ "filename": "hard.worker.8c7fe.worker.js", "previous": 17441, "size": 17441, "diff": 0 },
+			{ "filename": "bundle.08521.js", "previous": 44637, "size": 0, "diff": -44637 },
+			{ "filename": "route-home.chunk.ab08f.js", "previous": 380, "size": 380, "diff": 0 },
+			{ "filename": "route-perf.chunk.7f217.js", "previous": 70529, "size": 0, "diff": -70529 },
+			{ "filename": "bundle.ba29b.js", "previous": 0, "size": 46473, "diff": 46473 },
+			{ "filename": "route-perf.chunk.16a4a.js", "previous": 0, "size": 68607, "diff": 68607 }
+		]
+	},
+	{
+		"timestamp": 1676404499482,
+		"files": [
+			{ "filename": "bundle.dddf4.css", "previous": 577, "size": 0, "diff": -577 },
+			{ "filename": "bundle.*****.esm.js", "previous": 8644, "size": 40109, "diff": 31465 },
+			{ "filename": "polyfills.*****.esm.js", "previous": 2317, "size": 2317, "diff": 0 },
+			{ "filename": "route-home.chunk.352ef.css", "previous": 375, "size": 375, "diff": 0 },
+			{ "filename": "route-home.chunk.*****.esm.js", "previous": 606, "size": 375, "diff": -231 },
+			{ "filename": "route-profile.chunk.*****.esm.js", "previous": 1356, "size": 0, "diff": -1356 },
+			{ "filename": "sw-esm.js", "previous": 11483, "size": 11487, "diff": 4 },
+			{ "filename": "sw.js", "previous": 11478, "size": 11513, "diff": 35 },
+			{ "filename": "bundle.eb17c.js", "previous": 8673, "size": 0, "diff": -8673 },
+			{ "filename": "polyfills.88a73.js", "previous": 2416, "size": 2416, "diff": 0 },
+			{ "filename": "route-home.chunk.eb2d8.js", "previous": 606, "size": 0, "diff": -606 },
+			{ "filename": "route-profile.chunk.36451.js", "previous": 1877, "size": 0, "diff": -1877 },
+			{ "filename": "index.html", "previous": 1710, "size": 649, "diff": -1061 },
+			{ "filename": "200.html", "previous": 669, "size": 649, "diff": -20 },
+			{ "filename": "hard.worker.540ad.esm.worker.js", "previous": 0, "size": 14590, "diff": 14590 },
+			{ "filename": "bundle.77755.css", "previous": 0, "size": 579, "diff": 579 },
+			{ "filename": "route-perf.chunk.c44b8.css", "previous": 0, "size": 90, "diff": 90 },
+			{ "filename": "route-perf.chunk.*****.esm.js", "previous": 0, "size": 65462, "diff": 65462 },
+			{ "filename": "hard.worker.8c7fe.worker.js", "previous": 0, "size": 17441, "diff": 17441 },
+			{ "filename": "bundle.08521.js", "previous": 0, "size": 44637, "diff": 44637 },
+			{ "filename": "route-home.chunk.ab08f.js", "previous": 0, "size": 380, "diff": 380 },
+			{ "filename": "route-perf.chunk.7f217.js", "previous": 0, "size": 70529, "diff": 70529 }
+		]
+	},
+	{
+		"timestamp": 1676331597831,
+		"files": [
+			{ "filename": "ssr-build/ssr-bundle.3a04d.css", "previous": 945, "size": 0, "diff": -945 },
+			{ "filename": "ssr-build/ssr-bundle.js", "previous": 8756, "size": 0, "diff": -8756 },
+			{ "filename": "bundle.dddf4.css", "previous": 0, "size": 577, "diff": 577 },
+			{ "filename": "bundle.*****.esm.js", "previous": 0, "size": 8644, "diff": 8644 },
+			{ "filename": "polyfills.*****.esm.js", "previous": 0, "size": 2317, "diff": 2317 },
+			{ "filename": "route-home.chunk.352ef.css", "previous": 0, "size": 375, "diff": 375 },
+			{ "filename": "route-home.chunk.*****.esm.js", "previous": 0, "size": 606, "diff": 606 },
+			{ "filename": "route-profile.chunk.*****.esm.js", "previous": 0, "size": 1356, "diff": 1356 },
+			{ "filename": "sw-esm.js", "previous": 0, "size": 11483, "diff": 11483 },
+			{ "filename": "sw.js", "previous": 0, "size": 11478, "diff": 11478 },
+			{ "filename": "bundle.eb17c.js", "previous": 0, "size": 8673, "diff": 8673 },
+			{ "filename": "polyfills.88a73.js", "previous": 0, "size": 2416, "diff": 2416 },
+			{ "filename": "route-home.chunk.eb2d8.js", "previous": 0, "size": 606, "diff": 606 },
+			{ "filename": "route-profile.chunk.36451.js", "previous": 0, "size": 1877, "diff": 1877 },
+			{ "filename": "index.html", "previous": 0, "size": 1710, "diff": 1710 },
+			{ "filename": "200.html", "previous": 0, "size": 669, "diff": 669 }
+		]
+	}
+]

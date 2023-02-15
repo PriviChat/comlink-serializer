@@ -4,9 +4,9 @@ import Order from '@test-fixtures/order';
 import User from '@test-fixtures/user';
 import Circle from '@test-fixtures/circle';
 import { AddressClass, CircleClass, ProductClass, UserClass } from '@test-fixtures/types';
-import { isSerializableObject } from '../serial/decorators/utils';
-import { makeObj } from './fixtures';
-import SerialSymbol from '../serial/serial-symbol';
+import { isSerializableObject } from '../../serial/decorators/utils';
+import { makeObj } from '../fixtures';
+import SerialSymbol from '../../serial/serial-symbol';
 
 describe('Serialize descriptor tests', () => {
 	test('Check that SerializeDecoratorTestObject has proper descriptors', () => {

@@ -1,4 +1,4 @@
-import { Serializable, hashCd } from '@comlink-serializer';
+import { Serializable, hashCd } from 'comlink-serializer';
 import { AddressClass } from './types';
 
 @Serializable(AddressClass)

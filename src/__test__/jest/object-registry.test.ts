@@ -1,11 +1,11 @@
 import { expect, test, jest } from '@jest/globals';
 import User from '@test-fixtures/user';
 
-import objectRegistry from '../registry';
+import objectRegistry from '../../registry';
 import Order from '@test-fixtures/order';
 import { UserClass } from '@test-fixtures/types';
 import Product from '@test-fixtures/product';
-import SerialSymbol from '../serial/serial-symbol';
+import SerialSymbol from '../../serial/serial-symbol';
 
 describe('ObjectRegistry', () => {
 	beforeAll(() => {

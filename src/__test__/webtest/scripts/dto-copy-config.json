@@ -1,0 +1,31 @@
+{
+	"copyFiles": [
+		{
+			"from": "../../fixtures/types.ts",
+			"to": "../src/dto/"
+		},
+		{
+			"from": "../../fixtures/index.ts",
+			"to": "../src/dto/"
+		},
+		{
+			"from": "../../fixtures/address.ts",
+			"to": "../src/dto/"
+		},
+		{
+			"from": "../../fixtures/order.ts",
+			"to": "../src/dto/"
+		},
+		{
+			"from": "../../fixtures/product.ts",
+			"to": "../src/dto/"
+		},
+		{
+			"from": "../../fixtures/user.ts",
+			"to": "../src/dto/"
+		}
+	],
+	"copyFilesSettings": {
+		"whenFileExists": "overwrite"
+	}
+}

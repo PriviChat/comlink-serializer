@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/user';
-import { makeObj } from './fixtures';
+import { makeObj } from '../fixtures';
 
 import { toSerialIterator } from '@comlink-serializer';
 

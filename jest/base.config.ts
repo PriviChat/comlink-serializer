@@ -6,7 +6,7 @@ const baseJestConfig: JestConfigWithTsJest = {
 	clearMocks: true,
 	preset: 'ts-jest/presets/default',
 	testEnvironment: 'node',
-	testMatch: ['**/*.(test|spec).ts'],
+	testMatch: ['<rootDir>/src/__test__/jest/**/*.(test|spec).ts'],
 	moduleNameMapper: {
 		'^@comlink-serializer$': '<rootDir>/src/index',
 		'^@test-fixtures/(.*)$': '<rootDir>/src/__test__/fixtures/$1',

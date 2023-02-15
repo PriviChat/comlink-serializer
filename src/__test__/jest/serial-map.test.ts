@@ -2,10 +2,10 @@ import { expect, test } from '@jest/globals';
 import User from '@test-fixtures/user';
 import { SerializedUser, UserClass } from '@test-fixtures/types';
 
-import SerialSymbol from '../serial/serial-symbol';
-import { SerializedMap, SerializedSet, Serializer } from '../serial';
-import { makeObj } from './fixtures';
-import { makeSerial } from '../serial/utils';
+import SerialSymbol from '../../serial/serial-symbol';
+import { SerializedMap, Serializer } from '../../serial';
+import { makeObj } from '../fixtures';
+import { makeSerial } from '../../serial/utils';
 import { getSerializedMeta } from '@test-fixtures/utils';
 
 describe('SerialMap Tests', () => {

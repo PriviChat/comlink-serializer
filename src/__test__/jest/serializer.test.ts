@@ -10,10 +10,10 @@ import {
 import { toSerialIterator } from '@comlink-serializer';
 import User from '@test-fixtures/user';
 import { getSerializedMeta, getSerializedTransferables } from '@test-fixtures/utils';
-import SerialSymbol from '../serial/serial-symbol';
-import { SerializedArray, SerializedMap, SerializedObject, SerializedProxy, Serializer } from '../serial';
-import { makeArr, makeObj } from './fixtures';
-import { isSerializedArray, isSerializedMap, isSerializedProxy, makeSerial, makeSerialProxy } from '../serial/utils';
+import SerialSymbol from '../../serial/serial-symbol';
+import { SerializedArray, SerializedMap, SerializedObject, SerializedProxy, Serializer } from '../../serial';
+import { makeArr, makeObj } from '../fixtures';
+import { isSerializedArray, isSerializedMap, isSerializedProxy, makeSerial, makeSerialProxy } from '../../serial/utils';
 import Order from '@test-fixtures/order';
 import Address from '@test-fixtures/address';
 import Circle from '@test-fixtures/circle';

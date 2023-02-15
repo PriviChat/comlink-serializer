@@ -121,3 +121,6 @@ dist
 # Compiled code
 build/
 dist/
+/test-results/
+/playwright-report/
+/playwright/.cache/

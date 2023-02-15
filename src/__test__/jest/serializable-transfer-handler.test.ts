@@ -6,10 +6,10 @@ import ProxyTestWorker from '@test-fixtures/proxy-test-worker';
 
 import ComlinkSerializer, { toSerial, toSerialProxy, toSerialIterator } from '@comlink-serializer';
 
-import { serializableTransferHandler } from '../serial/comlink';
-import SerialSymbol from '../serial/serial-symbol';
-import { makeArr, makeObj } from './fixtures';
-import { SerialIterableProxy, SerialIteratorResult } from '../serial/iterable';
+import { serializableTransferHandler } from '../../serial/comlink';
+import SerialSymbol from '../../serial/serial-symbol';
+import { makeArr, makeObj } from '../fixtures';
+import { SerialIterableProxy, SerialIteratorResult } from '../../serial/iterable';
 
 import User from '@test-fixtures/user';
 import Order from '@test-fixtures/order';

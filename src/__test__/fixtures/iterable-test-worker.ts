@@ -1,5 +1,4 @@
 import * as Comlink from 'comlink';
-import { fluentAsync } from 'fluent-iterable';
 import ComlinkSerializer from '@comlink-serializer';
 import User from '@test-fixtures/user';
 

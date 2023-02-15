@@ -4,9 +4,9 @@ import Product from '@test-fixtures/product';
 import Order from '@test-fixtures/order';
 import { CircleClass, ProductClass, UserClass } from '@test-fixtures/types';
 import { getClassToken, getRevived, getSerializable } from '@test-fixtures/utils';
-import { Reviver, Serializer } from '../serial';
-import { makeArr, makeObj } from './fixtures';
-import { makeSerial } from '../serial/utils';
+import { Reviver, Serializer } from '../../serial';
+import { makeArr, makeObj } from '../fixtures';
+import { makeSerial } from '../../serial/utils';
 import Circle from '@test-fixtures/circle';
 
 describe('Reviver', () => {
