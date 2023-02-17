@@ -1,0 +1,27 @@
+.test {
+	display: flex;
+	flex-direction: column;
+}
+
+.testHeader h2 {
+	padding: 0 0.5rem;
+	font-size: 1.5rem;
+	line-height: 2rem;
+	font-weight: 400;
+}
+
+.testResult table,
+th,
+td {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+.testResult th,
+td {
+	padding: 5px;
+}
+
+.testResult th {
+	text-align: left;
+}

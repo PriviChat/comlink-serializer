@@ -13,4 +13,19 @@ const path = require('path');
 export default (config, env, helpers, options) => {
 	/** you can change the config here **/
 	const rules = helpers.getRules(config);
+
+	/* update node */
+	const node = config.node || {};
+	Object.assign(node, {
+		process: true,
+		fs: 'empty',
+	});
+	config.node = node;
+
+	/* update fallback webpack 5 */
+	//const fallback = config.resolve.fallback || {};
+	//Object.assign(fallback, {
+	//  "stream": require.resolve("stream-browserify"),
+	//});
+	//config.resolve.fallback = fallback;
 };

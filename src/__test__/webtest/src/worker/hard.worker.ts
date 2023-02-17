@@ -12,11 +12,11 @@ export default class HardWorker {
 	 * @returns The sum of all the zip codes in the array.
 	 */
 	async processArrayIterator(addrArr: AsyncIterableIterator<Address>): Promise<number> {
-		let zipCt = 0;
+		let ct = 0;
 		for await (const addr of addrArr) {
-			zipCt += addr.zip;
+			ct += 1;
 		}
-		return zipCt;
+		return ct;
 	}
 }
 Comlink.expose(HardWorker);

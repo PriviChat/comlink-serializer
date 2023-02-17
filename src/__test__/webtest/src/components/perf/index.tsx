@@ -13,9 +13,15 @@ import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import ReactJson from 'react-json-view';
 import { perfTests } from './test-config';
+import { Test } from './types';
+
+import style from './style.css';
+
+export const TEST_QUERY_PARAM = 'test';
 
 const PerfSuit = () => {
 	const navigate = useNavigate();
+	const [test, setTest] = useState<Test>();
 
 	return (
 		<>
@@ -58,7 +64,11 @@ const PerfSuit = () => {
 										variant="contained"
 										color="primary"
 										onClick={() => {
-											navigate(`${test.route}?config=${JSON.stringify(test.config || test.defaultConfig)}`);
+											// if the config has not been set
+											// set the config to the defaultConfig
+											if (!test.config) test.config = test.defaultConfig;
+											setTest(test);
+											navigate(`${test.route}?${TEST_QUERY_PARAM}=${JSON.stringify(test)}`);
 										}}
 									>
 										Run
@@ -69,7 +79,9 @@ const PerfSuit = () => {
 					</TableBody>
 				</Table>
 			</TableContainer>
-			<Outlet />
+			<div class={style.testResult}>
+				<Outlet />
+			</div>
 		</>
 	);
 };

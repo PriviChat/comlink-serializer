@@ -74,7 +74,6 @@
   },
   "homepage": "https://github.com/PriviChat/comlink-serializer#readme",
   "devDependencies": {
-    "@playwright/test": "^1.30.0",
     "@rollup/plugin-commonjs": "^23.0.4",
     "@rollup/plugin-node-resolve": "^15.0.1",
     "@rollup/plugin-terser": "^0.1.0",
