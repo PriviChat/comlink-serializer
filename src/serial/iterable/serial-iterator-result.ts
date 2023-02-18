@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { randomUUID as v4 } from 'crypto';
 import { hashCd } from '../utils';
 import { ReviverCtx, SerializeCtx, SerialPrimitive } from '..';
 import { Revivable, Serializable } from '../decorators';
@@ -9,7 +9,7 @@ import { SerializedIteratorResult } from './types';
 export default class SerialIteratorResult<T extends Serializable = Serializable>
 	implements Serializable<SerializedIteratorResult>, Revivable<SerializedIteratorResult>
 {
-	private id = uuid();
+	private id = v4();
 	private result?: T | [SerialPrimitive, T];
 	private done: boolean;
 

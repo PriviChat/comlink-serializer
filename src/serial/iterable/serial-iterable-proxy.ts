@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as v4 } from 'crypto';
 import { Revivable, Serializable } from '../decorators';
 import SerialSymbol from '../serial-symbol';
 import { hashCd } from '../utils';
@@ -10,7 +10,7 @@ import SerialIteratorResult from './serial-iterator-result';
 export default class SerialIterableProxy<I extends SerialIterType = SerialIterType>
 	implements AsyncIterableIterator<I>, Serializable<SerializedIterableProxy>, Revivable<SerializedIterableProxy>
 {
-	private _id = uuid();
+	private _id = v4();
 	private _iterator: AnySerialIterator<I>;
 	private _proxy?: Comlink.Remote<AsyncIterableIterator<I>>;
 	private done = false;

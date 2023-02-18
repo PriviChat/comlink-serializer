@@ -1,4 +1,4 @@
-import { v4 as uuid } from 'uuid';
+import { randomUUID as v4 } from 'crypto';
 import {
 	SerialPrimitive,
 	SerializedMap,
@@ -21,7 +21,7 @@ function serialMapFactory<K extends SerialPrimitive, V extends Serializable>(map
 export default class SerialMap<K extends SerialPrimitive, V extends Serializable = Serializable>
 	implements Serializable<SerializedMap>
 {
-	private id = uuid();
+	private id = v4();
 	private map: Map<K, V>;
 
 	constructor(map?: Map<K, V>) {

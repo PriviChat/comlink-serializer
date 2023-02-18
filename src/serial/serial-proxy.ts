@@ -1,5 +1,5 @@
 import * as Comlink from 'comlink';
-import { v4 as uuid } from 'uuid';
+import { randomUUID as v4 } from 'crypto';
 import { Revivable, SerializableObject, SerializePropertyDescriptor } from './decorators';
 import Serializable from './decorators/serializable';
 import { Dictionary, ParentRef, SerializedProxy } from '.';
@@ -12,7 +12,7 @@ import { hashCd, toSerial, toSerialProxy } from './utils';
 export default class SerialProxy<T extends Serializable>
 	implements Serializable<SerializedProxy>, Revivable<SerializedProxy>
 {
-	private _id = uuid();
+	private _id = v4();
 	private _proxyClass: string;
 	private _proxyDescr: Dictionary<SerializePropertyDescriptor>;
 	private _proxyProp?: string;

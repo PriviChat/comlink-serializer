@@ -16,6 +16,7 @@ export default class Address {
 	}
 
 	public hashCode(): number {
+		//return -1;
 		return hashCd(this.id);
 	}
 
