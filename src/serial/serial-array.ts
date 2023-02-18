@@ -1,4 +1,4 @@
-import { randomUUID as v4 } from 'crypto';
+import crypto from 'crypto';
 import { ReviverCtx, SerializeCtx, SerializedArray } from './types';
 import Serializable from './decorators/serializable';
 import { hashCd } from './utils';
@@ -10,7 +10,7 @@ function serialArrayFactory<T extends Serializable>(array?: T[]): SerialArray<T>
 
 @Serializable(SerialSymbol.serialArray)
 export default class SerialArray<T extends Serializable> implements Serializable<SerializedArray> {
-	private id = v4();
+	private id = crypto.randomUUID();
 	private array: Array<T>;
 
 	constructor(array?: T[]) {

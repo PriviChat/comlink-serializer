@@ -17,6 +17,8 @@ export default (config, env, helpers, options) => {
 	/* update node */
 	const node = config.node || {};
 	Object.assign(node, {
+		crypto: true,
+		Buffer: true,
 		process: true,
 		fs: 'empty',
 	});

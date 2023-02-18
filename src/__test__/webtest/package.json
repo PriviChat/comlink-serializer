@@ -28,7 +28,7 @@
     "@emotion/styled": "^11.10.5",
     "@mui/material": "^5.11.8",
     "comlink": "^4.4.1",
-    "comlink-serializer": "^1.2.2",
+    "comlink-serializer": "^1.2.3",
     "preact": "^10.10.0",
     "preact-render-to-string": "^5.2.1",
     "react-json-view": "^1.21.3",

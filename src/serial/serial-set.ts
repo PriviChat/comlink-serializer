@@ -1,4 +1,4 @@
-import { randomUUID as v4 } from 'crypto';
+import crypto from 'crypto';
 import { ReviverCtx, SerializeCtx, Serialized, SerializedSet } from './types';
 import Serializable from './decorators/serializable';
 import { hashCd } from './utils';
@@ -10,7 +10,7 @@ function serialSetFactory<T extends Serializable>(set?: Set<T>): SerialSet<T> {
 
 @Serializable(SerialSymbol.serialSet)
 export default class SerialSet<T extends Serializable> implements Serializable<SerializedSet> {
-	private id = v4();
+	private id = crypto.randomUUID();
 	private set: Set<T>;
 
 	constructor(set?: Set<T>) {
